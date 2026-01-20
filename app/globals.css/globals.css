@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #faf9f6;
+  color: #0a0a0a;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Neo-brutalist styling */
+body {
+  background-color: #faf9f6;
+  min-height: 100vh;
+  font-feature-settings: "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Update neon class for neo-brutalist aesthetic */
+.neon {
+  text-shadow: none;
+  color: #0a0a0a;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* High contrast borders and shadows */
+.neo-border {
+  border: 4px solid #0a0a0a;
+}
+
+.neo-shadow {
+  box-shadow: 8px 8px 0 #0a0a0a;
+}
+
+/* Accent color for highlights */
+.neo-accent {
+  background-color: #F4C430;
+}
+
+.neo-accent-hover:hover {
+  background-color: #E6B800;
+}
