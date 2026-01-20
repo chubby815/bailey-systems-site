@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 
-const apiVersion: Stripe.StripeConfig["apiVersion"] = "2024-09-30";
+const apiVersion: Stripe.StripeConfig["apiVersion"] = "2024-06-20";
 
 let stripe: Stripe | null = null;
 

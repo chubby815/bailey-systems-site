@@ -19,7 +19,13 @@ export default function Navbar() {
   );
 }
 
-function NavLink({ href, children }) {
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}

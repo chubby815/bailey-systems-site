@@ -47,7 +47,7 @@ export function Button({
   );
 
   if (asChild && isValidElement(children)) {
-    const child = children as ReactElement;
+    const child = children as ReactElement<{ className?: string }>;
     return cloneElement(child, {
       className: clsx(child.props.className, styles),
     });

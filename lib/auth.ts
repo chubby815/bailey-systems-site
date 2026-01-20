@@ -44,20 +44,23 @@ const decodeToken = (token: string) => {
   }
 };
 
-export const getUserSession = () => {
-  const token = cookies().get(AUTH_COOKIE)?.value;
+export const getUserSession = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AUTH_COOKIE)?.value;
   if (!token) return null;
   const payload = decodeToken(token);
   if (!payload) return null;
   return payload;
 };
 
-export const clearSession = () => {
-  cookies().delete(AUTH_COOKIE);
+export const clearSession = async () => {
+  const cookieStore = await cookies();
+  cookieStore.delete(AUTH_COOKIE);
 };
 
-export const setSessionCookie = (token: string) => {
-  cookies().set({
+export const setSessionCookie = async (token: string) => {
+  const cookieStore = await cookies();
+  cookieStore.set({
     name: AUTH_COOKIE,
     value: token,
     httpOnly: true,

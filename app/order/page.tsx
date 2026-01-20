@@ -97,13 +97,17 @@ export default function OrderPage() {
           label="Company"
           placeholder="Northwind Clinics"
           value={form.company}
-          onChange={(event) => updateField("company", event.target.value)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            updateField("company", event.target.value)
+          }
         />
         <Input
           label="Work email"
           placeholder="ops@northwind.com"
           value={form.email}
-          onChange={(event) => updateField("email", event.target.value)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            updateField("email", event.target.value)
+          }
         />
         <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-2 text-sm text-white/80">
@@ -111,7 +115,9 @@ export default function OrderPage() {
             <select
               className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white"
               value={form.teamSize}
-              onChange={(event) => updateField("teamSize", event.target.value)}
+              onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+                updateField("teamSize", event.target.value)
+              }
             >
               <option value="under-10">Under 10</option>
               <option value="10-50">10-50</option>
@@ -124,7 +130,9 @@ export default function OrderPage() {
             <select
               className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white"
               value={form.timeline}
-              onChange={(event) => updateField("timeline", event.target.value)}
+              onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+                updateField("timeline", event.target.value)
+              }
             >
               <option value="now">Ready now</option>
               <option value="this-quarter">This quarter</option>
@@ -161,7 +169,9 @@ export default function OrderPage() {
           multiline
           placeholder="Share your KPIs, SLAs, and existing tooling..."
           value={form.goals}
-          onChange={(event) => updateField("goals", event.target.value)}
+          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+            updateField("goals", event.target.value)
+          }
         />
 
         {trackingId && (

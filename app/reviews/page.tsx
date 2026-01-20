@@ -1,4 +1,4 @@
-import { ReviewCard } from "@/components/ReviewCard";
+import ReviewCard from "@/components/ReviewCard";
 import { REVIEWS } from "@/utils/constants";
 
 export default function ReviewsPage() {
@@ -16,7 +16,11 @@ export default function ReviewsPage() {
       </header>
       <div className="grid gap-6 md:grid-cols-3">
         {REVIEWS.map((review) => (
-          <ReviewCard key={review.name} review={review} />
+          <ReviewCard
+            key={review.name}
+            name={review.name}
+            quote={review.quote}
+          />
         ))}
       </div>
     </div>
