@@ -5,13 +5,14 @@ import Link from "next/link";
 export default function Navbar() {
   return (
     <nav className="w-full bg-[#faf9f6] border-b-4 border-black py-4 px-6 flex items-center justify-between shadow-[0_4px_0_#0a0a0a]">
-      <div className="text-2xl font-bold tracking-tight text-black">
+      <div className="text-3xl font-black tracking-tight bg-gradient-to-r from-[#F4C430] to-[#FF8C00] bg-clip-text text-transparent animate-pulse">
         Bailey Systems AI
       </div>
 
       <div className="flex items-center gap-8 text-base">
         <NavLink href="/">Home</NavLink>
         <NavLink href="#pricing">Pricing</NavLink>
+        <NavLink href="#team">Team</NavLink>
         <NavLink href="#about">About</NavLink>
         <NavLink href="#contact">Contact</NavLink>
       </div>

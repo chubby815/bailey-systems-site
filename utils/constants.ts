@@ -83,36 +83,34 @@ export const SERVICES: Service[] = [
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    title: "Custom Website",
-    type: "Project-Based",
-    description: "A production-ready website built to your specifications with modern tools and clean architecture.",
+    title: "Business Core",
+    type: "The Build",
+    description: "Transparent investment models designed for immediate ROI.",
     price: "$1,200",
-    frequency: "starting price",
+    frequency: "one-time",
     features: [
-      "Responsive design for all devices",
-      "Modern tech stack (Next.js, React)",
-      "SEO optimization built-in",
-      "Fast loading performance",
-      "Contact forms and integrations",
-      "Deployment and launch support",
+      "0.8s Load Speeds",
+      "Mobile-Perfect",
+      "SEO Built-in",
+      "Zero Monthly Fees",
+      "Lifetime Code Ownership",
     ],
     cta: { label: "Get Started", href: "#contact" },
     popular: true,
   },
   {
-    title: "Optional Add-ons",
-    type: "Post-Launch",
-    description: "Extend your website with additional features and ongoing support.",
-    price: "Variable",
+    title: "On-Demand Support",
+    type: "Support",
+    description: "Pay only for what you need, when you need it.",
+    price: "Pay-As-You-Go",
     frequency: "as needed",
     features: [
-      "Website updates: $50 per update",
-      "AI chatbot integration: starting at $200",
-      "Custom features priced individually",
-      "Additional pages and sections",
-      "Third-party API integrations",
+      "Micro-Updates ($50/request)",
+      "New Pages ($300+)",
+      "Design Refreshes",
+      "Security Audits",
     ],
-    cta: { label: "Discuss Add-ons", href: "#contact" },
+    cta: { label: "Learn More", href: "#contact" },
   },
 ];
 
@@ -209,18 +207,18 @@ export const SOCIAL_LINKS = [
 export const DEFAULT_CHAT_MESSAGES = [
   {
     role: "assistant" as const,
-    content: "You're connected to Bailey Systems. What workflow do you want to automate?",
+    content: "Hey there! 🐕 I'm Bailey, named after Javier's beagle! I can help you with questions about our services, pricing, location, or anything about Bailey Systems AI. What would you like to know?",
     timestamp: "09:00",
   },
   {
     role: "user" as const,
-    content: "Can you qualify leads from our website chat and pass hot ones to Slack?",
+    content: "What services do you offer?",
     timestamp: "09:01",
   },
   {
     role: "assistant" as const,
     content:
-      "Absolutely. We'll deploy an intake agent that scores leads, books meetings, and posts summaries into your #deal-desk channel.",
+      "We build custom AI Agents, Websites, Apps, and Automations! Projects start at $1,200. Based in Machesney Park, Illinois. Want to know more about any specific service?",
     timestamp: "09:02",
   },
 ];

@@ -78,9 +78,9 @@ export function ChatWindow() {
   return (
     <div className="glass-panel flex h-full flex-col p-6">
       <div className="mb-4 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-        <span>Agent Pilot</span>
+        <span>🐕 Bailey Systems AI</span>
         <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-emerald-200">
-          Online
+          Online Now
         </span>
       </div>
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto pr-2">
@@ -91,7 +91,7 @@ export function ChatWindow() {
       <form onSubmit={handleSubmit} className="mt-4 flex items-center gap-3">
         <textarea
           name="prompt"
-          placeholder="Ask about pipelines, onboarding, or fulfillment..."
+          placeholder="Ask Bailey anything... Woof! 🐾"
           className="w-full resize-none rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:border-white/30 focus:outline-none"
           rows={2}
           value={input}

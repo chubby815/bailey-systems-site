@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar"; // <--- FIXED: No curly braces!
 import { Footer } from "@/components/Footer";
+import { FloatingVideoChat } from "@/components/FloatingVideoChat";
 
 export const metadata: Metadata = {
   title: "Bailey Systems AI",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
+        <FloatingVideoChat />
       </body>
     </html>
   );

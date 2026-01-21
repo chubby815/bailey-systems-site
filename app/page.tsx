@@ -52,19 +52,51 @@ export default function Home() {
       {/* Section Divider */}
       <div className="w-full max-w-6xl h-2 bg-[#F4C430] mb-32"></div>
 
-      {/* ABOUT THE TEAM */}
+      {/* MEET THE TEAM */}
+      <section id="team" className="w-full max-w-5xl mb-32">
+        <div className="text-center mb-12">
+          <h2 className="text-5xl font-black tracking-tight relative inline-block mb-6" style={{ fontFamily: 'Inter, Arial Black, sans-serif' }}>
+            Meet The Team
+            <span className="absolute -bottom-2 left-0 w-full h-1 bg-[#F4C430]"></span>
+          </h2>
+        </div>
+        <div className="border-4 border-black bg-white p-12 shadow-[12px_12px_0_#0a0a0a]">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-shrink-0">
+              <div className="border-4 border-black shadow-[6px_6px_0_#0a0a0a] overflow-hidden w-64">
+                <img
+                  src="/profile-photo.jpg"
+                  alt="Javier Sandoval"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            </div>
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="text-3xl font-black text-black mb-1">Javier Sandoval</h3>
+                <p className="text-lg font-bold text-[#F4C430] uppercase tracking-wide">Sr. Software Engineer</p>
+              </div>
+              <p className="text-lg text-black/80 leading-relaxed">
+                Based in Machesney Park, IL. A Computer Science alumnus of McHenry County College (2008) and current Senior Software Engineer at Amazon. Building high-performance digital assets for serious businesses.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Divider */}
+      <div className="w-full max-w-6xl h-2 bg-[#F4C430] mb-32"></div>
+
+      {/* ABOUT */}
       <section id="about" className="w-full max-w-4xl mb-32">
         <div className="border-4 border-black bg-white p-12 shadow-[12px_12px_0_#0a0a0a]">
-          <h2 className="text-5xl font-bold tracking-tight text-center mb-10 relative inline-block w-full">
-            About the Team
+          <h2 className="text-5xl font-black tracking-tight text-center mb-10 relative inline-block w-full" style={{ fontFamily: 'Inter, Arial Black, sans-serif' }}>
+            About Us
             <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-[#F4C430]"></span>
           </h2>
           <div className="space-y-6 text-lg text-black/80 leading-relaxed">
             <p>
-              My name is Javier Sandoval. I work alongside a small team of experienced software engineers and media specialists to design and build modern digital products for businesses.
-            </p>
-            <p>
-              Based in Machesney Park, Illinois, my background spans Computer Science and Criminal Justice. Over the years, we've built and shipped custom websites, applications, and AI-powered tools for modern businesses. Our work includes automation systems, internal tools, and production-ready platforms that handle real traffic and real users.
+              We work alongside a small team of experienced software engineers and media specialists to design and build modern digital products for businesses.
             </p>
             <p>
               We focus on projects that actually get used — not demos or experiments. From customer-facing websites to backend automation that removes manual work from daily operations, our emphasis is on real-world delivery, performance, and reliability.
@@ -82,12 +114,12 @@ export default function Home() {
       {/* PRICING */}
       <section id="pricing" className="w-full max-w-6xl mb-32">
         <div className="text-center mb-12">
-          <h2 className="text-5xl font-bold tracking-tight relative inline-block mb-6">
+          <h2 className="text-5xl font-black tracking-tight relative inline-block mb-6" style={{ fontFamily: 'Inter, Arial Black, sans-serif' }}>
             Pricing
             <span className="absolute -bottom-2 left-0 w-full h-1 bg-[#F4C430]"></span>
           </h2>
           <p className="text-xl text-black/70 max-w-2xl mx-auto">
-            Projects typically start at $1,200. Clear pricing, no hidden costs.
+            Transparent investment models designed for immediate ROI.
           </p>
         </div>
 
@@ -132,8 +164,8 @@ export default function Home() {
       {/* CONTACT */}
       <section id="contact" className="w-full max-w-4xl mb-20">
         <div className="border-4 border-black bg-white p-12 shadow-[12px_12px_0_#0a0a0a] text-center">
-          <h2 className="text-5xl font-bold tracking-tight mb-10 relative inline-block">
-            Get In Touch
+          <h2 className="text-5xl font-black tracking-tight mb-10 relative inline-block" style={{ fontFamily: 'Inter, Arial Black, sans-serif' }}>
+            📞 Get In Touch
             <span className="absolute -bottom-2 left-0 w-full h-1 bg-[#F4C430]"></span>
           </h2>
           <p className="text-xl text-black/70 mb-8 leading-relaxed">
@@ -144,7 +176,7 @@ export default function Home() {
               <span className="font-bold text-black">Email:</span>{" "}
               <a
                 href="mailto:Lilianajs27@gmail.com"
-                className="text-black hover:text-[#F4C430] transition-colors font-semibold"
+                className="text-black hover:text-[#F4C430] transition-colors font-bold underline"
               >
                 Lilianajs27@gmail.com
               </a>
@@ -152,10 +184,10 @@ export default function Home() {
             <p>
               <span className="font-bold text-black">Phone:</span>{" "}
               <a
-                href="tel:7798958325"
-                className="text-black hover:text-[#F4C430] transition-colors font-semibold"
+                href="tel:+17798956325"
+                className="text-black hover:text-[#F4C430] transition-colors font-bold underline cursor-pointer"
               >
-                779-895-8325
+                779-895-6325
               </a>
             </p>
           </div>
