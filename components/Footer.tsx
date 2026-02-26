@@ -1,11 +1,13 @@
 export function Footer() {
   return (
-    <footer className="mt-20 border-t-4 border-black py-10 bg-[#faf9f6]">
-      <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-4 gap-10 text-black">
+    <footer className="mt-20 border-t-4 border-black py-10 bg-[#faf9f6] footer-section">
+      <div className="max-w-[65%] ml-0 px-4 grid md:grid-cols-4 gap-8 md:pr-56 mr-[200px]">
         {/* ABOUT */}
         <div>
-          <h3 className="text-lg font-bold">Bailey Systems AI</h3>
-          <p className="text-black/70 text-sm mt-2 leading-relaxed">
+          <h3 className="text-lg font-black text-black footer-heading" style={{ letterSpacing: '-0.04em' }}>
+            Bailey Systems AI
+          </h3>
+          <p className="text-black text-sm mt-2 leading-relaxed footer-text">
             Custom AI agents, websites, apps, and automation systems for
             businesses and creators.
           </p>
@@ -13,8 +15,10 @@ export function Footer() {
 
         {/* SERVICES */}
         <div>
-          <h3 className="text-lg font-bold">Services</h3>
-          <ul className="mt-2 text-black/70 text-sm space-y-1">
+          <h3 className="text-lg font-black text-black footer-heading" style={{ letterSpacing: '-0.04em' }}>
+            Services
+          </h3>
+          <ul className="mt-2 text-black text-sm space-y-1 footer-text">
             <li>AI Agents</li>
             <li>Websites</li>
             <li>Apps</li>
@@ -24,36 +28,49 @@ export function Footer() {
 
         {/* LINKS */}
         <div>
-          <h3 className="text-lg font-bold">Quick Links</h3>
-          <ul className="mt-2 text-black/70 text-sm space-y-1">
+          <h3 className="text-lg font-black text-black footer-heading" style={{ letterSpacing: '-0.04em' }}>
+            Quick Links
+          </h3>
+          <ul className="mt-2 text-black text-sm space-y-1 footer-text">
             <li>
-              <a href="#pricing" className="hover:text-[#F4C430] transition-colors">Pricing</a>
+              <a href="#pricing" className="hover:text-[#0EA5E9] transition-colors footer-link">Pricing</a>
             </li>
             <li>
-              <a href="#about" className="hover:text-[#F4C430] transition-colors">About</a>
+              <a href="#about" className="hover:text-[#0EA5E9] transition-colors footer-link">About</a>
             </li>
             <li>
-              <a href="/contact" className="hover:text-[#F4C430] transition-colors">Contact</a>
+              <a href="/consulting" className="hover:text-[#0EA5E9] transition-colors footer-link">Contact</a>
             </li>
           </ul>
         </div>
 
-        {/* START PROJECT */}
-        <div>
-          <h3 className="text-lg font-bold">Work With Me</h3>
-          <p className="text-black/70 text-sm mt-2 leading-relaxed">
+        {/* WORK WITH ME - Amazon Yellow Bento */}
+        <div className="border-4 border-black bg-[#F4C430] p-6 footer-cta">
+          <h3 className="text-lg font-black text-black footer-heading" style={{ letterSpacing: '-0.04em' }}>
+            Work With Me
+          </h3>
+          <p className="text-black text-sm mt-2 leading-relaxed footer-text">
             Ready to build something? Let's get started.
           </p>
           <a
-            href="#pricing"
-            className="inline-block mt-4 px-6 py-3 bg-[#F4C430] text-black border-4 border-black font-bold hover:bg-[#E6B800] hover:translate-x-1 hover:translate-y-1 shadow-[4px_4px_0_#0a0a0a] hover:shadow-[2px_2px_0_#0a0a0a] transition-all uppercase tracking-wide text-sm"
+            href="/consulting"
+            className="inline-block mt-4 px-6 py-3 bg-black text-white border-4 border-black font-bold hover:translate-x-1 hover:translate-y-1 transition-all uppercase text-sm footer-button"
+            style={{ letterSpacing: '-0.02em' }}
           >
             Start a Project
           </a>
         </div>
       </div>
 
-      <div className="text-center text-black/60 text-sm mt-10 font-semibold">
+      {/* SYSTEM STATUS INDICATOR */}
+      <div className="flex items-center justify-center gap-3 mt-10 mb-4">
+        <div className="w-2 h-2 rounded-full bg-green-600 system-status-dot"></div>
+        <span className="text-xs font-bold system-status-text" style={{ fontFamily: 'Courier New, Monaco, Consolas, monospace', letterSpacing: '0.05em' }}>
+          BAILEY_OS: ACTIVE
+        </span>
+      </div>
+
+      <div className="text-center text-black text-sm font-semibold footer-copyright" style={{ fontFamily: 'Courier New, Monaco, Consolas, monospace' }}>
         © {new Date().getFullYear()} Bailey Systems AI. All rights reserved.
       </div>
     </footer>

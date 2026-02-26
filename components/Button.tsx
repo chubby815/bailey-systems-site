@@ -10,9 +10,9 @@ import { clsx } from "clsx";
 
 const variantStyles = {
   primary:
-    "bg-[#F4C430] text-black border-4 border-black shadow-[4px_4px_0_#0a0a0a] hover:bg-[#E6B800] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] transition-all",
+    "bg-[#0EA5E9] text-white border-4 border-black shadow-[4px_4px_0_#0a0a0a] hover:bg-[#0284C7] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] transition-all button-primary",
   secondary:
-    "border-4 border-black bg-white text-black shadow-[4px_4px_0_#0a0a0a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a]",
+    "border-4 border-black bg-white text-black shadow-[4px_4px_0_#0a0a0a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] button-secondary",
   ghost: "text-black hover:text-black/70 hover:bg-black/5",
 };
 

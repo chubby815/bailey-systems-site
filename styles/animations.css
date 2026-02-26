@@ -20,6 +20,33 @@
   }
 }
 
+@keyframes fall {
+  0% {
+    transform: translateY(0) rotateX(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(200%) rotateX(180deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0) rotateX(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-flip {
+  0% {
+    transform: rotateY(0deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotateY(360deg) scale(1);
+  }
+}
+
 /* -------------------------------------------------- */
 /* 2. UTILITIES LAYER (ONLY classes below)            */
 /* -------------------------------------------------- */
@@ -48,5 +75,149 @@
     );
     animation: shimmer 2s infinite;
   }
+
+  .animate-fall {
+    animation: fall 600ms ease-in-out;
+  }
+
+  .animate-spin-flip {
+    animation: spin-flip 1s ease-in-out;
+  }
+
+  /* Hide scrollbar while keeping scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }
+
+/* -------------------------------------------------- */
+/* 3. CYBER MODE STYLES - CLEAN INSTANT COLOR SWAP   */
+/* -------------------------------------------------- */
+
+/* Background - Deep Black */
+.hacker-mode,
+.hacker-mode html,
+.hacker-mode body {
+  background-color: #0a0a0a !important;
+}
+
+/* Apply monospace fonts to everything */
+.hacker-mode * {
+  font-family: 'Courier New', 'Monaco', 'Consolas', monospace !important;
+}
+
+/* ===== COLOR SWAPS ===== */
+
+/* Yellow (#F4C430) → Neon Green (#00ff41) */
+.hacker-mode .bg-\[#F4C430\],
+.hacker-mode .bg-yellow-300,
+.hacker-mode .bg-yellow-400 {
+  background-color: #00ff41 !important;
+}
+
+.hacker-mode .text-\[#F4C430\],
+.hacker-mode .text-yellow-300,
+.hacker-mode .text-yellow-400 {
+  color: #00ff41 !important;
+}
+
+.hacker-mode .border-\[#F4C430\],
+.hacker-mode .border-yellow-300,
+.hacker-mode .border-yellow-400 {
+  border-color: #00ff41 !important;
+}
+
+/* Black Text → Neon Green */
+.hacker-mode .text-black,
+.hacker-mode .text-black\/70,
+.hacker-mode .text-black\/80,
+.hacker-mode .text-black\/60,
+.hacker-mode .text-black\/50,
+.hacker-mode .text-black\/40 {
+  color: #00ff41 !important;
+}
+
+/* White placeholder text → Neon Green */
+.hacker-mode .placeholder\:text-black\/50::placeholder {
+  color: rgba(0, 255, 65, 0.5) !important;
+}
+
+/* White/Light Backgrounds → Deep Black */
+.hacker-mode .bg-white,
+.hacker-mode .bg-\[#faf9f6\] {
+  background-color: #0a0a0a !important;
+}
+
+/* Black Borders → Neon Green */
+.hacker-mode .border-black {
+  border-color: #00ff41 !important;
+}
+
+/* ===== SPECIAL ELEMENTS ===== */
+
+/* Navbar */
+.hacker-mode nav {
+  background-color: #0a0a0a !important;
+  border-bottom-color: #00ff41 !important;
+}
+
+/* Logo gradient */
+.hacker-mode .bg-gradient-to-r {
+  background: #00ff41 !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Cards with neon glow borders */
+.hacker-mode .border-4,
+.hacker-mode .border-8 {
+  border-color: #00ff41 !important;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4) !important;
+}
+
+/* Buttons glow */
+.hacker-mode button {
+  border-color: #00ff41 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.6) !important;
+}
+
+/* Override all shadow styles */
+.hacker-mode .shadow-\[4px_4px_0_rgba\(0\,0\,0\,1\)\],
+.hacker-mode .shadow-\[8px_8px_0_\#0a0a0a\],
+.hacker-mode .shadow-\[12px_12px_0_\#0a0a0a\],
+.hacker-mode .shadow-\[3px_3px_0_rgba\(0\,0\,0\,1\)\],
+.hacker-mode .shadow-\[6px_6px_0_rgba\(0\,0\,0\,0\.8\)\],
+.hacker-mode .shadow-\[2px_2px_0_rgba\(0\,0\,0\,1\)\],
+.hacker-mode .shadow-\[6px_6px_0_\#0a0a0a\],
+.hacker-mode .shadow-\[0_4px_0_\#0a0a0a\] {
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5) !important;
+}
+
+/* Keep images and videos visible */
+.hacker-mode img,
+.hacker-mode video {
+  opacity: 1 !important;
+  filter: brightness(1) !important;
+}
+
+/* Ensure all text is visible */
+.hacker-mode * {
+  opacity: 1 !important;
+}
+
+/* Floating chat bot remains visible */
+.hacker-mode .fixed {
+  z-index: 50 !important;
+}
+
+/* Toggle button always visible on top */
+.hacker-mode button[aria-label*="Mode"] {
+  z-index: 9999 !important;
+}
+
 

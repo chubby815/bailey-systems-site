@@ -7,13 +7,51 @@ export function FloatingVideoChat() {
   const [baileyInput, setBaileyInput] = useState("");
   const [baileyResponse, setBaileyResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const keySequenceRef = useRef<string>("");
 
   useEffect(() => {
     if (videoRef.current) {
         videoRef.current.playbackRate = 0.6; 
     }
   }, []);
+
+  // Easter Egg: Listen for "woof" being typed
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Only track if not typing in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      keySequenceRef.current += e.key.toLowerCase();
+
+      // Keep only the last 4 characters
+      if (keySequenceRef.current.length > 4) {
+        keySequenceRef.current = keySequenceRef.current.slice(-4);
+      }
+
+      // Check if "woof" was typed
+      if (keySequenceRef.current === "woof") {
+        triggerFlip();
+        keySequenceRef.current = ""; // Reset
+      }
+    };
+
+    window.addEventListener("keypress", handleKeyPress);
+    return () => window.removeEventListener("keypress", handleKeyPress);
+  }, []);
+
+  const triggerFlip = () => {
+    setIsFlipping(true);
+    setBaileyResponse("WOOF WOOF! 🐕");
+    
+    setTimeout(() => {
+      setIsFlipping(false);
+      setBaileyResponse("");
+    }, 1000);
+  };
 
   async function handleBaileyChat(e: FormEvent) {
     e.preventDefault();
@@ -41,10 +79,10 @@ export function FloatingVideoChat() {
   return (
     <>
       <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
-        <div className="relative">
+        <div className={`relative transition-transform duration-1000 ${isFlipping ? 'animate-spin-flip' : ''}`}>
           {baileyResponse && (
             <div className="absolute bottom-full mb-4 right-0 w-96 max-h-48 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <div className="relative rounded-3xl bg-white px-6 py-4 shadow-[6px_6px_0_rgba(0,0,0,0.8)] border-[3px] border-black max-h-48 overflow-y-auto">
+              <div className="relative rounded-3xl bg-white px-6 py-4 shadow-[6px_6px_0_rgba(0,0,0,0.8)] border-[3px] border-black max-h-48 overflow-y-auto scrollbar-hide">
                 <p className="font-bold text-black text-sm leading-relaxed">{baileyResponse}</p>
                 <div className="absolute -bottom-6 right-12 w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[24px] border-t-black" />
                 <div className="absolute -bottom-5 right-12 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[20px] border-t-white" />
@@ -62,6 +100,8 @@ export function FloatingVideoChat() {
             autoPlay
             loop
             controls={false}
+            preload="metadata"
+            poster="/placeholder.jpg"
           />
 
           {/* --- LEFT FOOT PAWS (Covers Watermark 1) --- */}

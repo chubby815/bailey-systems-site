@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar"; // <--- FIXED: No curly braces!
+import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FloatingVideoChat } from "@/components/FloatingVideoChat";
+import { HackerToggle } from "@/components/HackerToggle";
+import { KonamiCode } from "@/components/KonamiCode";
 
 export const metadata: Metadata = {
   title: "Bailey Systems AI",
@@ -21,6 +23,8 @@ export default function RootLayout({
         {children}
         <Footer />
         <FloatingVideoChat />
+        <HackerToggle />
+        <KonamiCode />
       </body>
     </html>
   );

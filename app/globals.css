@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,19 +11,29 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 * {
   box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-/* Neo-brutalist styling */
+/* Apple-style typography */
 body {
   background-color: #faf9f6;
   min-height: 100vh;
-  font-feature-settings: "kern" 1;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apple-style headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
 /* Update neon class for neo-brutalist aesthetic */
@@ -62,4 +74,333 @@ body {
 
 .animate-pulse {
   animation: subtle-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ================================================== */
+/* CYBER MODE - Solid Black + Neon Green              */
+/* ================================================== */
+
+.hacker-mode,
+.hacker-mode html,
+.hacker-mode body {
+  background-color: #000000 !important;
+}
+
+.hacker-mode * {
+  font-family: 'Courier New', 'Monaco', 'Consolas', monospace !important;
+}
+
+/* ===== NAVBAR VISIBILITY ===== */
+.hacker-mode nav {
+  background-color: #000000 !important;
+  border-bottom-color: #00ff41 !important;
+}
+
+.hacker-mode .navbar-logo {
+  background: #00ff41 !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.hacker-mode .navbar-link {
+  color: #00ff41 !important;
+}
+
+.hacker-mode .navbar-link:hover {
+  color: #00ff41 !important;
+  opacity: 0.8 !important;
+}
+
+/* ===== BUTTONS ===== */
+.hacker-mode .button-primary,
+.hacker-mode .button-secondary {
+  background-color: #000000 !important;
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.5) !important;
+}
+
+.hacker-mode button {
+  border-color: #00ff41 !important;
+}
+
+/* ===== CONTACT INFO (Email/Phone) ===== */
+.hacker-mode a[href^="mailto"],
+.hacker-mode a[href^="tel"] {
+  color: #00ff41 !important;
+  font-family: 'Courier New', 'Monaco', 'Consolas', monospace !important;
+}
+
+.hacker-mode a[href^="mailto"]:hover,
+.hacker-mode a[href^="tel"]:hover {
+  color: #00ff41 !important;
+  opacity: 0.8 !important;
+}
+
+/* ===== TEXT CONVERSIONS ===== */
+.hacker-mode h1,
+.hacker-mode h2, 
+.hacker-mode h3,
+.hacker-mode h4,
+.hacker-mode p,
+.hacker-mode dt,
+.hacker-mode dd {
+  color: #00ff41 !important;
+}
+
+.hacker-mode [class*="text-gray"],
+.hacker-mode [class*="text-black"] {
+  color: #00ff41 !important;
+}
+
+/* ===== BACKGROUND CONVERSIONS ===== */
+.hacker-mode main {
+  background-color: #000000 !important;
+}
+
+.hacker-mode section > div,
+.hacker-mode [class*="bg-white"] {
+  background-color: #000000 !important;
+}
+
+/* ===== BORDER CONVERSIONS ===== */
+.hacker-mode [class*="border-black"],
+.hacker-mode [class*="border-4"],
+.hacker-mode [class*="border-2"] {
+  border-color: #00ff41 !important;
+}
+
+/* Dividers */
+.hacker-mode [class*="bg-"][class*="h-2"] {
+  background-color: #00ff41 !important;
+}
+
+/* ===== CARDS GLOW ===== */
+.hacker-mode [class*="border-4"],
+.hacker-mode [class*="shadow-"] {
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5) !important;
+}
+
+/* ===== PRESERVE MEDIA ===== */
+.hacker-mode img,
+.hacker-mode video,
+.hacker-mode iframe {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* ===== FOOTER CYBER MODE ===== */
+.hacker-mode .footer-section {
+  background-color: #000000 !important;
+  border-top-color: #00ff41 !important;
+}
+
+.hacker-mode .footer-heading,
+.hacker-mode .footer-text,
+.hacker-mode .footer-link,
+.hacker-mode .footer-copyright {
+  color: #00ff41 !important;
+}
+
+.hacker-mode .footer-link:hover {
+  color: #00ff41 !important;
+  opacity: 0.8 !important;
+}
+
+/* Work With Me CTA in Cyber Mode */
+.hacker-mode .footer-cta {
+  background-color: #000000 !important;
+  border-color: #00ff41 !important;
+}
+
+.hacker-mode .footer-button {
+  background-color: #000000 !important;
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+}
+
+/* Monospace for copyright */
+.hacker-mode .footer-copyright {
+  font-family: 'Courier New', 'Monaco', 'Consolas', monospace !important;
+}
+
+/* System Status in Cyber Mode */
+.hacker-mode .system-status-dot {
+  background-color: #00ff41 !important;
+}
+
+.hacker-mode .system-status-text {
+  color: #00ff41 !important;
+}
+
+/* ===== SYSTEM STATUS INDICATOR ===== */
+.system-status-text {
+  color: #000000;
+}
+
+.system-status-dot {
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ================================================== */
+/* EASTER EGG ANIMATIONS                              */
+/* ================================================== */
+
+/* Vee 360 Spin */
+@keyframes vee-spin-360 {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.vee-spin {
+  animation: vee-spin-360 1s ease-in-out;
+}
+
+/* Glitch Card Animation */
+@keyframes glitch-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.glitch-card {
+  animation: glitch-appear 0.5s ease-out;
+}
+
+/* Glitch Text Effect */
+@keyframes glitch-text {
+  0% {
+    text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff;
+  }
+  14% {
+    text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff;
+  }
+  15% {
+    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff;
+  }
+  49% {
+    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff;
+  }
+  50% {
+    text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff;
+  }
+  99% {
+    text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff;
+  }
+  100% {
+    text-shadow: -0.025em 0 0 #00fffc, -0.025em -0.025em 0 #fc00ff;
+  }
+}
+
+.glitch-text {
+  animation: glitch-text 0.5s infinite;
+}
+
+/* Chaos Mode Matrix Rain Effect */
+@keyframes chaos-glitch {
+  0%, 100% {
+    opacity: 1;
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    opacity: 0.8;
+    filter: hue-rotate(90deg);
+  }
+  40% {
+    opacity: 1;
+    filter: hue-rotate(180deg);
+  }
+  60% {
+    opacity: 0.9;
+    filter: hue-rotate(270deg);
+  }
+  80% {
+    opacity: 1;
+    filter: hue-rotate(360deg);
+  }
+}
+
+.chaos-glitch {
+  animation: chaos-glitch 5s ease-in-out;
+}
+
+/* ================================================== */
+/* CONTACT FORM CYBER MODE                            */
+/* ================================================== */
+
+/* Contact Form Standard Mode */
+.contact-form input,
+.contact-form textarea {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.contact-form label {
+  color: #000000;
+}
+
+/* Contact Form Cyber Mode */
+.hacker-mode .contact-form input,
+.hacker-mode .contact-form textarea {
+  background-color: #000000 !important;
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+}
+
+.hacker-mode .contact-form input::placeholder,
+.hacker-mode .contact-form textarea::placeholder {
+  color: #00ff41 !important;
+  opacity: 0.5 !important;
+}
+
+.hacker-mode .contact-form label {
+  color: #00ff41 !important;
+}
+
+.hacker-mode .contact-form input:focus,
+.hacker-mode .contact-form textarea:focus {
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.5) !important;
+}
+
+.hacker-mode .contact-form button {
+  background-color: #000000 !important;
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.5) !important;
 }
