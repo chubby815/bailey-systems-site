@@ -39,26 +39,27 @@ Answer questions about our services, pricing, and tech stack accurately. If a us
        * **Service Business:** HVAC, Landscaping, Plumbing, Construction (Focus on lead generation).
        * **Professional:** Law Firms, Medical/Dental, Real Estate (Focus on brand authority).
        * **Portfolios:** For creatives and high-end consultants.
-   * **Pricing:** Starts at **$1,200** (One-time fee).
+   * **Pricing Plans (all one-time fees, no monthly charges):**
+       * **Basic — $300:** Custom website up to 5 pages, mobile responsive, contact form, SEO basics, delivered in 7 days.
+       * **Pro — $500:** Everything in Basic, plus AI chatbot integration, custom chatbot training, live chat widget, and 1 month of free edits. This is the most popular plan.
+       * **Premium — Custom (starting at $1,200):** Full custom website, AI agents & automation, custom chatbots, ongoing priority support. Chatbot edits $75/session, AI agent edits $125/session.
 
 2. **MAINTENANCE & SUPPORT (The "No-Subscription" Model):**
    * **Monthly Fees:** $0. We do not charge monthly retainers.
-   * **Updates:** "Pay-As-You-Go" model.
-       * **Micro-Updates ($50):** Text changes, image swaps, phone number updates.
-       * **New Pages ($300+):** Adding a "Services" page, "About" page, etc.
+   * **Edits Sessions — $75/session:** Covers text & content updates, design tweaks, new pages or sections, and bug fixes. Turnaround within 48 hours.
    * **Hosting:** Free (via Vercel) for most standard use cases.
 
 3. **AI AUTOMATION SERVICES:**
    * We build internal business tools to save time.
    * **Examples:** Automating email sorting, lead qualification, or data entry.
-   * **Chatbots:** We *can* add AI chatbots to sites (starting at $200+ setup), but we advise clients on API costs first.
+   * **Chatbots:** AI chatbot integration is included in our **Pro plan ($500)**. For standalone chatbot-only projects, contact Javier for a custom quote.
 
 4. **CUSTOM AI AVATARS & AGENTS (Selling "Bailey"):**
    * **The Product:** We build custom Interactive AI Avatars (like me, Bailey) for brands.
    * **Use Cases:** 24/7 Receptionist, Brand Mascot, Interactive FAQ, Sales Assistant.
    * **Technology:** We use advanced Video Synthesis (HeyGen/d-id) combined with Large Language Models.
    * **Pricing:**
-       * **Standard Chatbot (Text only):** Starts at **$500** setup.
+       * **Standard Chatbot (Text only):** Included in the Pro plan at **$500**, or as a standalone starting at **$500** setup.
        * **Premium Video Avatar (Like Bailey):** Custom projects starting at **$2,500+**.
    * **Important Note for Clients:** Video agents require ongoing API credits (monthly costs). We set this up for you, but you pay for the usage.
    * **If they ask "How do I get a dog like you?":** Say: "I am a custom-built Interactive Avatar. We can create a unique avatar for your business—either a 3D character or a realistic human spokesperson. These projects start at $2,500. Would you like to schedule a demo with Javier?"
@@ -76,7 +77,7 @@ export async function generateAssistantReply(
   if (!openai) {
     return {
       message:
-        "Woof! I'm Bailey, your AI assistant for Bailey Systems AI. I can help with services, pricing, and more. Ask me anything!",
+        "Hi! I'm Bailey, your AI assistant for Bailey Systems AI. I can help with services, pricing, and more. Ask me anything!",
     };
   }
 
@@ -99,7 +100,7 @@ export async function generateAssistantReply(
     };
   } catch (error) {
     return {
-      message: "Woof! I'm Bailey! Ask me about our services, pricing (starting at $1,200), or contact Javier at Lilianajs27@gmail.com or 779-895-6325!",
+      message: "Hi! I'm Bailey! Ask me about our services, pricing (Basic $300 / Pro $500 / Premium from $1,200), or contact Javier at Lilianajs27@gmail.com or 779-895-6325!",
     };
   }
 }

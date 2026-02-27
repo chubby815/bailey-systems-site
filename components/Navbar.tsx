@@ -17,6 +17,8 @@ export default function Navbar() {
           <NavLink href="#team">Team</NavLink>
           <NavLink href="#about">About</NavLink>
           <NavLink href="/consulting">Consulting</NavLink>
+          <a href="/pro" className="text-sm font-bold text-purple-500 hover:text-purple-400 transition uppercase" style={{ letterSpacing: '-0.02em' }}>Pro</a>
+          <a href="/elite" className="text-sm font-bold text-yellow-500 hover:text-yellow-400 transition uppercase" style={{ letterSpacing: '-0.02em' }}>Elite 👑</a>
         </div>
       </div>
     </nav>
