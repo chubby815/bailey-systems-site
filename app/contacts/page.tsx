@@ -60,6 +60,17 @@ export default function ContactPage() {
               779-895-6325
             </a>
           </p>
+
+          <p className="text-black text-sm">
+            <a
+              href="https://www.facebook.com/profile.php?id=61588084179508"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[#00c48c] transition font-semibold text-sm flex items-center gap-2"
+            >
+              📘 Facebook
+            </a>
+          </p>
         </div>
 
         {/* Success Message - Replaces Form */}

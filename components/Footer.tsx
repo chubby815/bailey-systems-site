@@ -41,6 +41,11 @@ export function Footer() {
             <li>
               <a href="/consulting" className="hover:text-[#0EA5E9] transition-colors footer-link">Contact</a>
             </li>
+            <li>
+              <a href="https://www.facebook.com/profile.php?id=61588084179508" target="_blank" rel="noopener noreferrer" className="hover:text-[#0EA5E9] transition-colors footer-link flex items-center gap-1">
+                📘 Facebook
+              </a>
+            </li>
           </ul>
         </div>
 
