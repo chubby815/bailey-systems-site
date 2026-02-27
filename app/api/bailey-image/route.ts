@@ -6,7 +6,21 @@ const LIMITS = {
   bailey_elite_2026: { imgs: 3 },
 }
 
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const key = `ratelimit:${ip}:${new Date().getMinutes()}`
+  const count = (await kv.get<number>(key)) || 0
+  if (count >= 30) return false
+  await kv.set(key, count + 1, { ex: 60 })
+  return true
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') || 'unknown'
+  const allowed = await checkRateLimit(ip)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests. Slow down.' }, { status: 429 })
+  }
+
   const { prompt, token } = await req.json()
 
   const limit = LIMITS[token as keyof typeof LIMITS]
@@ -42,7 +56,7 @@ export async function POST(req: NextRequest) {
   })
 
   const data = await response.json()
-  if (!response.ok) return NextResponse.json({ error: data.error?.message }, { status: 500 })
+  if (!response.ok) return NextResponse.json({ error: 'Image generation error' }, { status: 500 })
 
   await kv.set(imgKey, used + 1, { ex: 86400 })
 

@@ -6,8 +6,13 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-[#faf9f6] border-b-4 border-black py-4 shadow-[0_4px_0_#0a0a0a]">
       <div className="max-w-[90%] mx-auto flex items-center justify-between">
-        <div className="text-3xl font-black bg-gradient-to-r from-[#0EA5E9] to-[#0284C7] bg-clip-text text-transparent animate-pulse navbar-logo" style={{ letterSpacing: '-0.03em' }}>
-          Bailey Systems AI
+        <div className="flex items-center gap-2">
+          <div className="text-xl font-black tracking-tight text-black">
+            Bailey Systems AI
+          </div>
+          <span className="inline-flex items-center gap-1 bg-[#00c48c]/10 border border-[#00c48c]/30 text-[#00c48c] text-xs font-bold px-2 py-1 rounded-full">
+            🇲🇽 Se habla español
+          </span>
         </div>
 
         <div className="flex items-center gap-8 text-base">

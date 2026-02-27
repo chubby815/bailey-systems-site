@@ -17,7 +17,7 @@ export function Hero() {
         // Try to play with sound
         videoRef.current.muted = false;
         videoRef.current.play().catch(e => {
-            console.log("Autoplay with sound prevented, trying muted:", e);
+            // autoplay with sound blocked by browser, falling back to muted
             // Fallback to muted autoplay
             if (videoRef.current) {
                 videoRef.current.muted = true;

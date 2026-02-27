@@ -24,15 +24,17 @@ function Paywall({ tier }: { tier: string }) {
           {isElite ? (
             <>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>100 messages per day</span></div>
-              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>3 AI images per day (DALL-E 3)</span></div>
-              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Claude Sonnet — full power</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>3 AI image generations per day</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Bailey AI — full power</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>🇲🇽 Se habla español</span></div>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Cancel anytime</span></div>
             </>
           ) : (
             <>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>20 messages per day</span></div>
-              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>2 AI images per day (DALL-E 3)</span></div>
-              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Claude Sonnet powered</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>2 AI image generations per day</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Bailey AI powered</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>🇲🇽 Se habla español</span></div>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Cancel anytime</span></div>
             </>
           )}
@@ -53,12 +55,11 @@ function Paywall({ tier }: { tier: string }) {
 
 function EliteChat() {
   const searchParams = useSearchParams()
-  const paramToken = searchParams.get('token')
-
   const [token, setToken] = useState<string | null>(null)
+  const [checking, setChecking] = useState(true)
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: "Welcome to Bailey Elite 👑 You have 100 messages and 3 images today. I'm powered by Claude Sonnet — ask me anything. Code, strategy, research, creative work. Use the 🎨 button to generate images!"
+    content: "Hey! I'm Bailey Elite 👑 You have full power — 100 messages and 3 images today. Ask me anything, I'll deliver.\n\n🇲🇽 ¡También hablo español! Escríbeme en el idioma que prefieras."
   }])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -67,26 +68,41 @@ function EliteChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('bailey_elite_token') : null
-    const resolved = paramToken || stored
-    if (resolved) {
-      setToken(resolved)
-      localStorage.setItem('bailey_elite_token', resolved)
-    }
-  }, [paramToken])
+    const urlToken = searchParams.get('token')
+    const cookieToken = document.cookie
+      .split(';')
+      .find(c => c.trim().startsWith('bailey_elite_auth='))
+      ?.split('=')[1]
+    const storageToken = localStorage.getItem('bailey_elite_token')
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    const found = urlToken || cookieToken || storageToken
+
+    if (found) {
+      setToken(found)
+      localStorage.setItem('bailey_elite_token', found)
+      document.cookie = `bailey_elite_auth=${found}; path=/; max-age=31536000`
+    }
+    setChecking(false)
+  }, [searchParams])
 
   useEffect(() => {
     if (token) {
       fetch(`/api/usage?token=${token}`)
         .then(r => r.json())
-        .then(d => setUsage({ msgs: d.msgs, imgs: d.imgs }))
+        .then(d => setUsage({ msgs: d.msgs || 0, imgs: d.imgs || 0 }))
+        .catch(() => {})
     }
   }, [token])
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  if (checking) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="text-white text-sm animate-pulse">Loading Bailey Elite...</div>
+    </div>
+  )
   if (!token) return <Paywall tier="elite" />
 
   const sendMessage = async () => {
@@ -143,13 +159,17 @@ function EliteChat() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
-      {/* Header */}
       <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-xl z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-black font-black text-sm">👑</div>
+          <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-black font-black text-sm">B</div>
           <div>
-            <div className="font-black text-sm">Bailey Elite</div>
-            <div className="text-xs text-yellow-400">Powered by Claude Sonnet</div>
+            <div className="font-black text-sm flex items-center gap-2">
+              Bailey Elite 👑
+              <span className="inline-flex items-center gap-1 bg-[#00c48c]/10 border border-[#00c48c]/30 text-[#00c48c] text-xs font-bold px-2 py-0.5 rounded-full">
+                🇲🇽 Se habla español
+              </span>
+            </div>
+            <div className="text-xs text-gray-500">Powered by Bailey AI</div>
           </div>
         </div>
         <div className="flex gap-4 text-xs text-gray-500">
@@ -158,7 +178,6 @@ function EliteChat() {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl mx-auto w-full space-y-4">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -186,7 +205,6 @@ function EliteChat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-white/10 p-4 sticky bottom-0 bg-[#0a0a0a]/90 backdrop-blur-xl">
         <div className="max-w-3xl mx-auto flex gap-2">
           <input
@@ -196,23 +214,16 @@ function EliteChat() {
             placeholder="Ask Bailey anything..."
             className="flex-1 bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-600 rounded-xl px-4 py-3 text-sm outline-none focus:border-yellow-400 transition"
           />
-          <button
-            onClick={generateImage}
-            disabled={imgLoading || usage.imgs >= 3}
-            className="bg-purple-600 text-white font-black px-4 py-3 rounded-xl hover:bg-purple-500 transition disabled:opacity-40 text-lg"
-            title="Generate image"
-          >
+          <button onClick={generateImage} disabled={imgLoading || usage.imgs >= 3}
+            className="bg-purple-600 text-white font-black px-4 py-3 rounded-xl hover:bg-purple-500 transition disabled:opacity-40 text-lg" title="Generate image">
             🎨
           </button>
-          <button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            className="bg-yellow-400 text-black font-black px-5 py-3 rounded-xl hover:bg-white transition disabled:opacity-40 text-sm"
-          >
+          <button onClick={sendMessage} disabled={loading || !input.trim()}
+            className="bg-yellow-400 text-black font-black px-5 py-3 rounded-xl hover:bg-white transition disabled:opacity-40 text-sm">
             Send
           </button>
         </div>
-        <p className="text-center text-gray-700 text-xs mt-2">Bailey Elite · Claude Sonnet + DALL-E 3 · Resets midnight</p>
+        <p className="text-center text-gray-700 text-xs mt-2">Bailey Elite · Resets midnight</p>
       </div>
     </div>
   )

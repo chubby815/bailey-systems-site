@@ -27,7 +27,7 @@ export function KonamiCode() {
         
         if (matches) {
           setShowDiscount(true);
-          console.log('SYSTEM_BREACH: DISCOUNT_PROTOCOL_ACTIVATED');
+          // easter egg activated
           return [];
         }
         

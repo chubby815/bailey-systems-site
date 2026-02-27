@@ -154,10 +154,11 @@ export default function Home() {
             <div className="text-sm text-gray-500 mb-6">Cancel anytime</div>
             <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
               <li>✅ 20 messages per day</li>
-              <li>✅ 2 AI images per day (DALL-E 3)</li>
-              <li>✅ Powered by Claude Sonnet</li>
+              <li>✅ 2 AI image generations per day</li>
+              <li>✅ Powered by Bailey AI</li>
               <li>✅ Code generation</li>
               <li>✅ Ask literally anything</li>
+              <li>🇲🇽 Se habla español</li>
             </ul>
             <a href={STRIPE_LINKS.proMonthly} target="_blank" rel="noopener noreferrer"
                className="bg-purple-600 text-white text-center py-3 rounded-xl font-bold hover:bg-purple-500 transition block">
@@ -176,11 +177,12 @@ export default function Home() {
             <div className="text-sm text-gray-500 mb-6">Cancel anytime</div>
             <ul className="text-sm text-gray-300 space-y-2 flex-1 mb-6">
               <li>✅ 100 messages per day</li>
-              <li>✅ 3 AI images per day (DALL-E 3)</li>
-              <li>✅ Powered by Claude Sonnet</li>
+              <li>✅ 3 AI image generations per day</li>
+              <li>✅ Powered by Bailey AI</li>
               <li>✅ Code generation</li>
               <li>✅ Priority everything</li>
               <li>✅ Ask literally anything</li>
+              <li>🇲🇽 Se habla español</li>
             </ul>
             <a href={STRIPE_LINKS.eliteMonthly} target="_blank" rel="noopener noreferrer"
                className="bg-yellow-400 text-black text-center py-3 rounded-xl font-bold hover:bg-white transition block">
