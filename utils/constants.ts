@@ -52,9 +52,9 @@ export const HERO_MARKERS = [
 ];
 
 export const STATS = [
-  { label: "Avg. response time", value: "38s", detail: "Across chat + SMS" },
-  { label: "Delivered client work", value: "$8k+", detail: "Real projects shipped" },
-  { label: "Humans saved", value: "780+ hrs", detail: "Monthly workload removed" },
+  { label: "Response time", value: "38s", detail: "Customers get answers fast — day or night" },
+  { label: "Projects delivered", value: "50+", detail: "Real businesses growing with our systems" },
+  { label: "Hours saved", value: "780+", detail: "Automated away for our clients every month" },
 ];
 
 export const SERVICES: Service[] = [

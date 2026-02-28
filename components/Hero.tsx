@@ -49,29 +49,28 @@ export function Hero() {
         <div className="space-y-8 text-black">
           <div className="inline-flex items-center gap-2 border-2 border-black bg-[#0EA5E9] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white">
             <span className="h-2 w-2 bg-white" />
-            AI-powered systems
+            Websites & AI Automation
           </div>
           <div className="space-y-6">
             <h1 className="text-6xl md:text-7xl font-black leading-[1.1] md:leading-[1.1]" style={{ letterSpacing: '-0.04em', fontWeight: 900 }}>
-              Custom <span className="relative inline-block">
-                SaaS products
+              We Build <span className="relative inline-block">
+                High-Converting
                 <span className="absolute -bottom-1 left-0 w-full h-2 bg-[#0EA5E9]"></span>
-              </span> and websites for <span className="relative inline-block">
-                modern businesses
+              </span> Websites & AI Systems That Bring You <span className="relative inline-block">
+                More Customers
                 <span className="absolute -bottom-1 left-0 w-full h-2 bg-[#0EA5E9]"></span>
-              </span>.
+              </span>
             </h1>
             <p className="text-xl text-gray-600 md:text-2xl leading-relaxed font-medium">
-              Production-ready software that handles real work. AI agents, custom websites, 
-              and automation tools built to solve actual problems.
+              Custom websites, AI chat systems, and business automations designed to generate leads, save time, and grow your revenue.
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" asChild>
-              <Link href="#pricing">Start a project</Link>
+              <Link href="#pricing">Get More Customers →</Link>
             </Button>
             <Button variant="secondary" size="lg" asChild>
-              <Link href="#about">Learn more</Link>
+              <Link href="#about">See How It Works</Link>
             </Button>
           </div>
           <dl className="grid gap-6 sm:grid-cols-3">
