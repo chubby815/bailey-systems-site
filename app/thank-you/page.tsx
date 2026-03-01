@@ -1,3 +1,5 @@
+import Script from "next/script";
+
 export default function ThankYouPage() {
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-6">
@@ -16,6 +18,14 @@ export default function ThankYouPage() {
         >
           Back to Home
         </a>
+        <Script id="google-purchase-conversion" strategy="afterInteractive">
+          {`
+            gtag('event', 'conversion', {
+              'send_to': 'AW-17983960384/yTaHCMayhoEcEMDqtf9C',
+              'transaction_id': ''
+            });
+          `}
+        </Script>
       </div>
     </main>
   )
