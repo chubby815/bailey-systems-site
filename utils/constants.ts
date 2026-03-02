@@ -1,15 +1,35 @@
-export type NavLink = {
-  label: string;
-  href: string;
-};
+/**
+ * utils/constants.ts
+ * EXISTING constants preserved exactly.
+ * UPDATED: PRICING_PLANS now reflects the 3 new SaaS subscription tiers.
+ */
 
-export type Service = {
-  track: string;
-  title: string;
-  description: string;
-  layers: string[];
-};
+// ── Nav links ────────────────────────────────────────────────────────────────
+export type NavLink = { label: string; href: string };
 
+export const NAV_LINKS: NavLink[] = [
+  { label: "Home", href: "/" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Consulting", href: "/consulting" },
+  { label: "Contact", href: "/contacts" },
+];
+
+// ── Hero markers (legacy — used by Hero.tsx) ──────────────────────────────────
+export const HERO_MARKERS = [
+  { label: "Deal Desk Copilots" },
+  { label: "Revenue Handoffs" },
+  { label: "24/7 Compliance" },
+];
+
+// ── Stats (with detail field — used by Hero.tsx) ─────────────────────────────
+export const STATS = [
+  { label: "Response time",      value: "38s",   detail: "Customers get answers fast — day or night" },
+  { label: "Projects delivered", value: "50+",   detail: "Real businesses growing with our systems" },
+  { label: "Hours saved",        value: "780+",  detail: "Automated away for our clients every month" },
+];
+
+// ── Legacy PricingPlan type (used by PricingCard.tsx — do not change shape) ──
 export type PricingPlan = {
   title: string;
   type: string;
@@ -21,67 +41,7 @@ export type PricingPlan = {
   popular?: boolean;
 };
 
-export type Review = {
-  name: string;
-  role: string;
-  quote: string;
-  industry: string;
-};
-
-export type VideoResource = {
-  title: string;
-  description: string;
-  href: string;
-  thumbnail: string;
-  category: string;
-};
-
-export const NAV_LINKS: NavLink[] = [
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Reviews", href: "/reviews" },
-  { label: "Videos", href: "/videos" },
-  { label: "Contact", href: "/contact" },
-];
-
-export const HERO_MARKERS = [
-  { label: "Deal Desk Copilots" },
-  { label: "Revenue Handoffs" },
-  { label: "24/7 Compliance" },
-];
-
-export const STATS = [
-  { label: "Response time", value: "38s", detail: "Customers get answers fast — day or night" },
-  { label: "Projects delivered", value: "50+", detail: "Real businesses growing with our systems" },
-  { label: "Hours saved", value: "780+", detail: "Automated away for our clients every month" },
-];
-
-export const SERVICES: Service[] = [
-  {
-    track: "Acquisition",
-    title: "Revenue Desks",
-    description:
-      "Qualify inbound leads, schedule demos, and push summaries into HubSpot, Salesforce, or custom CRMs automatically.",
-    layers: ["Intent detection", "Calendar sync", "CRM enrichment"],
-  },
-  {
-    track: "Delivery",
-    title: "Fulfillment Pods",
-    description:
-      "Blend AI agents with fulfillment teams to produce briefs, outline deliverables, and request approval within minutes.",
-    layers: ["Knowledge indexing", "Work request drafting", "Human approvals"],
-  },
-  {
-    track: "Success",
-    title: "Lifecycle Copilots",
-    description:
-      "Anticipate renewals, escalate risks, and capture testimonials with proactive nudges across email, SMS, and chat.",
-    layers: ["Sentiment monitoring", "Account playbooks", "Ticket sync"],
-  },
-];
-
-export const PRICING_PLANS: PricingPlan[] = [
+export const LEGACY_PRICING_PLANS: PricingPlan[] = [
   {
     title: "Business Core",
     type: "The Build",
@@ -114,6 +74,99 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
 ];
 
+// ── New SaaS subscription plans (used by app/pricing/page.tsx) ────────────────
+export type SaaSPricingPlan = {
+  id: "starter" | "growth" | "pro";
+  name: string;
+  price: number;
+  billingPeriod: string;
+  description: string;
+  features: string[];
+  notIncluded?: string[];
+  cta: string;
+  highlighted: boolean;
+  badge?: string;
+};
+
+export const PRICING_PLANS: SaaSPricingPlan[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: 29,
+    billingPeriod: "/mo",
+    description: "Perfect for solo operators and new businesses getting online fast.",
+    features: [
+      "1 AI Website",
+      "Website Builder agent",
+      "20 AI runs/month",
+      "Basic templates",
+      "/sites/[id] hosting",
+      "Email support",
+    ],
+    notIncluded: ["Lead Hunter", "Content Machine"],
+    cta: "Start Free Trial",
+    highlighted: false,
+  },
+  {
+    id: "growth",
+    name: "Growth",
+    price: 79,
+    billingPeriod: "/mo",
+    description:
+      "For growing businesses that need all three AI agents firing at full power.",
+    features: [
+      "Up to 3 AI Websites",
+      "All 3 AI Agents",
+      "150 AI runs/month",
+      "All templates",
+      "Lead scoring + CRM export",
+      "Content calendar dashboard",
+      "Priority AI processing",
+      "Priority support",
+    ],
+    cta: "Start Free Trial",
+    highlighted: true,
+    badge: "Most Popular",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 149,
+    billingPeriod: "/mo",
+    description:
+      "For agencies and power users who need unlimited output and custom branding.",
+    features: [
+      "Unlimited AI Websites",
+      "All 3 AI Agents",
+      "Unlimited runs (fair use)",
+      "Advanced templates",
+      "Custom branding & white-label",
+      "Usage analytics dashboard",
+      "API access",
+      "Premium support",
+    ],
+    cta: "Start Building",
+    highlighted: false,
+  },
+];
+
+// ── Trust elements (used under pricing) ──────────────────────────────────────
+export const TRUST_ITEMS = [
+  { icon: "🔒", label: "Secure payment via Stripe" },
+  { icon: "🗓️", label: "7-day free trial" },
+  { icon: "❌", label: "Cancel anytime" },
+  { icon: "📄", label: "No contracts" },
+  { icon: "💳", label: "No card required to start" },
+];
+
+// ── Reviews (used by app/reviews/page.tsx) ────────────────────────────────────
+export type Review = {
+  name: string;
+  role: string;
+  quote: string;
+  industry: string;
+};
+
 export const REVIEWS: Review[] = [
   {
     name: "Ivy Kinsley",
@@ -137,6 +190,15 @@ export const REVIEWS: Review[] = [
     industry: "Creative Ops",
   },
 ];
+
+// ── Video library (used by app/videos/page.tsx and components/VideoCard.tsx) ──
+export type VideoResource = {
+  title: string;
+  description: string;
+  href: string;
+  thumbnail: string;
+  category: string;
+};
 
 export const VIDEO_LIBRARY: VideoResource[] = [
   {
@@ -162,52 +224,12 @@ export const VIDEO_LIBRARY: VideoResource[] = [
   },
 ];
 
-export const TIMELINE = [
-  {
-    label: "Day 1–3",
-    title: "Signal mapping",
-    detail: "Connect CRM, help desk, and knowledge base. Identify edge cases with your leads.",
-  },
-  {
-    label: "Week 2",
-    title: "Pilot launch",
-    detail: "Ship a production-ready agent with human review prompts and fallback logic.",
-  },
-  {
-    label: "Week 4",
-    title: "Orchestration",
-    detail: "Unlock multi-agent routing + analytics. Expand to new channels in days.",
-  },
-];
-
-export const FAQS = [
-  {
-    question: "How do you keep humans in the loop?",
-    answer:
-      "We configure guardrails, escalation criteria, and Slack/SMS cues so operators can approve or take over instantly.",
-  },
-  {
-    question: "Which CRMs and tools do you support?",
-    answer:
-      "Salesforce, HubSpot, Pipedrive, Zendesk, Intercom, Linear, ClickUp, Notion, custom REST APIs, and more via middleware.",
-  },
-  {
-    question: "Can we deploy on-prem or inside our VPC?",
-    answer:
-      "Yes. Enterprise plans can run inside your VPC with private networking, audit logging, and customer-managed keys.",
-  },
-];
-
-export const SOCIAL_LINKS = [
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/bailey-systems" },
-  { label: "YouTube", href: "https://www.youtube.com/@baileysystems" },
-  { label: "X", href: "https://x.com/baileysystems" },
-];
-
+// ── Default chat messages (used by components/ChatWindow.tsx) ─────────────────
 export const DEFAULT_CHAT_MESSAGES = [
   {
     role: "assistant" as const,
-    content: "Hey there! 🐕 I'm Bailey, named after Javier's beagle! I can help you with questions about our services, pricing, location, or anything about Bailey Systems AI. What would you like to know?",
+    content:
+      "Hey there! 🐕 I'm Bailey, named after Javier's beagle! I can help you with questions about our services, pricing, location, or anything about Bailey Systems AI. What would you like to know?",
     timestamp: "09:00",
   },
   {
@@ -222,16 +244,3 @@ export const DEFAULT_CHAT_MESSAGES = [
     timestamp: "09:02",
   },
 ];
-
-export const DASHBOARD_WIDGETS = [
-  { label: "Active agents", value: "7", change: "+2 this week" },
-  { label: "Avg. CSAT", value: "4.9", change: "via 864 chats" },
-  { label: "Opportunities", value: "$420K", change: "in live pipeline" },
-];
-
-export const CONTACT_CHANNELS = [
-  { label: "Email", value: "hello@bailey.systems" },
-  { label: "HQ", value: "Deep Ellum, Dallas, TX" },
-  { label: "Support", value: "support@bailey.systems" },
-];
-

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Hero } from "@/components/Hero";
+import { HeroInput } from "@/components/HeroInput";
 import ReviewCard from "@/components/ReviewCard";
 import { BentoGrid } from "@/components/BentoGrid";
 import { STRIPE_LINKS } from "@/lib/stripe-links";
@@ -8,8 +9,9 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center px-4 py-16 text-black bg-[#faf9f6]">
       {/* HERO SECTION */}
-      <section className="w-full max-w-6xl mb-32">
+      <section className="w-full max-w-6xl mb-16">
         <Hero />
+        <HeroInput />
       </section>
 
       {/* Section Divider */}

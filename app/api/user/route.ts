@@ -3,8 +3,8 @@ import { ZodError } from "zod";
 import { authSchema } from "@/utils/validations";
 import { createSessionToken, getUserSession } from "@/lib/auth";
 
-export function GET() {
-  const session = getUserSession();
+export async function GET() {
+  const session = await getUserSession();
   return NextResponse.json({ session });
 }
 
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const { action = "login", ...body } = await request.json();
     const payload = authSchema.parse(body);
-    const token = createSessionToken(payload.email);
+    const token = await createSessionToken(payload.email);
     const response = NextResponse.json({
       success: true,
       action,

@@ -4,7 +4,7 @@ import { orderSchema } from "@/utils/validations";
 import { getUserSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
-  const session = getUserSession();
+  const session = await getUserSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
