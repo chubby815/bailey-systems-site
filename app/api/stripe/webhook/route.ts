@@ -3,8 +3,6 @@ import { stripe } from "@/lib/stripe";
 import { kv } from "@/lib/kv";
 import Stripe from "stripe";
 
-// Disable body parsing — Stripe requires the raw body for signature verification
-export const config = { api: { bodyParser: false } };
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
