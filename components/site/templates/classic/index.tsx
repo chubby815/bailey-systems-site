@@ -1,6 +1,6 @@
 /**
- * Classic Business template — traditional professional aesthetic.
- * Navy header, white content, gold accents, 3-column icon grid, trust badges.
+ * Classic Business — Trusted, professional, converts well.
+ * Navy gradient, gold accents, trust badges, traditional layout.
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent } from "@/lib/site-theme";
@@ -12,178 +12,269 @@ export type TemplateProps = {
   heroImageUrl?: string;
 };
 
-const NAVY    = "#1e3a5f";
-const NAVY_LT = "#234569";
-const GOLD    = "#c9a84c";
-const WHITE   = "#ffffff";
-const OFF_W   = "#f7f8fa";
-const TEXT    = "#1a2332";
-const MUTED   = "#5a6a7a";
-const FF      = "'Georgia', 'Times New Roman', serif";
-const FF_SAN  = "'Helvetica Neue', Arial, sans-serif";
+const NAVY   = "#1a2744";
+const NAVY2  = "#0f1729";
+const GOLD   = "#c9a84c";
+const GOLD_L = "#e8c86a";
+const WHITE  = "#ffffff";
+const OFF    = "#f8f9fa";
+const LIGHT  = "#e8edf5";
+const TEXT   = "#1e2d4a";
+const MUTED  = "#5a6a7a";
+const LINE   = "#d8e2ef";
+const FF     = "'Georgia', 'Times New Roman', serif";
+const FF_SAN = "'Helvetica Neue', 'Arial', system-ui, sans-serif";
 
-// CSS-variable–aware text colors
 const C_HEADING = "var(--heading-color, #1a2332)";
 const C_BODY    = "var(--body-color, #5a6a7a)";
 const C_ACCENT  = "var(--accent-color, #c9a84c)";
-const C_BTN     = "var(--btn-text-color, #1a2332)";
+const C_BTN     = "var(--btn-text-color, #1a2744)";
 
 function Stars({ n }: { n: number }) {
   const c = Math.min(5, Math.max(1, Math.round(n)));
-  return <span style={{ color: GOLD, fontSize: "1rem" }}>{"★".repeat(c)}{"☆".repeat(5 - c)}</span>;
+  return <span style={{ color: GOLD, fontSize: "0.9rem" }}>{"★".repeat(c)}{"☆".repeat(5 - c)}</span>;
 }
 
-// ── Navbar ───────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText }: { businessName: string; ctaText: string }) {
+// ── Styles ────────────────────────────────────────────────────────────────────
+function Styles() {
+  return (
+    <style>{`
+      .cb-service-card {
+        background: #fff; border: 1px solid ${LINE}; border-radius: 8px;
+        padding: 2rem 1.5rem; text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-bottom-color 0.2s;
+        border-bottom: 3px solid transparent;
+        cursor: default;
+      }
+      .cb-service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(26,39,68,0.10);
+        border-bottom-color: ${GOLD};
+      }
+      .cb-testimonial {
+        background: #fff; border: 1px solid ${LINE};
+        border-radius: 10px; padding: 1.75rem;
+        flex: 0 0 clamp(280px, 36vw, 360px);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        transition: box-shadow 0.2s;
+      }
+      .cb-testimonial:hover { box-shadow: 0 8px 28px rgba(26,39,68,0.10); }
+      .cb-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3);
+        border-radius: 4px; padding: 6px 14px;
+        font-family: ${FF_SAN}; font-size: 0.72rem; font-weight: 600;
+        color: ${GOLD_L}; text-transform: uppercase; letter-spacing: 0.08em;
+        white-space: nowrap;
+      }
+      .cb-btn-gold {
+        background: linear-gradient(135deg, ${GOLD}, ${GOLD_L});
+        color: ${C_BTN};
+        font-family: ${FF_SAN}; font-weight: 700; font-size: 0.95rem;
+        padding: 14px 32px; text-decoration: none; display: inline-block;
+        border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+        box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+        transition: opacity 0.2s, transform 0.15s;
+      }
+      .cb-btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
+      .cb-btn-outline {
+        background: transparent; color: rgba(255,255,255,0.9);
+        font-family: ${FF_SAN}; font-weight: 600; font-size: 0.95rem;
+        padding: 14px 32px; border: 1.5px solid rgba(255,255,255,0.45);
+        text-decoration: none; display: inline-block;
+        border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      .cb-btn-outline:hover { border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+      @media (max-width: 768px) {
+        .cb-hero-grid { flex-direction: column !important; }
+        .cb-hero-grid > div:last-child { display: none !important; }
+        .cb-services-grid { grid-template-columns: 1fr 1fr !important; }
+        .cb-about-grid { flex-direction: column !important; }
+        .cb-hero-btns { flex-direction: column !important; }
+        .cb-hero-btns a { width: 100%; text-align: center; }
+        .cb-trust-badges { flex-wrap: wrap !important; }
+        .cb-testimonials { flex-direction: column !important; }
+        .cb-stats-panel { flex-direction: row !important; flex-wrap: wrap; }
+        .cb-nav-links { display: none !important; }
+      }
+    `}</style>
+  );
+}
+
+// ── Navbar ─────────────────────────────────────────────────────────────────────
+function Navbar({ businessName, ctaText, contactPhone }: { businessName: string; ctaText: string; contactPhone?: string }) {
   return (
     <nav style={{
+      background: `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+      padding: "0 clamp(1rem, 5vw, 3rem)",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
       position: "sticky", top: 0, zIndex: 50,
-      background: NAVY, borderBottom: `3px solid ${GOLD}`,
-      padding: "0 2rem", boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
     }}>
       <div style={{
-        maxWidth: "1160px", margin: "0 auto",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: "68px",
+        maxWidth: "1200px", margin: "0 auto",
+        display: "flex", alignItems: "center", justifyContent: "space-between", height: "68px",
       }}>
-        <span style={{
-          fontFamily: FF, fontWeight: 700, fontSize: "1.3rem",
-          color: WHITE, letterSpacing: "-0.01em",
-        }}>{businessName}</span>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {["Services", "About", "Contact"].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`} style={{
-              fontFamily: FF_SAN, fontSize: "0.82rem", fontWeight: 400,
-              color: "rgba(255,255,255,0.75)", textDecoration: "none",
-              padding: "6px 14px",
-            }}>{l}</a>
-          ))}
-          <a href="#contact" style={{
-            background: GOLD, color: TEXT,
-            fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.82rem",
-            padding: "8px 20px", borderRadius: "4px", textDecoration: "none",
-            border: `1px solid ${GOLD}`, boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-          }}>{ctaText}</a>
+        <span style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.25rem", color: WHITE, letterSpacing: "-0.02em" }}>
+          {businessName}
+        </span>
+        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+          {contactPhone && (
+            <a href={`tel:${contactPhone}`} style={{
+              fontFamily: FF_SAN, fontSize: "0.875rem", color: GOLD,
+              textDecoration: "none", fontWeight: 600, letterSpacing: "0.02em",
+            }}>
+              ✆ {contactPhone}
+            </a>
+          )}
+          <div className="cb-nav-links" style={{ display: "flex", gap: "1.75rem" }}>
+            {["Services", "About", "Contact"].map(l => (
+              <a key={l} href={`#${l.toLowerCase()}`} style={{
+                fontFamily: FF_SAN, fontSize: "0.82rem", fontWeight: 400,
+                color: "rgba(255,255,255,0.7)", textDecoration: "none",
+                textTransform: "uppercase", letterSpacing: "0.06em",
+              }}>{l}</a>
+            ))}
+          </div>
+          <a href="#contact" className="cb-btn-gold" style={{ padding: "10px 22px", fontSize: "0.82rem" }}>
+            {ctaText}
+          </a>
         </div>
       </div>
     </nav>
   );
 }
 
-// ── Hero ─────────────────────────────────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────────────────────────────
 function Hero({ content, heroImageUrl, location }: {
   content: StructuredSiteContent["hero"];
   heroImageUrl?: string;
   location: string;
 }) {
+  const trustBadges = [
+    "✓ Licensed & Insured",
+    "✓ Free Estimates",
+    "✓ 5-Star Rated",
+    "✓ Local & Family Owned",
+  ];
+
   return (
     <section id="home" style={{
-      background: NAVY,
-      backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : undefined,
-      backgroundSize: "cover", backgroundPosition: "center",
-      minHeight: "80vh", display: "flex", alignItems: "center",
-      padding: "5rem 2rem", position: "relative",
+      background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 60%, #0a1020 100%)`,
+      padding: "6rem clamp(1rem, 5vw, 3rem) 5rem",
+      position: "relative", overflow: "hidden",
     }}>
-      {heroImageUrl && (
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(135deg, rgba(30,58,95,0.88) 0%, rgba(30,58,95,0.72) 100%)",
-        }} />
-      )}
-      <div style={{ position: "relative", maxWidth: "1160px", margin: "0 auto", textAlign: "center", width: "100%" }}>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: "8px",
-          background: "rgba(201,168,76,0.15)", border: `1px solid ${GOLD}`,
-          padding: "6px 18px", marginBottom: "1.75rem", borderRadius: "2px",
-        }}>
-          <span style={{ width: "6px", height: "6px", background: GOLD, borderRadius: "50%", display: "inline-block" }} />
-          <span style={{ fontFamily: FF_SAN, fontSize: "0.72rem", fontWeight: 600, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em" }}>
-            {content.badge || location}
-          </span>
-        </div>
-        <h1 style={{
-          fontFamily: FF, fontWeight: 700,
-          fontSize: "clamp(2.25rem, 5vw, 4rem)",
-          lineHeight: 1.15, color: WHITE, marginBottom: "1.5rem",
-          textShadow: "0 2px 20px rgba(0,0,0,0.3)",
-        }}>
-          {content.headline}
-        </h1>
-        <p style={{
-          fontFamily: FF_SAN, fontSize: "1.05rem", color: "rgba(255,255,255,0.82)",
-          maxWidth: "580px", margin: "0 auto 2.5rem", lineHeight: 1.75,
-        }}>{content.subheadline}</p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <a href="#contact" style={{
-            background: GOLD, color: TEXT,
-            fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.9rem",
-            padding: "13px 32px", borderRadius: "4px", textDecoration: "none",
-            boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
-          }}>{content.ctaText}</a>
-          <a href="#services" style={{
-            background: "transparent", color: WHITE,
-            fontFamily: FF_SAN, fontWeight: 600, fontSize: "0.9rem",
-            padding: "13px 32px", borderRadius: "4px", textDecoration: "none",
-            border: "1.5px solid rgba(255,255,255,0.35)",
-          }}>Our Services ↓</a>
-        </div>
+      {/* Subtle texture */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: `radial-gradient(ellipse 70% 60% at 80% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+                     radial-gradient(ellipse 50% 80% at 10% 80%, rgba(255,255,255,0.03) 0%, transparent 60%)`,
+      }} />
 
-        {/* Trust badges */}
-        <div style={{
-          display: "flex", gap: "2rem", justifyContent: "center", flexWrap: "wrap",
-          marginTop: "3.5rem", paddingTop: "2.5rem",
-          borderTop: "1px solid rgba(255,255,255,0.1)",
+      <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative" }}>
+        <div className="cb-hero-grid" style={{
+          display: "flex", gap: "4rem", alignItems: "center",
         }}>
-          {["✓ Licensed & Insured", "⭐ 5-Star Rated", "🏆 Trusted Local Business", "📞 Free Consultations"].map(b => (
-            <span key={b} style={{
-              fontFamily: FF_SAN, fontSize: "0.78rem", fontWeight: 600,
-              color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: "0.05em",
-            }}>{b}</span>
-          ))}
+          {/* Left: text */}
+          <div style={{ flex: "1 1 480px" }}>
+            {/* Trust badges */}
+            <div className="cb-trust-badges" style={{ display: "flex", gap: "0.625rem", marginBottom: "2.5rem", flexWrap: "wrap" }}>
+              {trustBadges.map((b, i) => (
+                <span key={i} className="cb-badge">{b}</span>
+              ))}
+            </div>
+
+            <h1 style={{
+              fontFamily: FF, fontWeight: 700,
+              fontSize: "clamp(2.5rem, 7vw, 5rem)",
+              lineHeight: 1.05, letterSpacing: "-0.03em",
+              color: WHITE, marginBottom: "1.25rem",
+            }}>
+              {content.headline}
+            </h1>
+
+            <p style={{
+              fontFamily: FF_SAN, fontSize: "clamp(1rem, 2vw, 1.125rem)",
+              color: "rgba(255,255,255,0.72)", lineHeight: 1.8,
+              marginBottom: "2.5rem", maxWidth: "500px",
+            }}>
+              {content.subheadline}
+            </p>
+
+            <div className="cb-hero-btns" style={{ display: "flex", gap: "0.875rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+              <a href="#contact" className="cb-btn-gold">{content.ctaText}</a>
+              <a href="#services" className="cb-btn-outline">Our Services</a>
+            </div>
+
+            <p style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Proudly serving {location}
+            </p>
+          </div>
+
+          {/* Right: circular image with gold ring */}
+          <div style={{ flex: "0 0 auto", display: "flex", justifyContent: "center" }}>
+            <div style={{
+              width: "clamp(200px, 30vw, 380px)", height: "clamp(200px, 30vw, 380px)",
+              borderRadius: "50%",
+              padding: "6px",
+              background: `linear-gradient(135deg, ${GOLD}, ${GOLD_L}, ${GOLD})`,
+              boxShadow: `0 0 0 1px rgba(201,168,76,0.3), 0 20px 60px rgba(0,0,0,0.4)`,
+            }}>
+              <div style={{
+                width: "100%", height: "100%", borderRadius: "50%",
+                overflow: "hidden",
+                background: heroImageUrl
+                  ? `url(${heroImageUrl}) center/cover`
+                  : `linear-gradient(160deg, ${NAVY} 0%, #2a4080 100%)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {!heroImageUrl && (
+                  <span style={{ fontSize: "6rem", opacity: 0.15 }}>🏆</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-// ── Services (3-column icon grid) ─────────────────────────────────────────────
+// ── Services (3-col icon grid) ─────────────────────────────────────────────────
 function Services({ content, location }: { content: StructuredSiteContent["services"]; location: string }) {
   return (
-    <section id="services" style={{ background: OFF_W, padding: "6rem 2rem" }}>
-      <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
-          <div style={{
-            width: "48px", height: "3px", background: GOLD, margin: "0 auto 1.25rem",
-          }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: C_HEADING, marginBottom: "0.75rem" }}>
-            Our Services
-          </h2>
-          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: C_BODY, maxWidth: "480px", margin: "0 auto", lineHeight: 1.7 }}>
-            Professional services delivered with experience and dedication to quality.
-          </p>
+    <section id="services" style={{ background: OFF, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+          <span style={{
+            fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.14em", color: `var(--accent-color, ${GOLD})`,
+            display: "block", marginBottom: "0.75rem",
+          }}>What We Offer</span>
+          <h2 style={{
+            fontFamily: FF, fontWeight: 700,
+            fontSize: "clamp(1.75rem, 4.5vw, 3rem)",
+            letterSpacing: "-0.03em", color: C_HEADING,
+          }}>Our Services</h2>
+          <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
         </div>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "1.5rem",
+
+        <div className="cb-services-grid" style={{
+          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1.25rem",
         }}>
           {content.map((s, i) => (
-            <div key={i} style={{
-              background: WHITE, border: "1px solid #e0e6ef",
-              borderTop: `4px solid ${GOLD}`, borderRadius: "4px",
-              padding: "2rem 1.75rem",
-              boxShadow: "0 2px 12px rgba(30,58,95,0.06)",
-              textAlign: "center",
-            }}>
+            <div key={i} className="cb-service-card">
               <div style={{
-                width: "56px", height: "56px", borderRadius: "50%",
-                background: `${NAVY}10`, border: `2px solid ${GOLD}`,
+                width: "60px", height: "60px", borderRadius: "50%",
+                background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`,
+                border: `2px solid ${GOLD}44`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "1.5rem", margin: "0 auto 1.25rem",
-              }}>{s.icon || "✓"}</div>
-              <h3 style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.1rem", color: C_HEADING, marginBottom: "0.625rem" }}>
-                {s.name}
-              </h3>
+                margin: "0 auto 1.25rem", fontSize: "1.75rem",
+              }}>{s.icon || "◆"}</div>
+              <h3 style={{
+                fontFamily: FF, fontWeight: 700, fontSize: "1rem",
+                color: C_HEADING, marginBottom: "0.625rem",
+              }}>{s.name}</h3>
               <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: C_BODY, lineHeight: 1.7 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
@@ -195,64 +286,95 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
   );
 }
 
-// ── About ─────────────────────────────────────────────────────────────────────
+// ── About ──────────────────────────────────────────────────────────────────────
 function About({ content, site }: { content: StructuredSiteContent["about"]; site: SiteRecord }) {
   return (
-    <section id="about" style={{ background: WHITE, padding: "6rem 2rem" }}>
-      <div style={{
-        maxWidth: "1160px", margin: "0 auto",
-        display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center",
-      }}>
-        {/* Stats block */}
-        <div style={{
-          background: NAVY, borderRadius: "4px", padding: "3rem 2.5rem",
-          boxShadow: "0 8px 40px rgba(30,58,95,0.18)",
-        }}>
-          <div style={{ width: "40px", height: "3px", background: GOLD, marginBottom: "1.75rem" }} />
-          <div style={{ fontFamily: FF, fontWeight: 700, fontSize: "2rem", color: WHITE, marginBottom: "0.375rem" }}>
-            {content.stats[0]?.value ?? ""}
-          </div>
-          <div style={{ fontFamily: FF_SAN, fontSize: "0.8rem", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "2rem" }}>
-            {content.stats[0]?.label ?? ""}
-          </div>
-          {content.stats.slice(1).map((st, i) => (
-            <div key={i} style={{
-              borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: "1.25rem", marginTop: "1.25rem",
-            }}>
-              <div style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.5rem", color: GOLD }}>{st.value}</div>
-              <div style={{ fontFamily: FF_SAN, fontSize: "0.75rem", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.25rem" }}>{st.label}</div>
-            </div>
-          ))}
-          {site.serviceArea && (
-            <div style={{ fontFamily: FF_SAN, fontSize: "0.8rem", color: "rgba(255,255,255,0.5)", marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-              📍 Serving {site.serviceArea}
-            </div>
-          )}
-        </div>
+    <section id="about" style={{ background: WHITE, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div className="cb-about-grid" style={{ display: "flex", gap: "0", alignItems: "stretch", flexWrap: "wrap" }}>
+          {/* Left: navy panel */}
+          <div style={{
+            flex: "1 1 340px",
+            background: `linear-gradient(160deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+            padding: "4rem clamp(2rem, 4vw, 3.5rem)",
+          }}>
+            <span style={{
+              fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
+              textTransform: "uppercase", letterSpacing: "0.12em", color: GOLD,
+              display: "block", marginBottom: "1.5rem",
+            }}>About Us</span>
+            <h2 style={{
+              fontFamily: FF, fontWeight: 700,
+              fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
+              color: WHITE, marginBottom: "1.25rem", letterSpacing: "-0.03em", lineHeight: 1.15,
+            }}>{content.title}</h2>
 
-        {/* Text */}
-        <div>
-          <div style={{ width: "40px", height: "3px", background: GOLD, marginBottom: "1.25rem" }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2rem", color: C_HEADING, marginBottom: "1.25rem", lineHeight: 1.2 }}>
-            {content.title}
-          </h2>
-          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: C_BODY, lineHeight: 1.85, marginBottom: "1.75rem" }}>
-            {content.body}
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {site.contactEmail && (
-              <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: C_ACCENT }}>✉</span> {site.contactEmail}
-              </a>
-            )}
+            {/* Stats */}
+            <div className="cb-stats-panel" style={{ display: "flex", flexDirection: "column", gap: "1.5rem", marginTop: "2.5rem" }}>
+              {content.stats.map((st, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "baseline", gap: "1rem" }}>
+                  <span style={{
+                    fontFamily: FF, fontWeight: 700, fontSize: "2.25rem",
+                    color: GOLD, letterSpacing: "-0.04em", lineHeight: 1,
+                  }}>{st.value}</span>
+                  <span style={{ fontFamily: FF_SAN, fontSize: "0.82rem", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    {st.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             {site.contactPhone && (
-              <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: C_ACCENT }}>✆</span> {site.contactPhone}
+              <a href={`tel:${site.contactPhone}`} style={{
+                display: "block", marginTop: "2.5rem",
+                fontFamily: FF_SAN, fontWeight: 700, fontSize: "1.1rem", color: GOLD,
+                textDecoration: "none", letterSpacing: "-0.01em",
+              }}>
+                ✆ {site.contactPhone}
               </a>
             )}
-            <span style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span style={{ color: C_ACCENT }}>📍</span> {site.serviceArea || site.location}
-            </span>
+          </div>
+
+          {/* Right: white panel */}
+          <div style={{
+            flex: "1 1 360px", padding: "4rem clamp(2rem, 4vw, 3.5rem)",
+            background: "#fff", borderTop: `4px solid ${GOLD}`,
+          }}>
+            <p style={{
+              fontFamily: FF_SAN, fontSize: "0.9375rem", color: C_BODY,
+              lineHeight: 1.9, marginBottom: "2rem",
+            }}>
+              {content.body}
+            </p>
+
+            {/* Trust list */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+              {[
+                "Licensed & fully insured professionals",
+                "Serving the local community for years",
+                "100% satisfaction guaranteed",
+                "Free estimates on all projects",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+                  <span style={{
+                    color: GOLD, fontWeight: 700, fontSize: "1rem", flexShrink: 0, marginTop: "0.0625rem",
+                  }}>✓</span>
+                  <span style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_BODY, lineHeight: 1.5 }}>
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {site.contactEmail && (
+              <a href={`mailto:${site.contactEmail}`} style={{
+                display: "inline-block", marginTop: "2rem",
+                fontFamily: FF_SAN, fontSize: "0.875rem", color: NAVY,
+                textDecoration: "none", borderBottom: `1px solid ${GOLD}`, paddingBottom: "2px",
+              }}>
+                {site.contactEmail}
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -260,43 +382,48 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
   );
 }
 
-// ── Testimonials ──────────────────────────────────────────────────────────────
+// ── Testimonials ───────────────────────────────────────────────────────────────
 function Testimonials({ content }: { content: StructuredSiteContent["testimonials"] }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: OFF_W, padding: "6rem 2rem" }}>
-      <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
+    <section style={{ background: OFF, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
-          <div style={{ width: "48px", height: "3px", background: GOLD, margin: "0 auto 1.25rem" }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: C_HEADING }}>
-            Client Testimonials
-          </h2>
+          <span style={{
+            fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.14em", color: `var(--accent-color, ${GOLD})`,
+            display: "block", marginBottom: "0.75rem",
+          }}>Client Testimonials</span>
+          <h2 style={{
+            fontFamily: FF, fontWeight: 700, fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
+            letterSpacing: "-0.03em", color: C_HEADING,
+          }}>What Our Clients Say</h2>
+          <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
+        <div className="cb-testimonials" style={{
+          display: "flex", gap: "1.25rem", overflowX: "auto",
+          paddingBottom: "1rem", scrollbarWidth: "none",
+        }}>
           {content.map((t, i) => (
-            <div key={i} style={{
-              background: WHITE, border: "1px solid #e0e6ef",
-              borderRadius: "4px", padding: "2rem",
-              boxShadow: "0 2px 12px rgba(30,58,95,0.06)",
-            }}>
-              <Stars n={t.rating} />
+            <div key={i} className="cb-testimonial">
+              <div style={{ marginBottom: "0.75rem" }}>
+                <Stars n={t.rating} />
+              </div>
               <p style={{
-                fontFamily: FF, fontStyle: "italic", fontSize: "0.9rem",
-                color: C_BODY, lineHeight: 1.8, margin: "0.875rem 0 1.5rem",
+                fontFamily: FF, fontStyle: "italic", fontSize: "0.9375rem",
+                color: C_BODY, lineHeight: 1.8, marginBottom: "1.25rem",
               }}>"{t.quote}"</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", borderTop: `1px solid ${LINE}`, paddingTop: "1rem" }}>
                 <div style={{
-                  width: "40px", height: "40px", borderRadius: "50%",
-                  background: NAVY, color: WHITE,
+                  width: "44px", height: "44px", borderRadius: "50%", flexShrink: 0,
+                  background: `linear-gradient(135deg, ${NAVY} 0%, #2a4080 100%)`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: FF, fontWeight: 700, fontSize: "1rem",
-                  flexShrink: 0,
-                }}>
-                  {t.name.charAt(0).toUpperCase()}
-                </div>
+                  color: WHITE, fontFamily: FF, fontWeight: 700, fontSize: "1rem",
+                  boxShadow: `0 0 0 2px ${GOLD}`,
+                }}>{t.name.charAt(0)}</div>
                 <div>
-                  <div style={{ fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.875rem", color: C_HEADING }}>{t.name}</div>
-                  <div style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: C_BODY }}>{t.role}</div>
+                  <div style={{ fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.875rem", color: TEXT }}>{t.name}</div>
+                  <div style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: MUTED }}>{t.role}</div>
                 </div>
               </div>
             </div>
@@ -307,7 +434,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
   );
 }
 
-// ── CTA ───────────────────────────────────────────────────────────────────────
+// ── CTA ────────────────────────────────────────────────────────────────────────
 function CTA({ content, contactEmail, contactPhone }: {
   content: StructuredSiteContent["cta"];
   contactEmail?: string;
@@ -316,64 +443,85 @@ function CTA({ content, contactEmail, contactPhone }: {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
     <section id="contact" style={{
-      background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_LT} 100%)`,
-      padding: "6rem 2rem", textAlign: "center",
+      background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+      padding: "7rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
+      position: "relative", overflow: "hidden",
     }}>
-      <div style={{ maxWidth: "640px", margin: "0 auto" }}>
-        <div style={{ width: "48px", height: "3px", background: GOLD, margin: "0 auto 1.75rem" }} />
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: `radial-gradient(ellipse 60% 80% at 50% 100%, rgba(201,168,76,0.10) 0%, transparent 60%)`,
+      }} />
+      <div style={{ maxWidth: "680px", margin: "0 auto", position: "relative" }}>
         <h2 style={{
           fontFamily: FF, fontWeight: 700,
-          fontSize: "clamp(1.75rem, 4vw, 3rem)",
-          color: WHITE, marginBottom: "1rem", lineHeight: 1.2,
+          fontSize: "clamp(2rem, 5.5vw, 4rem)",
+          letterSpacing: "-0.03em", color: WHITE,
+          marginBottom: "1.25rem", lineHeight: 1.1,
         }}>{content.headline}</h2>
-        <p style={{ fontFamily: FF_SAN, fontSize: "1rem", color: "rgba(255,255,255,0.72)", marginBottom: "2.5rem", lineHeight: 1.7 }}>
+        <p style={{ fontFamily: FF_SAN, fontSize: "1rem", color: "rgba(255,255,255,0.65)", marginBottom: "1.5rem", lineHeight: 1.75 }}>
           {content.subtext}
         </p>
-        <a href={href} style={{
-          background: GOLD, color: C_BTN,
-          fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.95rem",
-          padding: "14px 36px", borderRadius: "4px", textDecoration: "none",
-          display: "inline-block", boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
-        }}>{content.buttonText}</a>
+        {contactPhone && (
+          <p style={{
+            fontFamily: FF, fontWeight: 700, fontSize: "clamp(1.25rem, 3vw, 2rem)",
+            color: GOLD, marginBottom: "2rem", letterSpacing: "-0.02em",
+          }}>✆ {contactPhone}</p>
+        )}
+        <div style={{ display: "flex", gap: "0.875rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <a href={href} className="cb-btn-gold">{content.buttonText}</a>
+          {contactPhone && (
+            <a href={`tel:${contactPhone}`} className="cb-btn-outline">Call Now</a>
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
+// ── Footer ─────────────────────────────────────────────────────────────────────
 function Footer({ site }: { site: SiteRecord }) {
   return (
-    <footer id="footer" style={{ background: "#111d2b", borderTop: `3px solid ${GOLD}`, padding: "2.5rem 2rem" }}>
+    <footer style={{
+      background: NAVY2, borderTop: `3px solid ${GOLD}33`,
+      padding: "2.5rem clamp(1rem, 5vw, 3rem)",
+    }}>
       <div style={{
-        maxWidth: "1160px", margin: "0 auto",
+        maxWidth: "1200px", margin: "0 auto",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem",
       }}>
-        <div>
-          <span style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.1rem", color: WHITE }}>{site.businessName}</span>
-          <span style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", marginLeft: "1rem" }}>
-            {site.location}
+        <span style={{ fontFamily: FF, fontWeight: 700, fontSize: "1rem", color: WHITE }}>
+          {site.businessName}
+        </span>
+        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", flexWrap: "wrap" }}>
+          {site.contactEmail && (
+            <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: GOLD, textDecoration: "none" }}>
+              {site.contactEmail}
+            </a>
+          )}
+          <span style={{ fontFamily: FF_SAN, fontSize: "0.72rem", color: "#444" }}>
+            © {new Date().getFullYear()} · Built with{" "}
+            <a href="https://baileysystemsai.com" style={{ color: GOLD, textDecoration: "none" }}>BaileySystemsAI</a>
           </span>
         </div>
-        <span style={{ fontFamily: FF_SAN, fontSize: "0.72rem", color: "rgba(255,255,255,0.35)" }}>
-          © {new Date().getFullYear()} · Built with{" "}
-          <a href="https://baileysystemsai.com" style={{ color: GOLD, textDecoration: "none" }}>BaileySystemsAI</a>
-        </span>
       </div>
     </footer>
   );
 }
 
-// ── Main Layout ───────────────────────────────────────────────────────────────
+// ── Main Layout ────────────────────────────────────────────────────────────────
 export function ClassicLayout({ site, content, heroImageUrl }: TemplateProps) {
   return (
-    <div style={{ fontFamily: FF_SAN, background: WHITE, color: TEXT }}>
-      <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} />
-      <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
-      <Services content={content.services} location={site.location} />
-      <About content={content.about} site={site} />
-      <Testimonials content={content.testimonials} />
-      <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
-      <Footer site={site} />
-    </div>
+    <>
+      <Styles />
+      <div style={{ fontFamily: FF_SAN, background: OFF, color: TEXT, overflowX: "hidden" }}>
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} />
+        <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
+        <Services content={content.services} location={site.location} />
+        <About content={content.about} site={site} />
+        <Testimonials content={content.testimonials} />
+        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
+        <Footer site={site} />
+      </div>
+    </>
   );
 }
