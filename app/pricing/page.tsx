@@ -53,8 +53,8 @@ export default function PricingPage() {
           Choose Your Plan
         </h1>
         <p className="text-gray-400 text-lg max-w-xl mx-auto">
-          Monthly subscriptions. Cancel anytime. Start with a 7-day free trial — no
-          credit card required.
+          Monthly subscriptions. Cancel anytime. Start with a 7-day free trial —
+          card required, you won&apos;t be charged until day 7.
         </p>
       </section>
 

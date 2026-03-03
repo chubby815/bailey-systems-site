@@ -325,7 +325,7 @@ export default function Home() {
                 </a>
               </div>
               <p className="text-xs text-[#4b5563] mt-6">
-                No credit card · Setup in minutes · Cancel anytime
+                7-day free trial · Card required, charged on day 7 · Cancel anytime
               </p>
             </div>
           </div>

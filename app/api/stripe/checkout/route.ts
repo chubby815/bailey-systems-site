@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       success_url: `${baseUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
       subscription_data: {
+        trial_period_days: 7,
         metadata: { plan },
       },
       metadata: { plan },

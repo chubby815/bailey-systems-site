@@ -37,7 +37,7 @@ export function HeroInput() {
           className="w-full bg-transparent text-[#f0f0f0] placeholder-[#4b5563] px-3 py-2 text-sm outline-none resize-none font-dm leading-relaxed"
         />
         <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/[0.07]">
-          <span className="text-xs text-[#4b5563]">No credit card required</span>
+          <span className="text-xs text-[#4b5563]">7-day free trial — card required, charged on day 7</span>
           <button
             onClick={handleStart}
             disabled={loading}
