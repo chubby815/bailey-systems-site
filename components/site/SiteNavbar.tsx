@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function SiteNavbar({ businessName, ctaText, tokens }: Props) {
-  const { primaryColor, maxWidth, fontFamily, fontWeight } = tokens;
+  const { primaryColor, maxWidth, fontFamily, fontWeight, buttonRadius } = tokens;
 
   return (
     <nav
@@ -68,7 +68,7 @@ export function SiteNavbar({ businessName, ctaText, tokens }: Props) {
               fontWeight: 700,
               fontSize: "0.875rem",
               padding: "0.5rem 1.25rem",
-              borderRadius: "8px",
+              borderRadius: buttonRadius,
               textDecoration: "none",
             }}
           >

@@ -9,12 +9,14 @@ import type { SiteRecord } from "./kv";
 export type FontStyleKey   = "modern" | "classic" | "bold" | "minimal";
 export type HeroStyleKey   = "photo" | "gradient" | "solid";
 export type LayoutStyleKey = "standard" | "centered" | "fullwidth";
+export type ButtonStyleKey = "rounded" | "sharp" | "pill";
 
 export type ThemeConfig = {
-  primaryColor: string;    // resolved hex value e.g. "#10b981"
+  primaryColor: string;          // resolved hex value e.g. "#10b981"
   fontStyle:    FontStyleKey;
   heroStyle:    HeroStyleKey;
   layoutStyle:  LayoutStyleKey;
+  buttonStyle?: ButtonStyleKey;  // optional — defaults to "rounded"
 };
 
 export type ThemeTokens = {
@@ -22,9 +24,10 @@ export type ThemeTokens = {
   fontWeight:   number;
   maxWidth:     string;
   primaryColor: string;
-  accentLight:  string;   // 8 % tint for icon backgrounds
-  accentMid:    string;   // 19 % tint for box shadows
-  heroImageUrl: string;   // set after calling getHeroImageUrl(industry)
+  accentLight:  string;    // 8 % tint for icon backgrounds
+  accentMid:    string;    // 19 % tint for box shadows
+  heroImageUrl: string;    // set after calling getHeroImageUrl(industry)
+  buttonRadius: string;    // CSS border-radius for buttons
 };
 
 // ── Structured content types (new v2 format) ──────────────────────────────────
@@ -127,6 +130,12 @@ const LAYOUT_CONFIG: Record<LayoutStyleKey, string> = {
   fullwidth:  "100%",
 };
 
+const BUTTON_RADIUS: Record<ButtonStyleKey, string> = {
+  rounded: "10px",
+  sharp:   "4px",
+  pill:    "9999px",
+};
+
 // Input strings from the builder form → canonical keys
 const FONT_KEY_MAP: Record<string, FontStyleKey> = {
   "Modern":             "modern",
@@ -170,6 +179,7 @@ export function getThemeTokens(theme: ThemeConfig, heroImageUrl = ""): ThemeToke
     accentLight:  `${theme.primaryColor}18`,
     accentMid:    `${theme.primaryColor}30`,
     heroImageUrl,
+    buttonRadius: BUTTON_RADIUS[theme.buttonStyle ?? "rounded"] ?? "10px",
   };
 }
 

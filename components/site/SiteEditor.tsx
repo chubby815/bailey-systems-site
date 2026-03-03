@@ -10,7 +10,7 @@ import { LayoutRenderer } from "./LayoutRenderer";
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Panel = "themes" | "content" | null;
 
-type ContentSection = "hero" | "services" | "about" | "testimonials" | "cta";
+type ContentSection = "style" | "hero" | "services" | "about" | "testimonials" | "cta";
 
 type Props = {
   site:               SiteRecord;
@@ -44,6 +44,34 @@ function SectionHeader({
 }
 
 // ── Theme Panel ───────────────────────────────────────────────────────────────
+function MiniSitePreview({ colors }: { colors: { primary: string; background: string; surface: string; text: string; accent: string } }) {
+  return (
+    <div style={{ background: colors.background, borderRadius: 6, overflow: "hidden", width: "100%", userSelect: "none" }}>
+      {/* Navbar */}
+      <div style={{ background: colors.surface, height: 16, display: "flex", alignItems: "center", padding: "0 7px", gap: 5, borderBottom: `1.5px solid ${colors.primary}22` }}>
+        <div style={{ width: 22, height: 3, background: colors.text, borderRadius: 1, opacity: 0.75 }} />
+        <div style={{ flex: 1 }} />
+        <div style={{ width: 18, height: 7, background: colors.primary, borderRadius: 2 }} />
+      </div>
+      {/* Hero */}
+      <div style={{ padding: "9px 7px 7px", background: colors.background }}>
+        <div style={{ width: "62%", height: 4, background: colors.text, borderRadius: 1, opacity: 0.85, marginBottom: 4 }} />
+        <div style={{ width: "78%", height: 3, background: colors.text, borderRadius: 1, opacity: 0.35, marginBottom: 7 }} />
+        <div style={{ width: 30, height: 8, background: colors.primary, borderRadius: 3 }} />
+      </div>
+      {/* Services row */}
+      <div style={{ display: "flex", gap: 3, padding: "0 7px 7px" }}>
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            style={{ flex: 1, height: 13, background: colors.surface, borderRadius: 3, borderTop: `2px solid ${colors.accent}` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ThemesPanel({
   currentThemeKey,
   onSelectTheme,
@@ -77,13 +105,12 @@ function ThemesPanel({
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
       try {
-        const res  = await fetch(`/api/sites/${siteId}/image`, {
+        const res = await fetch(`/api/sites/${siteId}/image`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: dataUrl }),
         });
         if (!res.ok) { setUploadError("Upload failed"); return; }
-        // Use API URL so the image is served efficiently
         onHeroImageChange(`/api/sites/${siteId}/image?t=${Date.now()}`);
       } catch {
         setUploadError("Upload failed");
@@ -101,45 +128,63 @@ function ThemesPanel({
 
   return (
     <div className="p-4 space-y-6">
-      {/* Themes grid */}
+      {/* Themes grid — 2 columns with mini website previews */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
           Choose a Theme
         </p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {Object.entries(PRESET_THEMES).map(([key, preset]) => {
             const active = currentThemeKey === key;
             return (
-              <button
+              <div
                 key={key}
                 onClick={() => onSelectTheme(key, preset.theme)}
-                className={`flex flex-col items-start p-2.5 rounded-xl border transition-all text-left ${
+                className={`flex flex-col rounded-xl border overflow-hidden cursor-pointer transition-all ${
                   active
-                    ? "border-[#00e5a0] bg-[#00e5a0]/5"
-                    : "border-white/[0.07] bg-white/[0.02] hover:border-white/20"
+                    ? "border-[#00e5a0] shadow-[0_0_0_2px_rgba(0,229,160,0.25)]"
+                    : "border-white/[0.08] hover:border-white/25"
                 }`}
               >
-                {/* Color swatches */}
-                <div className="flex gap-1 mb-2">
-                  {[
-                    preset.colors.primary,
-                    preset.colors.background,
-                    preset.colors.surface,
-                    preset.colors.text,
-                    preset.colors.accent,
-                  ].map((c, i) => (
-                    <span
-                      key={i}
-                      className="w-3.5 h-3.5 rounded-full border border-white/10 flex-shrink-0"
-                      style={{ background: c }}
-                    />
-                  ))}
+                {/* Mini website preview */}
+                <div className="p-2" style={{ background: "#0d0e10" }}>
+                  <MiniSitePreview colors={preset.colors} />
                 </div>
-                <span className={`text-[11px] font-bold leading-tight mb-0.5 ${active ? "text-[#00e5a0]" : "text-[#f0f0f0]"}`}>
-                  {preset.name}
-                </span>
-                <span className="text-[9px] text-[#4b5563] leading-snug">{preset.preview}</span>
-              </button>
+
+                {/* Card footer */}
+                <div className="px-2.5 pb-2.5 pt-2" style={{ background: "#161718" }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`text-[11px] font-bold ${active ? "text-[#00e5a0]" : "text-[#f0f0f0]"}`}>
+                      {preset.name}
+                    </span>
+                    {active && (
+                      <span className="text-[9px] font-bold text-[#00e5a0] bg-[#00e5a0]/10 px-1.5 py-0.5 rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  {/* Color swatches */}
+                  <div className="flex gap-1 mb-2">
+                    {[preset.colors.primary, preset.colors.background, preset.colors.surface, preset.colors.text, preset.colors.accent].map((c, i) => (
+                      <span
+                        key={i}
+                        className="w-3 h-3 rounded-full border border-white/10 flex-shrink-0"
+                        style={{ background: c }}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onSelectTheme(key, preset.theme); }}
+                    className={`w-full text-[10px] font-bold py-1 rounded-md transition-colors ${
+                      active
+                        ? "bg-[#00e5a0]/15 text-[#00e5a0] border border-[#00e5a0]/30"
+                        : "bg-white/[0.05] text-[#9ca3af] border border-white/[0.08] hover:text-white hover:bg-white/[0.10]"
+                    }`}
+                  >
+                    {active ? "✓ Using this theme" : "Use Theme"}
+                  </button>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -201,15 +246,33 @@ function ThemesPanel({
   );
 }
 
+// ── Style option definitions ──────────────────────────────────────────────────
+const FONT_OPTIONS: { value: import("@/lib/site-theme").FontStyleKey; label: string; fontFamily: string }[] = [
+  { value: "modern",  label: "Modern",  fontFamily: "Inter, sans-serif" },
+  { value: "classic", label: "Classic", fontFamily: "Georgia, serif" },
+  { value: "bold",    label: "Bold",    fontFamily: "Trebuchet MS, sans-serif" },
+  { value: "minimal", label: "Minimal", fontFamily: "Helvetica Neue, sans-serif" },
+];
+
+const BUTTON_OPTIONS: { value: import("@/lib/site-theme").ButtonStyleKey; label: string; radius: string }[] = [
+  { value: "rounded", label: "Rounded", radius: "10px" },
+  { value: "sharp",   label: "Sharp",   radius: "4px" },
+  { value: "pill",    label: "Pill",    radius: "9999px" },
+];
+
 // ── Content Panel ─────────────────────────────────────────────────────────────
 function ContentPanel({
   content,
   onChange,
+  theme,
+  onThemeChange,
 }: {
-  content:  StructuredSiteContent;
-  onChange: (c: StructuredSiteContent) => void;
+  content:       StructuredSiteContent;
+  onChange:      (c: StructuredSiteContent) => void;
+  theme:         ThemeConfig;
+  onThemeChange: (t: ThemeConfig) => void;
 }) {
-  const [expanded, setExpanded] = useState<ContentSection | null>("hero");
+  const [expanded, setExpanded] = useState<ContentSection | null>("style");
 
   function toggle(s: ContentSection) {
     setExpanded((prev) => (prev === s ? null : s));
@@ -255,6 +318,67 @@ function ContentPanel({
 
   return (
     <div className="divide-y divide-white/[0.06]">
+      {/* Style */}
+      <div>
+        <SectionHeader label="🎨 Style" expanded={expanded === "style"} onToggle={() => toggle("style")} />
+        {expanded === "style" && (
+          <div className="px-4 pb-4 space-y-4">
+            {/* Font Style */}
+            <div>
+              <label className={LABEL}>Font Style</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {FONT_OPTIONS.map((opt) => {
+                  const active = (theme.fontStyle ?? "modern") === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => onThemeChange({ ...theme, fontStyle: opt.value })}
+                      style={{ fontFamily: opt.fontFamily }}
+                      className={`px-3 py-2 rounded-lg text-xs transition-all text-left border ${
+                        active
+                          ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
+                          : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Button Style */}
+            <div>
+              <label className={LABEL}>Button Style</label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {BUTTON_OPTIONS.map((opt) => {
+                  const active = (theme.buttonStyle ?? "rounded") === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => onThemeChange({ ...theme, buttonStyle: opt.value })}
+                      className={`relative px-2 py-2.5 text-[11px] transition-all border flex flex-col items-center gap-1.5 ${
+                        active
+                          ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
+                          : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
+                      }`}
+                      style={{ borderRadius: "10px" }}
+                    >
+                      {/* Mini button preview */}
+                      <span
+                        className="block w-12 h-4 bg-current opacity-30"
+                        style={{ borderRadius: opt.radius }}
+                      />
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Hero */}
       <div>
         <SectionHeader label="🦸 Hero" expanded={expanded === "hero"} onToggle={() => toggle("hero")} />
@@ -495,7 +619,7 @@ export function SiteEditor({
 
   const panelOpen = activePanel !== null;
   const BAR_H     = 52;
-  const PANEL_W   = 320;
+  const PANEL_W   = 360;
 
   return (
     <>
@@ -630,7 +754,12 @@ export function SiteEditor({
             />
           )}
           {activePanel === "content" && (
-            <ContentPanel content={currentContent} onChange={handleContentChange} />
+            <ContentPanel
+              content={currentContent}
+              onChange={handleContentChange}
+              theme={currentTheme}
+              onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
+            />
           )}
         </div>
       </div>

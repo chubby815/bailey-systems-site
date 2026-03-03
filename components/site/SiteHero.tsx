@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function SiteHero({ content, theme, tokens, location, serviceArea }: Props) {
-  const { primaryColor, accentMid, heroImageUrl, fontFamily, fontWeight } = tokens;
+  const { primaryColor, accentMid, heroImageUrl, fontFamily, fontWeight, buttonRadius } = tokens;
 
   function heroBackground(): React.CSSProperties {
     if (theme.heroStyle === "photo") {
@@ -143,7 +143,7 @@ export function SiteHero({ content, theme, tokens, location, serviceArea }: Prop
               fontWeight: 700,
               fontSize: "1rem",
               padding: "0.875rem 2rem",
-              borderRadius: "10px",
+              borderRadius: buttonRadius,
               textDecoration: "none",
               boxShadow: `0 8px 24px ${accentMid}`,
             }}
@@ -159,7 +159,7 @@ export function SiteHero({ content, theme, tokens, location, serviceArea }: Prop
               fontWeight: 600,
               fontSize: "1rem",
               padding: "0.875rem 2rem",
-              borderRadius: "10px",
+              borderRadius: buttonRadius,
               textDecoration: "none",
               border: "1.5px solid rgba(255,255,255,0.3)",
             }}

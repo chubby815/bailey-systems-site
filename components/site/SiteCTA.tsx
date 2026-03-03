@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function SiteCTA({ content, tokens, contactEmail, contactPhone }: Props) {
-  const { primaryColor, accentMid, fontFamily, fontWeight } = tokens;
+  const { primaryColor, accentMid, fontFamily, fontWeight, buttonRadius } = tokens;
 
   const contactHref = contactPhone
     ? `tel:${contactPhone}`
@@ -77,7 +77,7 @@ export function SiteCTA({ content, tokens, contactEmail, contactPhone }: Props) 
               fontWeight: 700,
               fontSize: "1rem",
               padding: "0.9375rem 2.25rem",
-              borderRadius: "10px",
+              borderRadius: buttonRadius,
               textDecoration: "none",
               boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
               display: "inline-block",
@@ -95,7 +95,7 @@ export function SiteCTA({ content, tokens, contactEmail, contactPhone }: Props) 
                 fontWeight: 600,
                 fontSize: "1rem",
                 padding: "0.9375rem 2.25rem",
-                borderRadius: "10px",
+                borderRadius: buttonRadius,
                 textDecoration: "none",
                 border: "1.5px solid rgba(255,255,255,0.35)",
                 display: "inline-block",
