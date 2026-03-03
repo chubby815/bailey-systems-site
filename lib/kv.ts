@@ -62,6 +62,19 @@ export type SiteRecord = {
   primaryColor: string;
   contactEmail: string;
   contactPhone: string;
+  // Extended info fields (optional for backward compat)
+  tagline?: string;
+  description?: string;
+  yearsInBusiness?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  googleBusinessUrl?: string;
+  businessHours?: string;
+  serviceArea?: string;
+  // Style choices
+  fontStyle?: string;
+  heroStyle?: string;
+  layoutStyle?: string;
   generatedContent: {
     hero_headline: string;
     hero_subheadline: string;

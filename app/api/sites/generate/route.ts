@@ -15,50 +15,50 @@ const VALID_COLORS = new Set([
   "Midnight Black", "Golden Yellow", "Hot Pink", "Cyan", "Slate Gray",
   "Rose Gold", "Deep Navy",
 ]);
+const VALID_FONT_STYLES = new Set(["Modern", "Classic & Elegant", "Bold & Strong", "Clean & Minimal"]);
+const VALID_HERO_STYLES = new Set(["Photo Background", "Gradient Background", "Solid Color"]);
+const VALID_LAYOUT_STYLES = new Set(["Standard", "Centered", "Full Width"]);
+const VALID_YEARS = new Set([
+  "Less than 1 year", "1-3 years", "3-5 years", "5-10 years", "10+ years",
+]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 function randomSuffix(): string {
   return Math.random().toString(36).substring(2, 6);
 }
 
-/** Strip HTML tags and control characters */
 function sanitize(str: string): string {
   return str.replace(/<[^>]*>/g, "").replace(/[\x00-\x1F\x7F]/g, "").trim();
 }
 
+function optStr(val: unknown, max = 300): string {
+  if (typeof val !== "string") return "";
+  return sanitize(val).slice(0, max);
+}
+
 export async function POST(req: NextRequest) {
-  // ── Auth check ───────────────────────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────
   const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Subscription check ───────────────────────────────────────────────────
+  // ── Subscription ─────────────────────────────────────────────────────────
   const plan = await getActivePlan(session.email);
   if (!plan) {
-    return NextResponse.json(
-      { error: "Active subscription required" },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
   }
 
-  // ── Rate limit: 10 site generations per hour per user ────────────────────
+  // ── Rate limit ───────────────────────────────────────────────────────────
   const rl = await rateLimit(`generate:${session.email}`, 10, 3600);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: `Rate limit reached. Try again in ${rl.resetInSeconds}s.` },
-      {
-        status: 429,
-        headers: { "Retry-After": String(rl.resetInSeconds) },
-      }
+      { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
     );
   }
 
@@ -71,80 +71,82 @@ export async function POST(req: NextRequest) {
   }
 
   const {
-    businessName,
-    industry,
-    location,
-    services,
-    tone,
-    primaryColor,
-    contactEmail,
-    contactPhone,
-    editSiteId,
+    businessName, industry, location, services, tone, primaryColor,
+    contactEmail, contactPhone, editSiteId,
+    // Extended info
+    tagline, description, yearsInBusiness,
+    facebookUrl, instagramUrl, googleBusinessUrl,
+    businessHours, serviceArea,
+    // Style
+    fontStyle, heroStyle, layoutStyle,
   } = body;
 
-  // ── Type checks ───────────────────────────────────────────────────────────
-  const stringFields: Record<string, unknown> = {
+  // ── Required field checks ─────────────────────────────────────────────────
+  const requiredFields: Record<string, unknown> = {
     businessName, industry, location, services, tone, primaryColor,
   };
-  for (const [key, val] of Object.entries(stringFields)) {
+  for (const [key, val] of Object.entries(requiredFields)) {
     if (typeof val !== "string" || val.trim() === "") {
-      return NextResponse.json(
-        { error: `Missing or invalid field: ${key}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Missing or invalid field: ${key}` }, { status: 400 });
     }
   }
 
   // ── Enum validation ───────────────────────────────────────────────────────
-  if (!VALID_INDUSTRIES.has(industry as string)) {
+  if (!VALID_INDUSTRIES.has(industry as string))
     return NextResponse.json({ error: "Invalid industry value" }, { status: 400 });
-  }
-  if (!VALID_TONES.has(tone as string)) {
+  if (!VALID_TONES.has(tone as string))
     return NextResponse.json({ error: "Invalid tone value" }, { status: 400 });
-  }
-  if (!VALID_COLORS.has(primaryColor as string)) {
+  if (!VALID_COLORS.has(primaryColor as string))
     return NextResponse.json({ error: "Invalid color value" }, { status: 400 });
-  }
+
+  // Style fields are optional — fall back to defaults if missing/invalid
+  const cleanFontStyle =
+    typeof fontStyle === "string" && VALID_FONT_STYLES.has(fontStyle) ? fontStyle : "Modern";
+  const cleanHeroStyle =
+    typeof heroStyle === "string" && VALID_HERO_STYLES.has(heroStyle) ? heroStyle : "Photo Background";
+  const cleanLayoutStyle =
+    typeof layoutStyle === "string" && VALID_LAYOUT_STYLES.has(layoutStyle) ? layoutStyle : "Standard";
+  const cleanYearsInBusiness =
+    typeof yearsInBusiness === "string" && VALID_YEARS.has(yearsInBusiness)
+      ? yearsInBusiness
+      : "1-3 years";
 
   // ── Length checks ─────────────────────────────────────────────────────────
-  if ((businessName as string).length > 100) {
-    return NextResponse.json(
-      { error: "Business name too long (max 100 characters)" },
-      { status: 400 }
-    );
-  }
-  if ((location as string).length > 100) {
-    return NextResponse.json(
-      { error: "Location too long (max 100 characters)" },
-      { status: 400 }
-    );
-  }
-  if ((services as string).length > 500) {
-    return NextResponse.json(
-      { error: "Services too long (max 500 characters)" },
-      { status: 400 }
-    );
-  }
+  if ((businessName as string).length > 100)
+    return NextResponse.json({ error: "Business name too long (max 100 chars)" }, { status: 400 });
+  if ((location as string).length > 100)
+    return NextResponse.json({ error: "Location too long (max 100 chars)" }, { status: 400 });
+  if ((services as string).length > 500)
+    return NextResponse.json({ error: "Services too long (max 500 chars)" }, { status: 400 });
 
-  // ── Sanitize before sending to Claude ────────────────────────────────────
-  const cleanBusinessName = sanitize(businessName as string);
-  const cleanLocation = sanitize(location as string);
-  const cleanServices = sanitize(services as string);
-  const cleanIndustry = sanitize(industry as string);
-  const cleanTone = sanitize(tone as string);
-  const cleanContactEmail =
-    typeof contactEmail === "string" ? sanitize(contactEmail).slice(0, 200) : "";
-  const cleanContactPhone =
-    typeof contactPhone === "string" ? sanitize(contactPhone).slice(0, 30) : "";
+  // ── Sanitize ──────────────────────────────────────────────────────────────
+  const cleanBusinessName  = sanitize(businessName as string);
+  const cleanLocation      = sanitize(location as string);
+  const cleanServices      = sanitize(services as string);
+  const cleanIndustry      = sanitize(industry as string);
+  const cleanTone          = sanitize(tone as string);
+  const cleanContactEmail  = optStr(contactEmail, 200);
+  const cleanContactPhone  = optStr(contactPhone, 30);
+  const cleanTagline       = optStr(tagline, 150);
+  const cleanDescription   = optStr(description, 600);
+  const cleanServiceArea   = optStr(serviceArea, 200);
+  const cleanFacebookUrl   = optStr(facebookUrl, 300);
+  const cleanInstagramUrl  = optStr(instagramUrl, 300);
+  const cleanGoogleUrl     = optStr(googleBusinessUrl, 300);
+  const cleanBusinessHours = optStr(businessHours, 200);
 
-  // ── Call Anthropic ────────────────────────────────────────────────────────
+  // ── Build Claude prompt ───────────────────────────────────────────────────
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "AI service not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "AI service not configured" }, { status: 500 });
   }
+
+  const extraContext = [
+    cleanTagline       && `Tagline hint: ${cleanTagline}`,
+    cleanDescription   && `Business description: ${cleanDescription}`,
+    cleanYearsInBusiness && `Years in business: ${cleanYearsInBusiness}`,
+    cleanServiceArea   && `Service area: ${cleanServiceArea}`,
+  ].filter(Boolean).join("\n");
 
   const userPrompt = `Generate website content for this local business:
 
@@ -153,6 +155,7 @@ Industry: ${cleanIndustry}
 Location: ${cleanLocation}
 Services: ${cleanServices}
 Tone: ${cleanTone}
+${extraContext ? `\nAdditional context:\n${extraContext}` : ""}
 
 IMPORTANT: Return ONLY a raw JSON object. No markdown. No backticks. No explanation. Just the JSON.
 
@@ -187,10 +190,7 @@ Required JSON structure:
   if (!anthropicRes.ok) {
     const errBody = await anthropicRes.text().catch(() => "unknown");
     console.error("[sites/generate] Anthropic API error:", anthropicRes.status, errBody);
-    return NextResponse.json(
-      { error: "Content generation failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Content generation failed" }, { status: 500 });
   }
 
   const anthropicData = await anthropicRes.json();
@@ -198,51 +198,38 @@ Required JSON structure:
 
   // ── Robust JSON extraction ────────────────────────────────────────────────
   function extractJSON(text: string): SiteRecord["generatedContent"] | null {
-    // Strip markdown code fences (```json ... ``` or ``` ... ```)
     let cleaned = text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "");
-    // Trim any text before the first { and after the last }
     const firstBrace = cleaned.indexOf("{");
-    const lastBrace = cleaned.lastIndexOf("}");
+    const lastBrace  = cleaned.lastIndexOf("}");
     if (firstBrace === -1 || lastBrace === -1) return null;
     cleaned = cleaned.slice(firstBrace, lastBrace + 1);
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(cleaned); } catch { return null; }
   }
 
-  // ── Fallback content if Claude returns unparseable output ─────────────────
   function buildFallback(): SiteRecord["generatedContent"] {
     const serviceItems = cleanServices.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 5);
-    if (serviceItems.length < 1) serviceItems.push(cleanIndustry);
+    if (!serviceItems.length) serviceItems.push(cleanIndustry);
     return {
-      hero_headline: `${cleanIndustry} Services in ${cleanLocation}`,
+      hero_headline:    `${cleanIndustry} Services in ${cleanLocation}`,
       hero_subheadline: `${cleanBusinessName} provides professional ${cleanIndustry.toLowerCase()} services in ${cleanLocation}. We deliver quality results you can count on.`,
-      about_text: `${cleanBusinessName} has been proudly serving ${cleanLocation} with top-quality ${cleanIndustry.toLowerCase()} services. Our team is committed to delivering outstanding results and exceptional customer service on every job.`,
-      services_list: serviceItems.length > 0 ? serviceItems : ["Consultation", "Installation", "Maintenance", "Repair", "Inspection"],
-      cta_text: "Get a Free Quote",
-      tagline: `Your trusted ${cleanIndustry.toLowerCase()} experts.`,
-      seo_title: `${cleanBusinessName} — ${cleanIndustry} in ${cleanLocation}`,
-      seo_description: `${cleanBusinessName} offers professional ${cleanIndustry.toLowerCase()} services in ${cleanLocation}. Contact us today for a free estimate.`,
+      about_text:       cleanDescription || `${cleanBusinessName} has been proudly serving ${cleanLocation} with top-quality ${cleanIndustry.toLowerCase()} services. Our team is committed to delivering outstanding results and exceptional customer service on every job.`,
+      services_list:    serviceItems,
+      cta_text:         "Get a Free Quote",
+      tagline:          cleanTagline || `Your trusted ${cleanIndustry.toLowerCase()} experts.`,
+      seo_title:        `${cleanBusinessName} — ${cleanIndustry} in ${cleanLocation}`,
+      seo_description:  `${cleanBusinessName} offers professional ${cleanIndustry.toLowerCase()} services in ${cleanLocation}. Contact us today for a free estimate.`,
     };
   }
 
   let generatedContent = extractJSON(rawText);
-
   if (!generatedContent) {
-    console.error(
-      "[sites/generate] JSON parse failed. Raw Claude output:",
-      rawText.slice(0, 500)
-    );
-    // Use fallback so generation still succeeds instead of erroring
+    console.error("[sites/generate] JSON parse failed. Raw output:", rawText.slice(0, 500));
     generatedContent = buildFallback();
   }
 
-  // ── Determine siteId (new or overwrite existing) ──────────────────────────
+  // ── Determine siteId ─────────────────────────────────────────────────────
   let siteId: string;
   if (typeof editSiteId === "string" && editSiteId.trim()) {
-    // Verify the existing site belongs to this user before overwriting
     const existing = await import("@/lib/kv").then((m) => m.getSite(editSiteId));
     if (existing && existing.userId !== session.email) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -252,17 +239,29 @@ Required JSON structure:
     siteId = `${slugify(cleanBusinessName)}-${randomSuffix()}`;
   }
 
+  // ── Save to Redis ─────────────────────────────────────────────────────────
   const siteData: SiteRecord = {
     siteId,
-    userId: session.email,
-    businessName: cleanBusinessName,
-    industry: cleanIndustry,
-    location: cleanLocation,
-    services: cleanServices,
-    tone: cleanTone,
-    primaryColor: primaryColor as string,
-    contactEmail: cleanContactEmail,
-    contactPhone: cleanContactPhone,
+    userId:           session.email,
+    businessName:     cleanBusinessName,
+    industry:         cleanIndustry,
+    location:         cleanLocation,
+    services:         cleanServices,
+    tone:             cleanTone,
+    primaryColor:     primaryColor as string,
+    contactEmail:     cleanContactEmail,
+    contactPhone:     cleanContactPhone,
+    tagline:          cleanTagline,
+    description:      cleanDescription,
+    yearsInBusiness:  cleanYearsInBusiness,
+    facebookUrl:      cleanFacebookUrl,
+    instagramUrl:     cleanInstagramUrl,
+    googleBusinessUrl: cleanGoogleUrl,
+    businessHours:    cleanBusinessHours,
+    serviceArea:      cleanServiceArea,
+    fontStyle:        cleanFontStyle,
+    heroStyle:        cleanHeroStyle,
+    layoutStyle:      cleanLayoutStyle,
     generatedContent,
     createdAt: new Date().toISOString(),
   };
