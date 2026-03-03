@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Never render the BaileySystemsAI navbar on customer-generated sites
+  if (pathname.startsWith("/sites/")) return null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);

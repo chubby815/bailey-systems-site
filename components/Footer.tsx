@@ -1,6 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // Never render the BaileySystemsAI footer on customer-generated sites
+  if (pathname.startsWith("/sites/")) return null;
+
   return (
     <footer className="border-t border-white/[0.07] bg-[#08090a] py-16 px-6">
       <div className="max-w-7xl mx-auto">
