@@ -92,7 +92,7 @@ export function SiteShareBar({ siteId }: Props) {
         </button>
 
         <Link
-          href={`/dashboard/build?edit=${siteId}`}
+          href={`/sites/${siteId}?edit=true`}
           style={{
             fontSize: "0.75rem",
             fontWeight: 600,
@@ -105,7 +105,7 @@ export function SiteShareBar({ siteId }: Props) {
             transition: "all 0.15s",
           }}
         >
-          Edit Site
+          Edit Site ✏️
         </Link>
 
         <a

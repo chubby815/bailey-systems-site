@@ -75,10 +75,16 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
       {/* Primary actions */}
       <div className="flex flex-wrap gap-2 mb-2">
         <Link
+          href={`/sites/${siteId}?edit=true`}
+          className="text-xs font-bold bg-[#00e5a0] text-black px-3 py-1.5 rounded-lg hover:bg-[#00ffb2] transition-colors"
+        >
+          Edit Site ✏️
+        </Link>
+        <Link
           href={`/sites/${siteId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-bold bg-[#00e5a0] text-black px-3 py-1.5 rounded-lg hover:bg-[#00ffb2] transition-colors"
+          className="text-xs font-medium text-[#6b7280] border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 rounded-lg hover:text-white hover:border-white/20 transition-all"
         >
           View Site ↗
         </Link>

@@ -98,10 +98,14 @@ function PausedOverlay() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function SitePage({
   params,
+  searchParams,
 }: {
-  params: Promise<{ siteId: string }>;
+  params:       Promise<{ siteId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { siteId } = await params;
+  const sp       = await searchParams;
+  const editMode = sp.edit === "true";
   const site = await getSite(siteId);
   if (!site) notFound();
 
@@ -132,6 +136,7 @@ export default async function SitePage({
             content={c}
             theme={theme}
             isOwner={true}
+            editMode={editMode}
             siteId={siteId}
             initialHeroImageUrl={customHeroImgUrl}
           />

@@ -17,6 +17,8 @@ type Props = {
   content:            StructuredSiteContent;
   theme:              ThemeConfig;
   isOwner:            boolean;
+  /** True only when the URL contains ?edit=true. Controls editor chrome visibility. */
+  editMode:           boolean;
   siteId:             string;
   initialHeroImageUrl?: string;
 };
@@ -419,7 +421,7 @@ function industryPhotoId(industry: string) {
 
 // ── Main SiteEditor component ─────────────────────────────────────────────────
 export function SiteEditor({
-  site, content, theme, isOwner, siteId, initialHeroImageUrl,
+  site, content, theme, isOwner, editMode, siteId, initialHeroImageUrl,
 }: Props) {
   const [activePanel, setActivePanel]         = useState<Panel>(null);
   const [currentContent, setCurrentContent]   = useState<StructuredSiteContent>(content);
@@ -432,8 +434,10 @@ export function SiteEditor({
   const hasChanges                            = useRef(false);
   const [, startTransition]                   = useTransition();
 
-  // ── Non-owner: render site only ──────────────────────────────────────────
-  if (!isOwner) {
+  // ── Clean site mode: no editor chrome ───────────────────────────────────
+  // Show the editor only when the owner explicitly visits with ?edit=true.
+  // Any other visitor (or owner without the param) sees the clean published site.
+  if (!isOwner || !editMode) {
     return (
       <LayoutRenderer
         site={site}
