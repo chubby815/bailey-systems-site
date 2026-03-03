@@ -6,11 +6,18 @@ export const dynamic = "force-dynamic";
 
 // ── Color map ─────────────────────────────────────────────────────────────────
 const COLOR_MAP: Record<string, string> = {
-  "Emerald Green": "#10b981",
-  "Electric Blue": "#3b82f6",
-  "Sunset Orange": "#f97316",
-  "Royal Purple": "#8b5cf6",
-  "Fire Red": "#ef4444",
+  "Emerald Green":  "#10b981",
+  "Electric Blue":  "#0066ff",
+  "Sunset Orange":  "#f97316",
+  "Royal Purple":   "#7c3aed",
+  "Fire Red":       "#ef4444",
+  "Midnight Black": "#0a0a0a",
+  "Golden Yellow":  "#eab308",
+  "Hot Pink":       "#ec4899",
+  "Cyan":           "#06b6d4",
+  "Slate Gray":     "#64748b",
+  "Rose Gold":      "#fb7185",
+  "Deep Navy":      "#1e3a5f",
 };
 
 // ── Metadata ──────────────────────────────────────────────────────────────────

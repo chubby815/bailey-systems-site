@@ -12,6 +12,8 @@ const VALID_INDUSTRIES = new Set([
 const VALID_TONES = new Set(["Professional", "Friendly", "Bold", "Luxury", "Minimal"]);
 const VALID_COLORS = new Set([
   "Emerald Green", "Electric Blue", "Sunset Orange", "Royal Purple", "Fire Red",
+  "Midnight Black", "Golden Yellow", "Hot Pink", "Cyan", "Slate Gray",
+  "Rose Gold", "Deep Navy",
 ]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
