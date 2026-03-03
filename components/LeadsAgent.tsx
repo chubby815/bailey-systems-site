@@ -25,7 +25,7 @@ function ScoreBadge({ score }: { score: number }) {
   if (score >= 7)
     return (
       <span className="inline-flex items-center gap-1 text-xs font-bold bg-yellow-500/15 text-yellow-400 border border-yellow-500/25 px-2.5 py-1 rounded-full">
-        ☀ Warm · {score}/10
+        ⚡ Warm · {score}/10
       </span>
     );
   return (
@@ -216,7 +216,6 @@ export function LeadsAgent({ locked }: { locked: boolean }) {
     location: "",
     businessSize: "Any",
     hasWebsite: "Any",
-    urgency: "Show all",
   });
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
@@ -343,28 +342,6 @@ export function LeadsAgent({ locked }: { locked: boolean }) {
             </select>
           </div>
 
-          {/* Urgency */}
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-widest text-[#6b7280]">
-              Lead Score Filter
-            </label>
-            <div className="flex gap-2">
-              {["Show all", "High potential only"].map((u) => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => set("urgency", u)}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                    form.urgency === u
-                      ? "bg-[#3b82f6] text-white border-[#3b82f6]"
-                      : "bg-[#0d0e10] text-[#6b7280] border-white/[0.07] hover:border-white/20"
-                  }`}
-                >
-                  {u === "High potential only" ? "⭐ " + u : u}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {error && (

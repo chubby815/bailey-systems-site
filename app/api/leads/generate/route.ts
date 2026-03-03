@@ -89,8 +89,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid business size" }, { status: 400 });
   if (typeof hasWebsite !== "string" || !VALID_WEBSITE.has(hasWebsite))
     return NextResponse.json({ error: "Invalid website filter" }, { status: 400 });
-  if (typeof urgency !== "string" || !VALID_URGENCY.has(urgency))
-    return NextResponse.json({ error: "Invalid urgency filter" }, { status: 400 });
+  // urgency is optional — defaults to "Show all" if omitted or invalid
+  const cleanUrgency =
+    typeof urgency === "string" && VALID_URGENCY.has(urgency) ? urgency : "Show all";
 
   const cleanLocation = sanitize(location).slice(0, 100);
 
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       : "Include a realistic mix of businesses with and without websites.";
 
   const urgencyInstruction =
-    urgency === "High potential only"
+    cleanUrgency === "High potential only"
       ? "Only generate leads with a score of 8 or higher (high-potential prospects)."
       : "Include a variety of lead scores from 5 to 10.";
 
