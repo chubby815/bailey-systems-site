@@ -2,25 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    // Run on every route except Next.js internals and static assets
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── Auth check ──────────────────────────────────────────────────────────────
-  const session = await getSession(req);
+  // ── Inject pathname header so app/layout.tsx can detect /sites/* routes ──
+  // (headers() in Server Components only reads request headers, not route info)
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
 
-  if (!session) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  // ── Auth guard for /dashboard routes ────────────────────────────────────
+  if (pathname.startsWith("/dashboard")) {
+    const session = await getSession(req);
+    if (!session) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // ── /dashboard — requires active subscription ───────────────────────────────
-  // Subscription status is checked in the page itself via requireAuth()
-  // to avoid an extra Redis round-trip here. Middleware just gates on auth.
-  // If you want middleware-level sub check, import hasActiveSubscription from lib/kv.
-
-  return NextResponse.next();
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
