@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/user")
@@ -15,6 +19,25 @@ export default function Navbar() {
       .catch(() => setIsLoggedIn(false))
       .finally(() => setAuthChecked(true));
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setIsLoggedIn(false);
+    setDropdownOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.07] bg-[#08090a]/80 backdrop-blur-xl">
@@ -38,15 +61,49 @@ export default function Navbar() {
         {/* CTA buttons — swap based on auth state */}
         <div className="hidden md:flex items-center gap-3">
           {!authChecked ? (
-            // Skeleton to prevent layout shift while checking
             <div className="w-32 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
           ) : isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              className="text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-5 py-2 rounded-xl"
-            >
-              Dashboard →
-            </Link>
+            // ── Logged-in dropdown ──
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="flex items-center gap-1.5 text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-5 py-2 rounded-xl"
+              >
+                Dashboard
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-44 bg-[#111214] border border-white/[0.1] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden z-50">
+                  {[
+                    { label: "Dashboard", href: "/dashboard" },
+                    { label: "My Sites", href: "/dashboard" },
+                    { label: "Billing", href: "/dashboard/billing" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-[#9ca3af] hover:text-white hover:bg-white/[0.05] transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div className="border-t border-white/[0.07]" />
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link
@@ -91,13 +148,28 @@ export default function Navbar() {
           <MobileLink href="/elite" onClick={() => setMobileOpen(false)}>Elite 👑</MobileLink>
           <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.07]">
             {isLoggedIn ? (
-              <Link
-                href="/dashboard"
-                className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl"
-                onClick={() => setMobileOpen(false)}
-              >
-                Dashboard →
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Dashboard →
+                </Link>
+                <Link
+                  href="/dashboard/billing"
+                  className="text-center text-sm font-semibold text-[#6b7280] py-2 rounded-xl border border-white/10"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Billing
+                </Link>
+                <button
+                  onClick={() => { setMobileOpen(false); handleLogout(); }}
+                  className="text-center text-sm font-semibold text-red-400 py-2 rounded-xl border border-red-500/20 hover:bg-red-500/5 transition-colors"
+                >
+                  Log Out
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/login" className="text-center text-sm font-semibold text-[#6b7280] py-2 rounded-xl border border-white/10" onClick={() => setMobileOpen(false)}>Log In</Link>
