@@ -25,7 +25,9 @@ module.exports = {
         "glow-primary": "0 0 0 rgba(0, 0, 0, 0)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        syne: ["var(--font-syne)", "sans-serif"],
+        dm: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
       },
     },
   },

@@ -49,3 +49,38 @@ export async function getUserPlan(
   if (!record || record.status === "canceled") return null;
   return record.plan;
 }
+
+// ── Site record shape ─────────────────────────────────────────────────────────
+export type SiteRecord = {
+  siteId: string;
+  userId: string;
+  businessName: string;
+  industry: string;
+  location: string;
+  services: string;
+  tone: string;
+  primaryColor: string;
+  contactEmail: string;
+  contactPhone: string;
+  generatedContent: {
+    hero_headline: string;
+    hero_subheadline: string;
+    about_text: string;
+    services_list: string[];
+    cta_text: string;
+    tagline: string;
+    seo_title: string;
+    seo_description: string;
+  };
+  createdAt: string;
+};
+
+/** Save a generated site to Redis */
+export async function saveSite(siteId: string, data: SiteRecord): Promise<void> {
+  await kv.set(`site:${siteId}`, data);
+}
+
+/** Get a generated site from Redis */
+export async function getSite(siteId: string): Promise<SiteRecord | null> {
+  return kv.get<SiteRecord>(`site:${siteId}`);
+}

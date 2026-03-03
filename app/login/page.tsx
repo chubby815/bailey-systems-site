@@ -55,7 +55,7 @@ function LoginForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block text-xl font-extrabold tracking-tight" style={{ fontFamily: "Syne, sans-serif" }}>
-            Bailey<span className="text-[#00e5a0]">Systems</span>.ai
+            Bailey<span className="text-[#00e5a0]">Systems</span>AI
           </Link>
           <p className="text-gray-500 text-sm mt-2">
             {mode === "login" ? "Welcome back" : "Create your account"}

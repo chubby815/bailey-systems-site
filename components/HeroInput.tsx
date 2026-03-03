@@ -11,11 +11,9 @@ export function HeroInput() {
   const handleStart = async () => {
     if (loading) return
     setLoading(true)
-
     try {
       const res = await fetch('/api/user', { method: 'GET' })
       const data = await res.json()
-
       if (data.session) {
         router.push('/dashboard')
       } else {
@@ -29,25 +27,25 @@ export function HeroInput() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-10 mb-4">
-      <div className="bg-[#0a0a0a] border-4 border-black shadow-[8px_8px_0_#0EA5E9] p-6 flex flex-col gap-4">
+    <div className="w-full max-w-2xl mx-auto mt-10">
+      <div className="bg-[#111214] border border-white/[0.07] rounded-2xl p-4 shadow-[0_0_60px_rgba(0,229,160,0.08)]">
         <textarea
           value={value}
           onChange={e => setValue(e.target.value)}
           placeholder="What type of business are you building?"
           rows={3}
-          className="w-full bg-[#111] border-2 border-white/10 text-white placeholder-gray-600 rounded-none px-4 py-3 text-sm outline-none focus:border-[#0EA5E9] transition-colors resize-none font-medium"
+          className="w-full bg-transparent text-[#f0f0f0] placeholder-[#4b5563] px-3 py-2 text-sm outline-none resize-none font-dm leading-relaxed"
         />
-        <button
-          onClick={handleStart}
-          disabled={loading}
-          className="w-full bg-[#0EA5E9] text-black font-black py-4 text-sm uppercase tracking-widest border-2 border-black hover:bg-white hover:shadow-[4px_4px_0_#0a0a0a] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Loading...' : 'Start Building →'}
-        </button>
-        <p className="text-center text-gray-600 text-xs">
-          No credit card required to get started
-        </p>
+        <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/[0.07]">
+          <span className="text-xs text-[#4b5563]">No credit card required</span>
+          <button
+            onClick={handleStart}
+            disabled={loading}
+            className="bg-[#00e5a0] hover:bg-[#00ffb2] text-black text-sm font-bold px-6 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Loading...' : 'Start Building →'}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ export default async function DashboardPage() {
       {/* ── Top bar ── */}
       <header className="border-b border-white/[0.07] bg-[#111214] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-extrabold tracking-tight" style={{ fontFamily: "Syne, sans-serif" }}>
-          Bailey<span className="text-[#00e5a0]">Systems</span>.ai
+          Bailey<span className="text-[#00e5a0]">Systems</span>AI
         </Link>
         <div className="flex items-center gap-4">
           <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${planColors[plan]}`}>
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
                 My Sites
               </h2>
               <Link
-                href="/start"
+                href="/dashboard/build"
                 className="bg-[#00e5a0] text-black text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#00ffb2] transition-colors"
               >
                 + New Site
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
                 Build your first AI-powered website in under 3 minutes. Just answer 8 questions.
               </p>
               <Link
-                href="/start"
+                href="/dashboard/build"
                 className="inline-block bg-[#00e5a0] text-black font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
               >
                 Build My First Site →
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
                   icon: "🌐",
                   name: "Website Builder",
                   desc: "Generate a full business site in minutes.",
-                  href: "/start",
+                  href: "/dashboard/build",
                   available: true,
                   color: "emerald",
                 },

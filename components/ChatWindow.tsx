@@ -78,7 +78,7 @@ export function ChatWindow() {
   return (
     <div className="glass-panel flex h-full flex-col p-6">
       <div className="mb-4 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-        <span>🐕 Bailey Systems AI</span>
+        <span>🐕 BaileySystemsAI</span>
         <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-emerald-200">
           Online Now
         </span>

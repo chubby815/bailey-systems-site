@@ -1,46 +1,99 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <nav className="w-full bg-[#faf9f6] border-b-4 border-black py-4 shadow-[0_4px_0_#0a0a0a]">
-      <div className="max-w-[90%] mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="text-xl font-black tracking-tight text-black">
-            Bailey Systems AI
-          </div>
-          <span className="inline-flex items-center gap-1 bg-[#00c48c]/10 border border-[#00c48c]/30 text-[#00c48c] text-xs font-bold px-2 py-1 rounded-full">
-            🇲🇽 Se habla español
-          </span>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.07] bg-[#08090a]/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-0.5 text-xl font-black tracking-tight font-syne">
+          <span className="text-[#f0f0f0]">Bailey</span>
+          <span className="text-[#00e5a0]">Systems</span>
+          <span className="text-[#f0f0f0]">AI</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-8">
+          <NavLink href="#agents">Agents</NavLink>
+          <NavLink href="#how-it-works">How It Works</NavLink>
+          <NavLink href="/pricing">Pricing</NavLink>
+          <NavLink href="/dashboard">Dashboard</NavLink>
+          <NavLink href="/pro">Pro</NavLink>
+          <NavLink href="/elite">Elite 👑</NavLink>
         </div>
 
-        <div className="flex items-center gap-8 text-base">
-          <NavLink href="/">Home</NavLink>
-          <NavLink href="#services">Services</NavLink>
-          <NavLink href="#pricing">Pricing</NavLink>
-          <NavLink href="#team">Team</NavLink>
-          <NavLink href="#about">About</NavLink>
-          <NavLink href="/consulting">Consulting</NavLink>
-          <a href="/pro" className="text-sm font-bold text-purple-500 hover:text-purple-400 transition uppercase" style={{ letterSpacing: '-0.02em' }}>Pro</a>
-          <a href="/elite" className="text-sm font-bold text-yellow-500 hover:text-yellow-400 transition uppercase" style={{ letterSpacing: '-0.02em' }}>Elite 👑</a>
+        {/* CTA buttons */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/login"
+            className="text-sm font-semibold text-[#6b7280] hover:text-[#f0f0f0] transition-colors px-4 py-2 rounded-xl border border-white/10 hover:border-white/20"
+          >
+            Log In
+          </Link>
+          <Link
+            href="/login"
+            className="text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-4 py-2 rounded-xl"
+          >
+            Start Free →
+          </Link>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden text-[#6b7280] hover:text-[#f0f0f0]"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {mobileOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-white/[0.07] bg-[#08090a] px-6 py-4 flex flex-col gap-4">
+          <MobileLink href="#agents" onClick={() => setMobileOpen(false)}>Agents</MobileLink>
+          <MobileLink href="#how-it-works" onClick={() => setMobileOpen(false)}>How It Works</MobileLink>
+          <MobileLink href="/pricing" onClick={() => setMobileOpen(false)}>Pricing</MobileLink>
+          <MobileLink href="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</MobileLink>
+          <MobileLink href="/pro" onClick={() => setMobileOpen(false)}>Pro</MobileLink>
+          <MobileLink href="/elite" onClick={() => setMobileOpen(false)}>Elite 👑</MobileLink>
+          <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.07]">
+            <Link href="/login" className="text-center text-sm font-semibold text-[#6b7280] py-2 rounded-xl border border-white/10">Log In</Link>
+            <Link href="/login" className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl">Start Free →</Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
 
-function NavLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="text-black font-semibold hover:text-[#0EA5E9] transition-colors duration-150 uppercase text-sm navbar-link" style={{ letterSpacing: '-0.02em' }}
+      className="text-sm text-[#6b7280] hover:text-[#f0f0f0] transition-colors font-medium"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function MobileLink({ href, children, onClick }: { href: string; children: React.ReactNode; onClick: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="text-sm text-[#6b7280] hover:text-[#f0f0f0] transition-colors font-medium py-1"
     >
       {children}
     </Link>

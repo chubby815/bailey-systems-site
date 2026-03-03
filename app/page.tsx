@@ -1,298 +1,337 @@
-import Image from "next/image";
-import { Hero } from "@/components/Hero";
 import { HeroInput } from "@/components/HeroInput";
-import ReviewCard from "@/components/ReviewCard";
-import { BentoGrid } from "@/components/BentoGrid";
-import { STRIPE_LINKS } from "@/lib/stripe-links";
+import { AgentCards } from "@/components/AgentCards";
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center px-4 py-16 text-black bg-[#faf9f6]">
-      {/* HERO SECTION */}
-      <section className="w-full max-w-6xl mb-16">
-        <Hero />
-        <HeroInput />
-      </section>
+    <div className="bg-[#08090a] text-[#f0f0f0] overflow-x-hidden">
 
-      {/* Section Divider */}
-      <div className="w-full max-w-6xl h-2 bg-[#0EA5E9] mb-32"></div>
-
-      {/* BENTO GRID: Services, Team & Map */}
-      <BentoGrid />
-
-      {/* Section Divider */}
-      <div className="w-full max-w-6xl h-2 bg-[#0EA5E9] mb-32"></div>
-
-      {/* ABOUT */}
-      <section id="about" className="w-full max-w-4xl mb-32">
-        <div className="border-4 border-black bg-white p-12 shadow-[12px_12px_0_#0a0a0a]">
-          <h2 className="text-5xl font-black text-center mb-10 relative inline-block w-full" style={{ letterSpacing: '-0.03em', fontWeight: 900 }}>
-            About Us
-            <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-[#0EA5E9]"></span>
-          </h2>
-          <div className="space-y-6 text-lg text-gray-600 leading-relaxed font-medium">
-            <p>
-              We work alongside a small team of experienced software engineers and media specialists to design and build modern digital products for businesses.
-            </p>
-            <p>
-              We focus on projects that actually get used — not demos or experiments. From customer-facing websites to backend automation that removes manual work from daily operations, our emphasis is on real-world delivery, performance, and reliability.
-            </p>
-            <p>
-              Our approach is straightforward: build things that solve actual problems. Clean code, reliable systems, and tools that make your work easier. No hype, no buzzwords, just functional software supported by a tight, experienced team.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Divider */}
-      <div className="w-full max-w-6xl h-2 bg-[#0EA5E9] mb-32"></div>
-
-      {/* PRICING */}
-      <section id="pricing" className="py-20 px-6 max-w-6xl mx-auto mb-32 w-full">
-        <h2 className="text-4xl font-bold text-center mb-4">Pricing</h2>
-        <p className="text-center text-gray-500 mb-12">Transparent pricing. No surprises.</p>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-          {/* Starter */}
-          <div className="border-2 border-gray-200 rounded-2xl p-6 flex flex-col">
-            <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Starter</div>
-            <div className="text-4xl font-black mb-1">$149</div>
-            <div className="text-sm text-gray-500 mb-1">One-time</div>
-            <div className="text-xs text-[#00c48c] font-bold mb-6">🎁 1 year hosting included</div>
-            <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
-              <li>✅ Custom one-page site</li>
-              <li>✅ Mobile optimized</li>
-              <li>✅ Contact form</li>
-              <li>✅ SEO basics</li>
-              <li>✅ 1 year hosting included</li>
-            </ul>
-            <a
-              href={STRIPE_LINKS.starter}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-black text-white text-center py-3 rounded-xl font-bold hover:bg-gray-800 transition block"
-            >
-              Get Started
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-          {/* Basic */}
-          <div className="border-2 border-gray-200 rounded-2xl p-6 flex flex-col">
-            <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Basic</div>
-            <div className="text-4xl font-black mb-1">$300</div>
-            <div className="text-sm text-gray-500 mb-6">One-time</div>
-            <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
-              <li>✅ Custom website (up to 5 pages)</li>
-              <li>✅ Mobile responsive</li>
-              <li>✅ Contact form</li>
-              <li>✅ SEO basics</li>
-              <li>✅ Delivered in 7 days</li>
-            </ul>
-            <a href={STRIPE_LINKS.basic}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="bg-black text-white text-center py-3 rounded-xl font-bold hover:bg-gray-800 transition block">
-              Get Started
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-          {/* Edits */}
-          <div className="border-2 border-blue-200 rounded-2xl p-6 flex flex-col">
-            <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Edits</div>
-            <div className="text-4xl font-black mb-1">$75</div>
-            <div className="text-sm text-gray-500 mb-6">Per session</div>
-            <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
-              <li>✅ Text &amp; content updates</li>
-              <li>✅ Design tweaks</li>
-              <li>✅ New page or section</li>
-              <li>✅ Bug fixes</li>
-              <li>✅ Turnaround within 48hrs</li>
-            </ul>
-            <a href={STRIPE_LINKS.edits}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="bg-blue-600 text-white text-center py-3 rounded-xl font-bold hover:bg-blue-700 transition block">
-              Book Edits
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-          {/* Pro */}
-          <div className="border-2 border-[#00c48c] rounded-2xl p-6 flex flex-col relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00c48c] text-white text-xs font-bold px-3 py-1 rounded-full">
-              MOST POPULAR
-            </div>
-            <div className="text-xs font-bold uppercase tracking-widest text-[#00c48c] mb-2">Pro</div>
-            <div className="text-4xl font-black mb-1">$500</div>
-            <div className="text-sm text-gray-500 mb-6">One-time</div>
-            <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
-              <li>✅ Everything in Basic</li>
-              <li>✅ AI chatbot integration</li>
-              <li>✅ Custom chatbot training</li>
-              <li>✅ Live chat widget</li>
-              <li>✅ 1 month free edits</li>
-            </ul>
-            <a href={STRIPE_LINKS.pro}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="bg-[#00c48c] text-black text-center py-3 rounded-xl font-bold hover:bg-[#00a876] transition block">
-              Get Pro
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-        </div>
-
-        {/* Bailey Pro + Elite subscription cards */}
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
-
-          {/* Bailey Pro subscription */}
-          <div className="border-2 border-purple-400 rounded-2xl p-6 flex flex-col">
-            <div className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-2">Bailey Pro</div>
-            <div className="text-4xl font-black mb-1">$4.99<span className="text-lg font-normal text-gray-400">/mo</span></div>
-            <div className="text-sm text-gray-500 mb-6">Cancel anytime</div>
-            <ul className="text-sm text-gray-600 space-y-2 flex-1 mb-6">
-              <li>✅ 20 messages per day</li>
-              <li>✅ 2 AI image generations per day</li>
-              <li>✅ Powered by Bailey AI</li>
-              <li>✅ Code generation</li>
-              <li>✅ Ask literally anything</li>
-              <li>🇲🇽 Se habla español</li>
-            </ul>
-            <a href={STRIPE_LINKS.proMonthly} target="_blank" rel="noopener noreferrer"
-               className="bg-purple-600 text-white text-center py-3 rounded-xl font-bold hover:bg-purple-500 transition block">
-              Start Bailey Pro
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-          {/* Bailey Elite subscription */}
-          <div className="border-2 border-yellow-400 rounded-2xl p-6 flex flex-col bg-black text-white relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full">
-              MOST POWERFUL
-            </div>
-            <div className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-2">Bailey Elite</div>
-            <div className="text-4xl font-black mb-1 text-yellow-400">$19.99<span className="text-lg font-normal text-gray-400">/mo</span></div>
-            <div className="text-sm text-gray-500 mb-6">Cancel anytime</div>
-            <ul className="text-sm text-gray-300 space-y-2 flex-1 mb-6">
-              <li>✅ 100 messages per day</li>
-              <li>✅ 3 AI image generations per day</li>
-              <li>✅ Powered by Bailey AI</li>
-              <li>✅ Code generation</li>
-              <li>✅ Priority everything</li>
-              <li>✅ Ask literally anything</li>
-              <li>🇲🇽 Se habla español</li>
-            </ul>
-            <a href={STRIPE_LINKS.eliteMonthly} target="_blank" rel="noopener noreferrer"
-               className="bg-yellow-400 text-black text-center py-3 rounded-xl font-bold hover:bg-white transition block">
-              Join Bailey Elite 👑
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">🔒 Secure checkout via Stripe</p>
-          </div>
-
-        </div>
-
-        {/* Premium — centered below all cards */}
-        <div className="flex justify-center mt-6">
-          <div className="border-2 border-yellow-400 rounded-2xl p-6 flex flex-col bg-black text-white w-full max-w-xs">
-            <div className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-2">Premium</div>
-            <div className="text-4xl font-black mb-1 text-yellow-400">Custom</div>
-            <div className="text-sm text-gray-400 mb-6">Starting at $1,200</div>
-            <ul className="text-sm text-gray-300 space-y-2 flex-1 mb-6">
-              <li>✅ Full custom website</li>
-              <li>✅ AI agents &amp; automation</li>
-              <li>✅ Custom chatbots</li>
-              <li>✅ Chatbot edits — $75/session</li>
-              <li>✅ AI agent edits — $125/session</li>
-              <li>✅ Ongoing priority support</li>
-            </ul>
-            <a href="mailto:Lilianajs27@gmail.com?subject=Premium Plan Inquiry"
-               className="bg-yellow-400 text-black text-center py-3 rounded-xl font-bold hover:bg-yellow-300 transition block">
-              Contact Us
-            </a>
-            <p className="text-xs text-center text-gray-400 mt-2">Custom quote — we'll reach out within 24hrs</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Divider */}
-      <div className="w-full max-w-6xl h-2 bg-[#0EA5E9] mb-32"></div>
-
-      {/* TESTIMONIALS */}
-      <section id="reviews" className="w-full max-w-6xl text-center mb-20">
-        <h2 className="text-5xl font-black relative inline-block mb-12" style={{ letterSpacing: '-0.03em', fontWeight: 900 }}>
-          What People Are Saying
-          <span className="absolute -bottom-2 left-0 w-full h-1 bg-[#0EA5E9]"></span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <ReviewCard
-            name="Michael R."
-            quote="Bailey Systems AI built me a custom AI assistant that handles all my customer service. Game changer!"
+      {/* ── SECTION 1: HERO ─────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
+        {/* Background glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[#00e5a0]/8 rounded-full blur-[140px]" />
+          <div className="absolute bottom-0 right-0 w-[600px] h-[500px] bg-blue-600/5 rounded-full blur-[140px]" />
+          {/* Grid */}
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
           />
-
-          <ReviewCard
-            name="Sarah K."
-            quote="The automation they built saves me 2 hours a day. Worth every cent."
-          />
-
-          <ReviewCard
-            name="Tony L."
-            quote="The website + AI agent combo doubled my business leads in a week."
-          />
+          {/* Fade edges */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#08090a] via-transparent to-[#08090a]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08090a] via-transparent to-[#08090a]" />
         </div>
-      </section>
 
-      {/* Section Divider */}
-      <div className="w-full max-w-6xl h-2 bg-[#0EA5E9] mb-32"></div>
+        <div className="relative z-10 max-w-4xl mx-auto">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-[#111214] border border-white/10 rounded-full px-4 py-2 mb-8">
+            <span className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse" />
+            <span className="text-sm text-[#9ca3af] font-medium">AI-Powered Business Platform</span>
+          </div>
 
-      {/* CONTACT */}
-      <section id="contact" className="w-full max-w-4xl mb-20">
-        <div className="border-4 border-black bg-white p-12 shadow-[12px_12px_0_#0a0a0a] text-center">
-          <h2 className="text-5xl font-black mb-10 relative inline-block" style={{ letterSpacing: '-0.03em', fontWeight: 900 }}>
-            📞 Get In Touch
-            <span className="absolute -bottom-2 left-0 w-full h-1 bg-[#0EA5E9]"></span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed font-medium">
-            Ready to start a project? Reach out and I'll get back to you within 24 hours.
+          {/* H1 */}
+          <h1 className="font-syne text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
+            Build Your AI Business<br />
+            in <span className="text-[#00e5a0]">Minutes</span>
+          </h1>
+
+          {/* Subheadline */}
+          <p className="text-lg md:text-xl text-[#6b7280] max-w-2xl mx-auto mb-10 leading-relaxed">
+            Generate a complete website, find leads, and create content — all powered by AI.
+            No code. No designers. Just results.
           </p>
-          <div className="space-y-4 text-lg">
-            <p>
-              <span className="font-bold text-black">Email:</span>{" "}
-              <a
-                href="mailto:Lilianajs27@gmail.com"
-                className="text-black hover:text-[#0EA5E9] transition-colors font-bold underline"
+
+          {/* AI Input */}
+          <HeroInput />
+
+          {/* Social proof */}
+          <p className="text-sm text-[#4b5563] mt-6">
+            Trusted by 2,400+ businesses · Sites live in under 3 minutes
+          </p>
+        </div>
+      </section>
+
+      {/* ── SECTION 2: TEMPLATE PREVIEWS ───────────────────────────── */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+            What We Build
+          </p>
+          <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
+            Live in minutes, not months
+          </h2>
+          <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
+            Every site is custom-built, mobile-first, and ready to convert visitors into customers.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              name: "Apex Fitness",
+              industry: "Health & Wellness",
+              gradient: "from-emerald-500/25 to-teal-600/10",
+              dot: "bg-emerald-400",
+              bar: "bg-emerald-400/20",
+            },
+            {
+              name: "Neon Legal",
+              industry: "Legal Services",
+              gradient: "from-blue-500/25 to-violet-600/10",
+              dot: "bg-blue-400",
+              bar: "bg-blue-400/20",
+            },
+            {
+              name: "Swift Realty",
+              industry: "Real Estate",
+              gradient: "from-orange-500/25 to-rose-600/10",
+              dot: "bg-orange-400",
+              bar: "bg-orange-400/20",
+            },
+          ].map((item) => (
+            <div
+              key={item.name}
+              className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-white/20 transition-colors"
+            >
+              {/* Browser bar */}
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.07]">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                <div className="flex-1 bg-white/[0.04] rounded-md h-4 ml-2" />
+              </div>
+              {/* Preview hero block */}
+              <div
+                className={`h-36 bg-gradient-to-br ${item.gradient} m-4 rounded-xl flex items-center justify-center`}
               >
-                Lilianajs27@gmail.com
-              </a>
+                <div className={`w-12 h-12 rounded-full ${item.dot} opacity-40 blur-sm`} />
+              </div>
+              {/* Placeholder lines */}
+              <div className="px-4 space-y-2 pb-3">
+                <div className="h-2.5 bg-white/[0.05] rounded-full w-3/4" />
+                <div className="h-2.5 bg-white/[0.05] rounded-full w-1/2" />
+                <div className="h-2.5 bg-white/[0.05] rounded-full w-2/3" />
+              </div>
+              {/* Label */}
+              <div className="px-4 pb-5 flex items-center justify-between">
+                <span className="text-sm font-semibold text-[#f0f0f0]">{item.name}</span>
+                <span className="text-xs text-[#00e5a0] bg-[#00e5a0]/10 border border-[#00e5a0]/20 px-2.5 py-1 rounded-full">
+                  {item.industry}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── SECTION 3: AI AGENTS ────────────────────────────────────── */}
+      <section id="agents" className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+            AI Agents
+          </p>
+          <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
+            Your AI team, working 24/7
+          </h2>
+          <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
+            Three specialized agents that handle the work you hate — automatically.
+          </p>
+        </div>
+
+        <AgentCards />
+      </section>
+
+      {/* ── SECTION 4: HOW IT WORKS ─────────────────────────────────── */}
+      <section id="how-it-works" className="py-24 px-6 bg-[#111214]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+              Process
             </p>
-            <p>
-              <span className="font-bold text-black">Phone:</span>{" "}
-              <a
-                href="tel:+17798956325"
-                className="text-black hover:text-[#0EA5E9] transition-colors font-bold underline cursor-pointer"
-              >
-                779-895-6325
-              </a>
-            </p>
+            <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
+              Simple. Fast. Done.
+            </h2>
+          </div>
+
+          <div className="relative">
+            {/* Connector line */}
+            <div className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+            <div className="grid md:grid-cols-4 gap-8">
+              {[
+                { n: "01", title: "Tell Us Your Vision", desc: "Describe your business, goals, and what you need. Takes 2 minutes." },
+                { n: "02", title: "AI Builds It", desc: "Our agents get to work — website, content, automations — all configured." },
+                { n: "03", title: "Review & Refine", desc: "We walk you through the deliverables and adjust until it's perfect." },
+                { n: "04", title: "Go Live", desc: "Your site goes live. Your agents start running. Revenue starts coming in." },
+              ].map((step) => (
+                <div key={step.n} className="text-center relative">
+                  <div className="w-16 h-16 rounded-full bg-[#08090a] border border-white/[0.07] flex items-center justify-center mx-auto mb-5 relative z-10">
+                    <span className="font-syne font-black text-[#00e5a0] text-lg">{step.n}</span>
+                  </div>
+                  <h3 className="font-syne font-bold text-lg mb-2">{step.title}</h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed">{step.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="mt-10 text-center">
-        <a
-          href="https://www.baileysystemsai.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bailey-glow text-lg font-semibold tracking-wide"
-        >
-          Built by www.baileysystemsai.com
-        </a>
-      </div>
+      {/* ── SECTION 6: DASHBOARD MOCKUP ─────────────────────────────── */}
+      <section className="py-24 px-6 bg-[#111214]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+              Dashboard
+            </p>
+            <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
+              Everything in one place
+            </h2>
+            <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
+              Monitor your sites, agents, and revenue from a single clean dashboard.
+            </p>
+          </div>
 
-    </main>
+          {/* Mockup */}
+          <div className="bg-[#08090a] border border-white/[0.07] rounded-2xl overflow-hidden max-w-5xl mx-auto shadow-[0_0_80px_rgba(0,229,160,0.05)]">
+            {/* App chrome */}
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.07]">
+              <div className="w-3 h-3 rounded-full bg-red-500/60" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+              <div className="w-3 h-3 rounded-full bg-green-500/60" />
+              <div className="flex-1 flex items-center gap-2 ml-3">
+                <div className="bg-white/[0.04] rounded-md h-5 w-48" />
+              </div>
+            </div>
+
+            <div className="flex min-h-[400px]">
+              {/* Sidebar */}
+              <div className="w-52 border-r border-white/[0.07] p-4 hidden md:block">
+                <div className="flex items-center gap-2 mb-6 px-2">
+                  <div className="w-6 h-6 rounded-md bg-[#00e5a0]/20" />
+                  <div className="h-3 bg-white/10 rounded-full w-24" />
+                </div>
+                <div className="space-y-1">
+                  {["Overview", "My Sites", "AI Agents", "Analytics", "Billing", "Settings"].map((item, i) => (
+                    <div
+                      key={item}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs ${
+                        i === 0
+                          ? "bg-[#00e5a0]/10 text-[#00e5a0]"
+                          : "text-[#6b7280]"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded ${i === 0 ? "bg-[#00e5a0]/30" : "bg-white/5"}`} />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main content */}
+              <div className="flex-1 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="h-4 bg-white/10 rounded-full w-32 mb-2" />
+                    <div className="h-2.5 bg-white/5 rounded-full w-20" />
+                  </div>
+                  <div className="bg-[#00e5a0] text-black text-xs font-bold px-4 py-2 rounded-lg">
+                    + New Site
+                  </div>
+                </div>
+
+                {/* Stats cards */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {[
+                    { label: "Active Sites", value: "4", color: "text-[#00e5a0]" },
+                    { label: "Total Leads", value: "247", color: "text-blue-400" },
+                    { label: "Revenue", value: "$8.4k", color: "text-purple-400" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-[#111214] border border-white/[0.07] rounded-xl p-4">
+                      <p className="text-xs text-[#6b7280] mb-1">{stat.label}</p>
+                      <p className={`font-syne text-2xl font-black ${stat.color}`}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Site list */}
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-widest mb-3">Your Sites</p>
+                  {[
+                    { name: "Apex Fitness", status: "Live", traffic: "1.2k/mo" },
+                    { name: "Neon Legal", status: "Live", traffic: "890/mo" },
+                    { name: "Swift Realty", status: "Building", traffic: "—" },
+                  ].map((site) => (
+                    <div
+                      key={site.name}
+                      className="flex items-center justify-between bg-[#111214] border border-white/[0.07] rounded-xl px-4 py-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/5" />
+                        <div>
+                          <p className="text-sm font-medium">{site.name}</p>
+                          <p className="text-xs text-[#6b7280]">{site.traffic} visitors</p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                          site.status === "Live"
+                            ? "bg-[#00e5a0]/10 text-[#00e5a0]"
+                            : "bg-yellow-500/10 text-yellow-400"
+                        }`}
+                      >
+                        {site.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 7: CTA BANNER ───────────────────────────────────── */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="relative bg-[#111214] border border-white/[0.07] rounded-3xl p-16 overflow-hidden">
+            {/* Glow */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#00e5a0]/5 rounded-full blur-[80px]" />
+            </div>
+            <div className="relative z-10">
+              <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight mb-6">
+                Your Business Deserves<br />
+                to Be Online <span className="text-[#00e5a0]">Today</span>
+              </h2>
+              <p className="text-[#6b7280] text-lg mb-10 max-w-lg mx-auto">
+                Stop waiting. Start building. We ship fast, we build right, and we make sure it works.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <a
+                  href="/login"
+                  className="bg-[#00e5a0] hover:bg-[#00ffb2] text-black font-bold px-8 py-4 rounded-xl transition-colors text-sm"
+                >
+                  Start Building Free →
+                </a>
+                <a
+                  href="mailto:Lilianajs27@gmail.com"
+                  className="border border-white/10 hover:border-white/30 text-[#f0f0f0] font-semibold px-8 py-4 rounded-xl transition-colors text-sm"
+                >
+                  Talk to Us
+                </a>
+              </div>
+              <p className="text-xs text-[#4b5563] mt-6">
+                No credit card · Setup in minutes · Cancel anytime
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
   );
 }
