@@ -139,6 +139,7 @@ function BuildForm() {
   const [loading, setLoading] = useState(false);
   const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [planLimitMsg, setPlanLimitMsg] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "generating">("form");
 
   useEffect(() => {
@@ -199,6 +200,12 @@ function BuildForm() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) { router.push("/login?redirect=/dashboard/build"); return; }
+        if (res.status === 403 && data.error === "plan_limit") {
+          setPlanLimitMsg(data.message ?? "You've reached your plan's site limit.");
+          setStep("form");
+          setLoading(false);
+          return;
+        }
         if (res.status === 403) { router.push("/pricing?reason=subscription_required"); return; }
         throw new Error(data.error ?? "Generation failed");
       }
@@ -280,6 +287,17 @@ function BuildForm() {
               : "Fill out the form below and our AI will generate a complete, professional website for you in seconds."}
           </p>
         </div>
+
+        {planLimitMsg && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-5 py-4 mb-6">
+            <p className="text-amber-400 text-sm font-semibold mb-2">🔒 Site limit reached</p>
+            <p className="text-amber-300/80 text-sm mb-3">{planLimitMsg}</p>
+            <Link href="/pricing"
+              className="inline-block text-sm font-bold bg-[#00e5a0] text-black px-4 py-2 rounded-lg hover:bg-[#00ffb2] transition-colors">
+              Upgrade Plan →
+            </Link>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm mb-6">

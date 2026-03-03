@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
-import { saveSite, type SiteRecord } from "@/lib/kv";
+import { saveSite, getUserSites, type SiteRecord } from "@/lib/kv";
 import { rateLimit } from "@/lib/ratelimit";
+
+const SITE_LIMITS: Record<string, number> = {
+  starter: 1,
+  growth:  3,
+  pro:     Infinity,
+};
 
 // ── Allowed enum values ───────────────────────────────────────────────────────
 const VALID_INDUSTRIES = new Set([
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Parse body ────────────────────────────────────────────────────────────
+  // ── Parse body early so we can detect regeneration before the limit check ─
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -70,6 +76,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  // ── Plan site limit (skip when regenerating an existing site) ────────────
+  const isRegenerate = typeof body.editSiteId === "string" && body.editSiteId.trim() !== "";
+  if (!isRegenerate) {
+    const limit = SITE_LIMITS[plan] ?? 1;
+    if (isFinite(limit)) {
+      const existingSites = await getUserSites(session.email);
+      if (existingSites.length >= limit) {
+        const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+        return NextResponse.json(
+          {
+            error: `plan_limit`,
+            message: `Your ${planName} plan allows up to ${limit} site${limit === 1 ? "" : "s"}. Upgrade to create more.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
+  // ── Destructure body ──────────────────────────────────────────────────────
   const {
     businessName, industry, location, services, tone, primaryColor,
     contactEmail, contactPhone, editSiteId,

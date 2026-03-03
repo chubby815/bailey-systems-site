@@ -98,6 +98,11 @@ export async function getSite(siteId: string): Promise<SiteRecord | null> {
   return kv.get<SiteRecord>(`site:${siteId}`);
 }
 
+/** Delete a generated site from Redis */
+export async function deleteSite(siteId: string): Promise<void> {
+  await kv.del(`site:${siteId}`);
+}
+
 /** Get all sites belonging to a specific user, sorted newest first */
 export async function getUserSites(email: string): Promise<SiteRecord[]> {
   const keys = await kv.keys("site:*");

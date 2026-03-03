@@ -87,12 +87,12 @@ export default async function DashboardPage() {
           {/* Welcome */}
           <div className="mb-8">
             <h1 className="text-2xl font-extrabold tracking-tight mb-1" style={{ fontFamily: "Syne, sans-serif" }}>
-              Welcome to Bailey AI, {firstName} 👋
+              Welcome, {firstName} 👋
             </h1>
             <p className="text-gray-500 text-sm">
               {subscription?.status === "trialing"
-                ? "Your free trial is active. Build your first site below."
-                : "Let's build your first site."}
+                ? `Free trial active · ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runLimits[plan]} runs`
+                : `You're on the ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runLimits[plan]} runs remaining`}
             </p>
           </div>
 

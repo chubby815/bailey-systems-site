@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Props = {
@@ -11,7 +12,9 @@ type Props = {
 };
 
 export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   function copyLink() {
     const url = `${window.location.origin}/sites/${siteId}`;
@@ -21,6 +24,28 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
     });
   }
 
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `Delete "${businessName}"?\n\nThis will permanently remove the site and cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/sites/${siteId}`, { method: "DELETE" });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Failed to delete site. Please try again.");
+        setDeleting(false);
+      }
+    } catch {
+      alert("Network error. Please try again.");
+      setDeleting(false);
+    }
+  }
+
   const dateStr = new Date(createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -28,7 +53,7 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
   });
 
   return (
-    <div className="bg-[#111214] border border-white/[0.07] rounded-xl p-5 hover:border-white/20 transition-all group">
+    <div className={`bg-[#111214] border border-white/[0.07] rounded-xl p-5 hover:border-white/20 transition-all group ${deleting ? "opacity-50 pointer-events-none" : ""}`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="min-w-0 flex-1 pr-3">
@@ -47,8 +72,8 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
 
       <p className="text-[11px] text-[#4b5563] mb-4">Created {dateStr}</p>
 
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2">
+      {/* Primary actions */}
+      <div className="flex flex-wrap gap-2 mb-2">
         <Link
           href={`/sites/${siteId}`}
           target="_blank"
@@ -73,6 +98,17 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
         >
           Regenerate
         </Link>
+      </div>
+
+      {/* Destructive action — separated visually */}
+      <div className="border-t border-white/[0.05] pt-2 mt-1">
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="text-xs font-medium text-red-500/60 hover:text-red-400 transition-colors py-1 disabled:opacity-40"
+        >
+          {deleting ? "Deleting…" : "🗑 Delete Site"}
+        </button>
       </div>
     </div>
   );
