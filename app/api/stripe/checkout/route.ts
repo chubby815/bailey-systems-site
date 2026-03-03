@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { kv } from "@/lib/kv";
 import { getSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 
@@ -40,6 +41,11 @@ export async function POST(req: NextRequest) {
     const session = await getSession(req);
     const customerEmail = session?.email ?? undefined;
 
+    // One trial per email address — check if this email has already used a trial
+    const trialEligible = customerEmail
+      ? !(await kv.get(`trial-used:${customerEmail}`))
+      : true; // unknown email at this point — trial eligibility checked again in webhook
+
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileysystemsai.com";
 
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
       success_url: `${baseUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
       subscription_data: {
-        trial_period_days: 7,
+        ...(trialEligible ? { trial_period_days: 7 } : {}),
         metadata: { plan },
       },
       metadata: { plan },

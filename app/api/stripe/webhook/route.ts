@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
           });
           // Also index by Stripe customer ID for webhook lookups
           await kv.set(`sub:cust:${customerId}`, email);
+          // Permanently mark this email as having used their free trial.
+          // No expiry — one trial per email address, regardless of cancellations.
+          await kv.set(`trial-used:${email}`, true);
         }
 
         console.log(`[webhook] activated ${plan} for ${email}`);
