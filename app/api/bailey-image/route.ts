@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
+import { rateLimit } from '@/lib/ratelimit'
 
 const LIMITS = {
   bailey_pro_2026:   { imgs: 2 },
   bailey_elite_2026: { imgs: 3 },
 }
 
-async function checkRateLimit(ip: string): Promise<boolean> {
-  const key = `ratelimit:${ip}:${new Date().getMinutes()}`
-  const count = (await kv.get<number>(key)) || 0
-  if (count >= 30) return false
-  await kv.set(key, count + 1, { ex: 60 })
-  return true
-}
-
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || 'unknown'
-  const allowed = await checkRateLimit(ip)
-  if (!allowed) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+
+  // Per-IP burst guard: max 30 requests per minute
+  const rl = await rateLimit(`image-burst:${ip}`, 30, 60)
+  if (!rl.allowed) {
     return NextResponse.json({ error: 'Too many requests. Slow down.' }, { status: 429 })
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { getSession } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 const PRICE_MAP: Record<string, string> = {
   starter: process.env.STRIPE_PRICE_STARTER_MONTHLY!,
@@ -9,6 +10,17 @@ const PRICE_MAP: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  // ── Rate limit: 5 checkout attempts per hour per IP ───────────────────────
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const rl = await rateLimit(`checkout:${ip}`, 5, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+    );
+  }
+
   try {
     const { plan } = await req.json();
 

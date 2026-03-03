@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
 import { saveSite, type SiteRecord } from "@/lib/kv";
+import { rateLimit } from "@/lib/ratelimit";
 
+// ── Allowed enum values ───────────────────────────────────────────────────────
+const VALID_INDUSTRIES = new Set([
+  "Landscaping", "Plumbing", "Electrician", "Beauty & Wellness",
+  "Restaurant", "Consulting", "Real Estate", "Fitness",
+  "Auto & Mechanic", "Cleaning", "Other",
+]);
+const VALID_TONES = new Set(["Professional", "Friendly", "Bold", "Luxury", "Minimal"]);
+const VALID_COLORS = new Set([
+  "Emerald Green", "Electric Blue", "Sunset Orange", "Royal Purple", "Fire Red",
+]);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -14,14 +27,19 @@ function randomSuffix(): string {
   return Math.random().toString(36).substring(2, 6);
 }
 
+/** Strip HTML tags and control characters */
+function sanitize(str: string): string {
+  return str.replace(/<[^>]*>/g, "").replace(/[\x00-\x1F\x7F]/g, "").trim();
+}
+
 export async function POST(req: NextRequest) {
-  // ── Auth check ──────────────────────────────────────────────────────────────
+  // ── Auth check ───────────────────────────────────────────────────────────
   const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Subscription check ───────────────────────────────────────────────────────
+  // ── Subscription check ───────────────────────────────────────────────────
   const plan = await getActivePlan(session.email);
   if (!plan) {
     return NextResponse.json(
@@ -30,8 +48,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── Parse body ───────────────────────────────────────────────────────────────
-  const body = await req.json();
+  // ── Rate limit: 10 site generations per hour per user ────────────────────
+  const rl = await rateLimit(`generate:${session.email}`, 10, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Rate limit reached. Try again in ${rl.resetInSeconds}s.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.resetInSeconds) },
+      }
+    );
+  }
+
+  // ── Parse body ────────────────────────────────────────────────────────────
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const {
     businessName,
     industry,
@@ -41,16 +77,64 @@ export async function POST(req: NextRequest) {
     primaryColor,
     contactEmail,
     contactPhone,
-  } = body as Record<string, string>;
+  } = body;
 
-  if (!businessName || !industry || !location || !services) {
+  // ── Type checks ───────────────────────────────────────────────────────────
+  const stringFields: Record<string, unknown> = {
+    businessName, industry, location, services, tone, primaryColor,
+  };
+  for (const [key, val] of Object.entries(stringFields)) {
+    if (typeof val !== "string" || val.trim() === "") {
+      return NextResponse.json(
+        { error: `Missing or invalid field: ${key}` },
+        { status: 400 }
+      );
+    }
+  }
+
+  // ── Enum validation ───────────────────────────────────────────────────────
+  if (!VALID_INDUSTRIES.has(industry as string)) {
+    return NextResponse.json({ error: "Invalid industry value" }, { status: 400 });
+  }
+  if (!VALID_TONES.has(tone as string)) {
+    return NextResponse.json({ error: "Invalid tone value" }, { status: 400 });
+  }
+  if (!VALID_COLORS.has(primaryColor as string)) {
+    return NextResponse.json({ error: "Invalid color value" }, { status: 400 });
+  }
+
+  // ── Length checks ─────────────────────────────────────────────────────────
+  if ((businessName as string).length > 100) {
     return NextResponse.json(
-      { error: "Missing required fields" },
+      { error: "Business name too long (max 100 characters)" },
+      { status: 400 }
+    );
+  }
+  if ((location as string).length > 100) {
+    return NextResponse.json(
+      { error: "Location too long (max 100 characters)" },
+      { status: 400 }
+    );
+  }
+  if ((services as string).length > 500) {
+    return NextResponse.json(
+      { error: "Services too long (max 500 characters)" },
       { status: 400 }
     );
   }
 
-  // ── Call Anthropic ───────────────────────────────────────────────────────────
+  // ── Sanitize before sending to Claude ────────────────────────────────────
+  const cleanBusinessName = sanitize(businessName as string);
+  const cleanLocation = sanitize(location as string);
+  const cleanServices = sanitize(services as string);
+  const cleanIndustry = sanitize(industry as string);
+  const cleanTone = sanitize(tone as string);
+  const cleanContactEmail =
+    typeof contactEmail === "string" ? sanitize(contactEmail).slice(0, 200) : "";
+  const cleanContactPhone =
+    typeof contactPhone === "string" ? sanitize(contactPhone).slice(0, 30) : "";
+
+  // ── Call Anthropic ────────────────────────────────────────────────────────
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -60,11 +144,11 @@ export async function POST(req: NextRequest) {
   }
 
   const userPrompt = `Generate a complete website for:
-Business: ${businessName}
-Industry: ${industry}
-Location: ${location}
-Services: ${services}
-Tone: ${tone}
+Business: ${cleanBusinessName}
+Industry: ${cleanIndustry}
+Location: ${cleanLocation}
+Services: ${cleanServices}
+Tone: ${cleanTone}
 
 Return this exact JSON structure with no markdown, no backticks, just raw JSON:
 {
@@ -114,20 +198,20 @@ Return this exact JSON structure with no markdown, no backticks, just raw JSON:
     );
   }
 
-  // ── Save to Redis ────────────────────────────────────────────────────────────
-  const siteId = `${slugify(businessName)}-${randomSuffix()}`;
+  // ── Save to Redis ─────────────────────────────────────────────────────────
+  const siteId = `${slugify(cleanBusinessName)}-${randomSuffix()}`;
 
   const siteData: SiteRecord = {
     siteId,
     userId: session.email,
-    businessName,
-    industry,
-    location,
-    services,
-    tone,
-    primaryColor,
-    contactEmail,
-    contactPhone,
+    businessName: cleanBusinessName,
+    industry: cleanIndustry,
+    location: cleanLocation,
+    services: cleanServices,
+    tone: cleanTone,
+    primaryColor: primaryColor as string,
+    contactEmail: cleanContactEmail,
+    contactPhone: cleanContactPhone,
     generatedContent,
     createdAt: new Date().toISOString(),
   };

@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
+import { rateLimit } from '@/lib/ratelimit'
 
 const LIMITS = {
   bailey_pro_2026:   { msgs: 20, imgs: 2 },
   bailey_elite_2026: { msgs: 100, imgs: 3 },
 }
 
-async function checkRateLimit(ip: string): Promise<boolean> {
-  const key = `ratelimit:${ip}:${new Date().getMinutes()}`
-  const count = (await kv.get<number>(key)) || 0
-  if (count >= 30) return false
-  await kv.set(key, count + 1, { ex: 60 })
-  return true
-}
-
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || 'unknown'
-  const allowed = await checkRateLimit(ip)
-  if (!allowed) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+
+  // Per-IP burst guard: max 30 requests per minute
+  const burstRl = await rateLimit(`chat-burst:${ip}`, 30, 60)
+  if (!burstRl.allowed) {
     return NextResponse.json({ error: 'Too many requests. Slow down.' }, { status: 429 })
   }
 
@@ -25,6 +20,15 @@ export async function POST(req: NextRequest) {
 
   const limit = LIMITS[token as keyof typeof LIMITS]
   if (!limit) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Per-token hourly rate limit: max 50 requests per hour
+  const hourlyRl = await rateLimit(`chat-hourly:${token}`, 50, 3600)
+  if (!hourlyRl.allowed) {
+    return NextResponse.json(
+      { error: 'Hourly limit reached. Try again later.', resetInSeconds: hourlyRl.resetInSeconds },
+      { status: 429 }
+    )
+  }
 
   const today = new Date().toISOString().split('T')[0]
   const msgKey = `usage:${token}:msg:${today}`
