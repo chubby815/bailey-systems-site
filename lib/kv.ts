@@ -51,6 +51,13 @@ export async function getUserPlan(
 }
 
 // ── Site record shape ─────────────────────────────────────────────────────────
+// Re-export content types from site-theme so consumers have a single import point.
+export type {
+  GeneratedContent,
+  LegacySiteContent,
+  StructuredSiteContent,
+} from "./site-theme";
+
 export type SiteRecord = {
   siteId: string;
   userId: string;
@@ -75,16 +82,8 @@ export type SiteRecord = {
   fontStyle?: string;
   heroStyle?: string;
   layoutStyle?: string;
-  generatedContent: {
-    hero_headline: string;
-    hero_subheadline: string;
-    about_text: string;
-    services_list: string[];
-    cta_text: string;
-    tagline: string;
-    seo_title: string;
-    seo_description: string;
-  };
+  // generatedContent accepts both the legacy flat format and the new structured format
+  generatedContent: import("./site-theme").GeneratedContent;
   createdAt: string;
 };
 
