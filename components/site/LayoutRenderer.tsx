@@ -16,14 +16,22 @@ import { SiteCTA }          from "./SiteCTA";
 import { SiteFooter }       from "./SiteFooter";
 
 type Props = {
-  site:    SiteRecord;
-  content: StructuredSiteContent;
-  theme:   ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  theme:          ThemeConfig;
+  /** Partial theme override — merged on top of base theme. Used by the visual editor. */
+  themeOverride?: Partial<ThemeConfig>;
+  /** Custom hero image URL. When set, overrides the default industry photo. */
+  heroImageUrl?:  string;
 };
 
-export function LayoutRenderer({ site, content, theme }: Props) {
-  const heroImageUrl = getHeroImageUrl(site.industry);
-  const tokens = getThemeTokens(theme, heroImageUrl);
+export function LayoutRenderer({ site, content, theme, themeOverride, heroImageUrl: heroImageUrlProp }: Props) {
+  const resolvedTheme: ThemeConfig = themeOverride
+    ? { ...theme, ...themeOverride }
+    : theme;
+
+  const heroImageUrl = heroImageUrlProp ?? getHeroImageUrl(site.industry);
+  const tokens = getThemeTokens(resolvedTheme, heroImageUrl);
 
   // Determine the best tagline text for the footer
   const footerTagline =
@@ -33,7 +41,16 @@ export function LayoutRenderer({ site, content, theme }: Props) {
     "";
 
   return (
-    <div style={{ fontFamily: tokens.fontFamily, color: "#1a1a1a", background: "#ffffff" }}>
+    <div style={{
+      fontFamily: tokens.fontFamily,
+      color: "#1a1a1a",
+      background: "#ffffff",
+      "--primary":    tokens.primaryColor,
+      "--background": "#ffffff",
+      "--surface":    "#f9fafb",
+      "--text-color": "#1a1a1a",
+      "--accent":     tokens.primaryColor,
+    } as React.CSSProperties}>
       <SiteNavbar
         businessName={site.businessName}
         ctaText={content.hero.ctaText}
@@ -42,7 +59,7 @@ export function LayoutRenderer({ site, content, theme }: Props) {
 
       <SiteHero
         content={content.hero}
-        theme={theme}
+        theme={resolvedTheme}
         tokens={tokens}
         location={site.location}
         serviceArea={site.serviceArea}

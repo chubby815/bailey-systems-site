@@ -178,3 +178,76 @@ export function getHeroImageUrl(industry: string): string {
   const id = INDUSTRY_PHOTO[industry] ?? 338;
   return `https://picsum.photos/id/${id}/1600/900`;
 }
+
+// ── Preset themes ─────────────────────────────────────────────────────────────
+export type PresetThemeColors = {
+  primary:    string;
+  background: string;
+  surface:    string;
+  text:       string;
+  accent:     string;
+};
+
+export type PresetTheme = {
+  name:    string;
+  preview: string;
+  theme:   ThemeConfig;
+  colors:  PresetThemeColors;
+};
+
+export const PRESET_THEMES: Record<string, PresetTheme> = {
+  modernDark: {
+    name:    "Modern Dark",
+    preview: "Dark background, emerald green accent",
+    theme:   { primaryColor: "#10b981", fontStyle: "modern",  heroStyle: "gradient", layoutStyle: "standard" },
+    colors:  { primary: "#10b981", background: "#08090a", surface: "#111214", text: "#f0f0f0", accent: "#00e5a0" },
+  },
+  cleanLight: {
+    name:    "Clean Light",
+    preview: "White background, minimal",
+    theme:   { primaryColor: "#0066ff", fontStyle: "minimal", heroStyle: "solid",    layoutStyle: "standard" },
+    colors:  { primary: "#0066ff", background: "#ffffff", surface: "#f8f9fa", text: "#111214", accent: "#0066ff" },
+  },
+  boldBlack: {
+    name:    "Bold Black",
+    preview: "All black, white text, bold typography",
+    theme:   { primaryColor: "#ffffff", fontStyle: "bold",    heroStyle: "solid",    layoutStyle: "fullwidth" },
+    colors:  { primary: "#ffffff", background: "#000000", surface: "#111111", text: "#ffffff", accent: "#ff3333" },
+  },
+  forest: {
+    name:    "Forest",
+    preview: "Deep green, natural feel",
+    theme:   { primaryColor: "#2d6a4f", fontStyle: "classic", heroStyle: "photo",    layoutStyle: "standard" },
+    colors:  { primary: "#2d6a4f", background: "#1a2e1a", surface: "#2d3d2d", text: "#e8f5e9", accent: "#52b788" },
+  },
+  ocean: {
+    name:    "Ocean",
+    preview: "Navy blue, clean and professional",
+    theme:   { primaryColor: "#0077b6", fontStyle: "modern",  heroStyle: "gradient", layoutStyle: "standard" },
+    colors:  { primary: "#0077b6", background: "#03045e", surface: "#023e8a", text: "#caf0f8", accent: "#00b4d8" },
+  },
+  sunset: {
+    name:    "Sunset",
+    preview: "Warm orange tones, energetic",
+    theme:   { primaryColor: "#f97316", fontStyle: "bold",    heroStyle: "gradient", layoutStyle: "standard" },
+    colors:  { primary: "#f97316", background: "#1c0a00", surface: "#2d1200", text: "#fff7ed", accent: "#fb923c" },
+  },
+  luxury: {
+    name:    "Luxury",
+    preview: "Black and gold, premium feel",
+    theme:   { primaryColor: "#d4af37", fontStyle: "classic", heroStyle: "solid",    layoutStyle: "centered" },
+    colors:  { primary: "#d4af37", background: "#0a0a0a", surface: "#1a1a1a", text: "#f5f5f0", accent: "#ffd700" },
+  },
+  fresh: {
+    name:    "Fresh",
+    preview: "Bright white, coral accent",
+    theme:   { primaryColor: "#ff6b6b", fontStyle: "modern",  heroStyle: "photo",    layoutStyle: "standard" },
+    colors:  { primary: "#ff6b6b", background: "#ffffff", surface: "#fff5f5", text: "#2d3436", accent: "#ff6b6b" },
+  },
+  professional: {
+    name:    "Professional",
+    preview: "Gray and blue, corporate",
+    theme:   { primaryColor: "#2563eb", fontStyle: "minimal", heroStyle: "solid",    layoutStyle: "standard" },
+    colors:  { primary: "#2563eb", background: "#f8fafc", surface: "#ffffff", text: "#1e293b", accent: "#3b82f6" },
+  },
+};

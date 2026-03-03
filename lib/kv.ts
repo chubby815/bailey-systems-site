@@ -85,6 +85,8 @@ export type SiteRecord = {
   // generatedContent accepts both the legacy flat format and the new structured format
   generatedContent: import("./site-theme").GeneratedContent;
   createdAt: string;
+  // Editor overrides — set when the owner edits the site in the visual editor
+  editorTheme?: import("./site-theme").ThemeConfig;
 };
 
 /** Save a generated site to Redis */

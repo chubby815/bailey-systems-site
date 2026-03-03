@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSite } from "@/lib/kv";
+import { getSite, kv } from "@/lib/kv";
 import { getSessionFromCookies, getSubscriptionStatus } from "@/lib/auth";
 import { isStructuredContent, buildThemeConfig } from "@/lib/site-theme";
 import { SiteShareBar } from "@/components/SiteShareBar";
 import { LayoutRenderer } from "@/components/site/LayoutRenderer";
+import { SiteEditor }     from "@/components/site/SiteEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -115,13 +116,38 @@ export default async function SitePage({
 
   // ── New structured format ─────────────────────────────────────────────────
   if (isStructuredContent(c)) {
-    const theme = buildThemeConfig(site);
+    // Use the owner's saved editor theme if present, otherwise derive from record
+    const theme = site.editorTheme ?? buildThemeConfig(site);
+
+    // Check if a custom hero image has been uploaded
+    const storedImage      = await kv.get<string>(`site:${siteId}:hero-image`);
+    const customHeroImgUrl = storedImage ? `/api/sites/${siteId}/image` : undefined;
+
+    if (isOwner) {
+      return (
+        <>
+          {siteIsPaused && <PausedOverlay />}
+          <SiteEditor
+            site={site}
+            content={c}
+            theme={theme}
+            isOwner={true}
+            siteId={siteId}
+            initialHeroImageUrl={customHeroImgUrl}
+          />
+        </>
+      );
+    }
+
     return (
       <>
-        {isOwner && <SiteShareBar siteId={siteId} />}
         {siteIsPaused && <PausedOverlay />}
-        {isOwner && <div style={{ height: "48px" }} />}
-        <LayoutRenderer site={site} content={c} theme={theme} />
+        <LayoutRenderer
+          site={site}
+          content={c}
+          theme={theme}
+          heroImageUrl={customHeroImgUrl}
+        />
       </>
     );
   }
@@ -201,6 +227,7 @@ export default async function SitePage({
       {isOwner && <SiteShareBar siteId={siteId} />}
       {siteIsPaused && <PausedOverlay />}
       {isOwner && <div style={{ height: "48px" }} />}
+      
 
       {/* NAVBAR */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb", padding: "0 1.5rem" }}>
