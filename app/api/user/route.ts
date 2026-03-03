@@ -10,16 +10,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { action = "login", ...body } = await request.json();
+    const { mode = "login", ...body } = await request.json();
     const payload = authSchema.parse(body);
     const token = await createSessionToken(payload.email);
     const response = NextResponse.json({
       success: true,
-      action,
-      user: {
-        email: payload.email,
-        plan: action === "signup" ? "Scale" : "Launch",
-      },
+      mode,
+      user: { email: payload.email },
     });
     response.cookies.set({
       name: "auth-token",
@@ -38,6 +35,7 @@ export async function POST(request: NextRequest) {
         { status: 422 },
       );
     }
+    console.error("[api/user] Session error:", error);
     return NextResponse.json(
       { error: "Unable to update user session." },
       { status: 500 },
