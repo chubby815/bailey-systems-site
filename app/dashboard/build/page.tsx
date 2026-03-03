@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const INDUSTRIES = [
@@ -57,12 +57,41 @@ const INITIAL: FormData = {
   contactPhone: "",
 };
 
-export default function BuildPage() {
+function BuildForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editSiteId = searchParams.get("edit");
+  const isEditMode = !!editSiteId;
+
   const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "generating">("form");
+
+  // Pre-fill form when ?edit=siteId is present
+  useEffect(() => {
+    if (!editSiteId) return;
+    setPrefilling(true);
+    fetch(`/api/sites/${editSiteId}`)
+      .then((r) => r.json())
+      .then((site) => {
+        if (site && !site.error) {
+          setForm({
+            businessName: site.businessName ?? "",
+            industry: site.industry ?? "Landscaping",
+            location: site.location ?? "",
+            services: site.services ?? "",
+            tone: site.tone ?? "Professional",
+            primaryColor: site.primaryColor ?? "Emerald Green",
+            contactEmail: site.contactEmail ?? "",
+            contactPhone: site.contactPhone ?? "",
+          });
+        }
+      })
+      .catch(() => setError("Failed to load site data."))
+      .finally(() => setPrefilling(false));
+  }, [editSiteId]);
 
   function set(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -80,10 +109,14 @@ export default function BuildPage() {
     setStep("generating");
 
     try {
+      const payload = isEditMode
+        ? { ...form, editSiteId }
+        : form;
+
       const res = await fetch("/api/sites/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -108,6 +141,14 @@ export default function BuildPage() {
     }
   }
 
+  if (prefilling) {
+    return (
+      <div className="min-h-screen bg-[#08090a] flex items-center justify-center">
+        <div className="text-[#6b7280] text-sm animate-pulse">Loading site data...</div>
+      </div>
+    );
+  }
+
   if (step === "generating") {
     return (
       <div className="min-h-screen bg-[#08090a] flex flex-col items-center justify-center text-center px-6">
@@ -116,7 +157,7 @@ export default function BuildPage() {
             <div className="w-8 h-8 border-2 border-[#00e5a0] border-t-transparent rounded-full animate-spin" />
           </div>
           <h2 className="font-syne text-2xl font-black text-white mb-3">
-            Building your site...
+            {isEditMode ? "Regenerating your site..." : "Building your site..."}
           </h2>
           <p className="text-[#6b7280] text-sm max-w-xs mx-auto leading-relaxed">
             Our AI is writing your headlines, crafting your copy, and structuring your pages.
@@ -162,13 +203,15 @@ export default function BuildPage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-[#00e5a0]/10 border border-[#00e5a0]/20 text-[#00e5a0] px-3 py-1.5 rounded-full text-xs font-semibold mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00e5a0] animate-pulse" />
-            AI Website Builder
+            {isEditMode ? "Regenerate Site" : "AI Website Builder"}
           </div>
           <h1 className="font-syne text-3xl md:text-4xl font-black tracking-tight mb-3">
-            Tell us about your business
+            {isEditMode ? "Update your site" : "Tell us about your business"}
           </h1>
           <p className="text-[#6b7280] leading-relaxed">
-            Answer 8 quick questions and our AI will generate a complete, professional website for you in seconds.
+            {isEditMode
+              ? "Edit any details below and click Regenerate to create an updated version."
+              : "Answer 8 quick questions and our AI will generate a complete, professional website for you in seconds."}
           </p>
         </div>
 
@@ -356,7 +399,10 @@ export default function BuildPage() {
               disabled={loading}
               className="w-full bg-[#00e5a0] hover:bg-[#00ffb2] text-black font-bold py-4 rounded-xl text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Generating..." : "Generate My Site →"}
+              {loading
+                ? (isEditMode ? "Regenerating..." : "Generating...")
+                : (isEditMode ? "Regenerate Site →" : "Generate My Site →")
+              }
             </button>
             <p className="text-center text-xs text-[#4b5563] mt-3">
               Takes about 10–15 seconds · Powered by AI
@@ -366,5 +412,19 @@ export default function BuildPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function BuildPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#08090a] flex items-center justify-center">
+          <div className="text-[#6b7280] text-sm animate-pulse">Loading...</div>
+        </div>
+      }
+    >
+      <BuildForm />
+    </Suspense>
   );
 }

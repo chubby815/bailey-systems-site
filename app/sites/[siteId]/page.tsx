@@ -1,10 +1,32 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSite } from "@/lib/kv";
+import { getSessionFromCookies, getSubscriptionStatus } from "@/lib/auth";
+import { SiteShareBar } from "@/components/SiteShareBar";
 
 export const dynamic = "force-dynamic";
 
 // ── Color map ─────────────────────────────────────────────────────────────────
+// Industry → specific Picsum photo ID for consistent, beautiful hero images
+const INDUSTRY_PHOTO: Record<string, number> = {
+  "Landscaping":       28,
+  "Plumbing":          164,
+  "Electrician":       160,
+  "Beauty & Wellness": 64,
+  "Restaurant":        292,
+  "Consulting":        375,
+  "Real Estate":       450,
+  "Fitness":           1,
+  "Auto & Mechanic":   111,
+  "Cleaning":          219,
+  "Other":             338,
+};
+
+function getHeroImage(industry: string): string {
+  const id = INDUSTRY_PHOTO[industry] ?? 338;
+  return `https://picsum.photos/id/${id}/1600/900`;
+}
+
 const COLOR_MAP: Record<string, string> = {
   "Emerald Green":  "#10b981",
   "Electric Blue":  "#0066ff",
@@ -46,8 +68,19 @@ export default async function SitePage({
 
   if (!site) notFound();
 
-  const { generatedContent: c, businessName, location, contactEmail, contactPhone, services } = site;
+  // Check if the current viewer is the site owner
+  const viewerSession = await getSessionFromCookies();
+  const isOwner = viewerSession?.email === site.userId;
+
+  // Check owner's subscription to determine if site should be paused
+  const ownerSubscription = await getSubscriptionStatus(site.userId);
+  const siteIsPaused =
+    ownerSubscription !== null &&
+    (ownerSubscription.status === "canceled" || ownerSubscription.status === "past_due");
+
+  const { generatedContent: c, businessName, location, contactEmail, contactPhone, services, industry } = site;
   const accent = COLOR_MAP[site.primaryColor] ?? "#10b981";
+  const heroImage = getHeroImage(industry);
   const accentLight = `${accent}18`;
   const accentMid = `${accent}30`;
 
@@ -57,6 +90,56 @@ export default async function SitePage({
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#1a1a1a", background: "#ffffff" }}>
+
+      {/* ── OWNER SHARE BAR ────────────────────────────────────────────── */}
+      {isOwner && <SiteShareBar siteId={siteId} />}
+
+      {/* ── SUBSCRIPTION GATING OVERLAY ────────────────────────────────── */}
+      {siteIsPaused && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9998,
+          backdropFilter: "blur(10px)",
+          background: "rgba(0,0,0,0.82)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "1.5rem",
+        }}>
+          <div style={{
+            background: "#111214",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "24px",
+            padding: "3rem 2.5rem",
+            textAlign: "center",
+            maxWidth: "420px",
+            width: "100%",
+          }}>
+            <div style={{ fontSize: "3.5rem", marginBottom: "1.25rem" }}>⏸️</div>
+            <h2 style={{ fontSize: "1.5rem", fontWeight: 900, color: "#f0f0f0", marginBottom: "0.75rem", letterSpacing: "-0.03em" }}>
+              Site Paused
+            </h2>
+            <p style={{ fontSize: "0.9rem", color: "#9ca3af", lineHeight: 1.7, marginBottom: "2rem" }}>
+              This site is paused. Reactivate your BaileySystemsAI subscription to restore it.
+            </p>
+            <a
+              href="/pricing"
+              style={{
+                display: "inline-block",
+                background: "#00e5a0",
+                color: "#000",
+                fontWeight: 700,
+                fontSize: "0.95rem",
+                padding: "0.875rem 2.5rem",
+                borderRadius: "12px",
+                textDecoration: "none",
+              }}
+            >
+              Reactivate →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* ── Push content down when share bar is visible ─────────────────── */}
+      {isOwner && <div style={{ height: "48px" }} />}
 
       {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb", padding: "0 1.5rem" }}>
@@ -105,34 +188,36 @@ export default async function SitePage({
           justifyContent: "center",
           textAlign: "center",
           padding: "5rem 1.5rem",
-          background: `linear-gradient(135deg, ${accentLight} 0%, #ffffff 60%, ${accentLight} 100%)`,
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Decorative blob */}
+        {/* Dark overlay for text readability */}
         <div style={{
-          position: "absolute", top: "-100px", right: "-100px",
-          width: "400px", height: "400px", borderRadius: "50%",
-          background: `radial-gradient(circle, ${accentMid} 0%, transparent 70%)`,
+          position: "absolute", inset: 0,
+          background: `linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.7) 100%)`,
           pointerEvents: "none",
         }} />
+        {/* Accent color tint */}
         <div style={{
-          position: "absolute", bottom: "-80px", left: "-80px",
-          width: "300px", height: "300px", borderRadius: "50%",
-          background: `radial-gradient(circle, ${accentMid} 0%, transparent 70%)`,
+          position: "absolute", inset: 0,
+          background: `linear-gradient(to bottom right, ${accent}22 0%, transparent 60%)`,
           pointerEvents: "none",
         }} />
 
         <div style={{ position: "relative", maxWidth: "800px", margin: "0 auto" }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
-            background: accentLight, border: `1px solid ${accentMid}`,
+            background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)",
+            backdropFilter: "blur(8px)",
             borderRadius: "100px", padding: "6px 14px",
-            fontSize: "0.75rem", fontWeight: 600, color: accent,
+            fontSize: "0.75rem", fontWeight: 600, color: "#ffffff",
             marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em",
           }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: accent, display: "inline-block" }} />
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ffffff", display: "inline-block" }} />
             {location}
           </div>
 
@@ -141,18 +226,20 @@ export default async function SitePage({
             fontWeight: 900,
             lineHeight: 1.05,
             letterSpacing: "-0.03em",
-            color: "#111",
+            color: "#ffffff",
             marginBottom: "1.5rem",
+            textShadow: "0 2px 20px rgba(0,0,0,0.4)",
           }}>
             {c.hero_headline}
           </h1>
 
           <p style={{
             fontSize: "1.125rem",
-            color: "#6b7280",
+            color: "rgba(255,255,255,0.85)",
             maxWidth: "560px",
             margin: "0 auto 2.5rem",
             lineHeight: 1.7,
+            textShadow: "0 1px 8px rgba(0,0,0,0.3)",
           }}>
             {c.hero_subheadline}
           </p>
@@ -176,14 +263,15 @@ export default async function SitePage({
             <a
               href="#services"
               style={{
-                background: "transparent",
-                color: "#374151",
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(8px)",
+                color: "#ffffff",
                 fontWeight: 600,
                 fontSize: "1rem",
                 padding: "0.875rem 2rem",
                 borderRadius: "10px",
                 textDecoration: "none",
-                border: "1.5px solid #e5e7eb",
+                border: "1.5px solid rgba(255,255,255,0.3)",
               }}
             >
               See Our Services

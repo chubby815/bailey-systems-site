@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
     primaryColor,
     contactEmail,
     contactPhone,
+    editSiteId,
   } = body;
 
   // ── Type checks ───────────────────────────────────────────────────────────
@@ -238,8 +239,18 @@ Required JSON structure:
     generatedContent = buildFallback();
   }
 
-  // ── Save to Redis ─────────────────────────────────────────────────────────
-  const siteId = `${slugify(cleanBusinessName)}-${randomSuffix()}`;
+  // ── Determine siteId (new or overwrite existing) ──────────────────────────
+  let siteId: string;
+  if (typeof editSiteId === "string" && editSiteId.trim()) {
+    // Verify the existing site belongs to this user before overwriting
+    const existing = await import("@/lib/kv").then((m) => m.getSite(editSiteId));
+    if (existing && existing.userId !== session.email) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    siteId = editSiteId.trim();
+  } else {
+    siteId = `${slugify(cleanBusinessName)}-${randomSuffix()}`;
+  }
 
   const siteData: SiteRecord = {
     siteId,

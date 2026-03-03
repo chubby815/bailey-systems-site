@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionFromCookies, getActivePlan, getSubscriptionStatus } from "@/lib/auth";
+import { getUserSites } from "@/lib/kv";
+import { SiteCard } from "@/components/SiteCard";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +11,10 @@ export default async function DashboardPage() {
   const session = await getSessionFromCookies();
   if (!session) redirect("/login?redirect=/dashboard");
 
-  const [plan, subscription] = await Promise.all([
+  const [plan, subscription, sites] = await Promise.all([
     getActivePlan(session.email),
     getSubscriptionStatus(session.email),
+    getUserSites(session.email),
   ]);
 
   // No active subscription → send to pricing
@@ -88,7 +91,7 @@ export default async function DashboardPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: "Active Sites", value: "0", color: "text-[#00e5a0]" },
+              { label: "Active Sites", value: String(sites.length), color: "text-[#00e5a0]" },
               { label: "Runs Used", value: "0", color: "" },
               { label: "Runs Remaining", value: String(runLimits[plan]), color: "" },
               { label: "Site Limit", value: String(siteLimits[plan]), color: "" },
@@ -102,11 +105,14 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          {/* Quick actions */}
+          {/* My Sites */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-base" style={{ fontFamily: "Syne, sans-serif" }}>
                 My Sites
+                {sites.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-[#6b7280]">({sites.length})</span>
+                )}
               </h2>
               <Link
                 href="/dashboard/build"
@@ -116,22 +122,35 @@ export default async function DashboardPage() {
               </Link>
             </div>
 
-            {/* Empty state */}
-            <div className="bg-[#111214] border border-white/[0.07] rounded-xl p-12 text-center">
-              <div className="text-4xl mb-4">🌐</div>
-              <h3 className="font-bold text-lg mb-2" style={{ fontFamily: "Syne, sans-serif" }}>
-                No sites yet
-              </h3>
-              <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-                Build your first AI-powered website in under 3 minutes. Just answer 8 questions.
-              </p>
-              <Link
-                href="/dashboard/build"
-                className="inline-block bg-[#00e5a0] text-black font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
-              >
-                Build My First Site →
-              </Link>
-            </div>
+            {sites.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sites.map((site) => (
+                  <SiteCard
+                    key={site.siteId}
+                    siteId={site.siteId}
+                    businessName={site.businessName}
+                    industry={site.industry}
+                    createdAt={site.createdAt}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-[#111214] border border-white/[0.07] rounded-xl p-12 text-center">
+                <div className="text-4xl mb-4">🌐</div>
+                <h3 className="font-bold text-lg mb-2" style={{ fontFamily: "Syne, sans-serif" }}>
+                  No sites yet
+                </h3>
+                <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
+                  Build your first AI-powered website in under 3 minutes. Just answer 8 questions.
+                </p>
+                <Link
+                  href="/dashboard/build"
+                  className="inline-block bg-[#00e5a0] text-black font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
+                >
+                  Build My First Site →
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Agent cards */}

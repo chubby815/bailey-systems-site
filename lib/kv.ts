@@ -84,3 +84,17 @@ export async function saveSite(siteId: string, data: SiteRecord): Promise<void> 
 export async function getSite(siteId: string): Promise<SiteRecord | null> {
   return kv.get<SiteRecord>(`site:${siteId}`);
 }
+
+/** Get all sites belonging to a specific user, sorted newest first */
+export async function getUserSites(email: string): Promise<SiteRecord[]> {
+  const keys = await kv.keys("site:*");
+  if (!keys.length) return [];
+
+  const values = await kv.mget<(SiteRecord | null)[]>(...keys);
+
+  return values
+    .filter((s): s is SiteRecord => s !== null && s.userId === email)
+    .sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+}
