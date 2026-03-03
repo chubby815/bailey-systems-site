@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/user")
+      .then((r) => r.json())
+      .then((data) => setIsLoggedIn(!!data.session))
+      .catch(() => setIsLoggedIn(false))
+      .finally(() => setAuthChecked(true));
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.07] bg-[#08090a]/80 backdrop-blur-xl">
@@ -21,25 +31,38 @@ export default function Navbar() {
           <NavLink href="#agents">Agents</NavLink>
           <NavLink href="#how-it-works">How It Works</NavLink>
           <NavLink href="/pricing">Pricing</NavLink>
-          <NavLink href="/dashboard">Dashboard</NavLink>
           <NavLink href="/pro">Pro</NavLink>
           <NavLink href="/elite">Elite 👑</NavLink>
         </div>
 
-        {/* CTA buttons */}
+        {/* CTA buttons — swap based on auth state */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-sm font-semibold text-[#6b7280] hover:text-[#f0f0f0] transition-colors px-4 py-2 rounded-xl border border-white/10 hover:border-white/20"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-4 py-2 rounded-xl"
-          >
-            Start Free →
-          </Link>
+          {!authChecked ? (
+            // Skeleton to prevent layout shift while checking
+            <div className="w-32 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
+          ) : isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-5 py-2 rounded-xl"
+            >
+              Dashboard →
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-semibold text-[#6b7280] hover:text-[#f0f0f0] transition-colors px-4 py-2 rounded-xl border border-white/10 hover:border-white/20"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/login"
+                className="text-sm font-bold text-black bg-[#00e5a0] hover:bg-[#00ffb2] transition-colors px-4 py-2 rounded-xl"
+              >
+                Start Free →
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -64,12 +87,23 @@ export default function Navbar() {
           <MobileLink href="#agents" onClick={() => setMobileOpen(false)}>Agents</MobileLink>
           <MobileLink href="#how-it-works" onClick={() => setMobileOpen(false)}>How It Works</MobileLink>
           <MobileLink href="/pricing" onClick={() => setMobileOpen(false)}>Pricing</MobileLink>
-          <MobileLink href="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</MobileLink>
           <MobileLink href="/pro" onClick={() => setMobileOpen(false)}>Pro</MobileLink>
           <MobileLink href="/elite" onClick={() => setMobileOpen(false)}>Elite 👑</MobileLink>
           <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.07]">
-            <Link href="/login" className="text-center text-sm font-semibold text-[#6b7280] py-2 rounded-xl border border-white/10">Log In</Link>
-            <Link href="/login" className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl">Start Free →</Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl"
+                onClick={() => setMobileOpen(false)}
+              >
+                Dashboard →
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-center text-sm font-semibold text-[#6b7280] py-2 rounded-xl border border-white/10" onClick={() => setMobileOpen(false)}>Log In</Link>
+                <Link href="/login" className="text-center text-sm font-bold text-black bg-[#00e5a0] py-2 rounded-xl" onClick={() => setMobileOpen(false)}>Start Free →</Link>
+              </>
+            )}
           </div>
         </div>
       )}

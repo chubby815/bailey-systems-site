@@ -143,18 +143,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const userPrompt = `Generate a complete website for:
+  const userPrompt = `Generate website content for this local business:
+
 Business: ${cleanBusinessName}
 Industry: ${cleanIndustry}
 Location: ${cleanLocation}
 Services: ${cleanServices}
 Tone: ${cleanTone}
 
-Return this exact JSON structure with no markdown, no backticks, just raw JSON:
+IMPORTANT: Return ONLY a raw JSON object. No markdown. No backticks. No explanation. Just the JSON.
+
+Required JSON structure:
 {
   "hero_headline": "punchy headline max 8 words",
   "hero_subheadline": "1-2 sentence description of what they do and who they serve",
-  "about_text": "2-3 sentences about the business, their experience, and their commitment to customers",
+  "about_text": "2-3 sentences about the business, their experience, and commitment to customers",
   "services_list": ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5"],
   "cta_text": "Call to action max 4 words",
   "tagline": "short memorable brand phrase",
@@ -173,12 +176,14 @@ Return this exact JSON structure with no markdown, no backticks, just raw JSON:
       model: "claude-sonnet-4-5",
       max_tokens: 1024,
       system:
-        "You are a professional website copywriter. Generate website content for a local business. Return ONLY valid JSON, no markdown, no backticks, no explanation.",
+        "You are a professional website copywriter. Generate website content for a local business. Return ONLY a raw JSON object — no markdown, no backticks, no code fences, no explanation, nothing before or after the JSON.",
       messages: [{ role: "user", content: userPrompt }],
     }),
   });
 
   if (!anthropicRes.ok) {
+    const errBody = await anthropicRes.text().catch(() => "unknown");
+    console.error("[sites/generate] Anthropic API error:", anthropicRes.status, errBody);
     return NextResponse.json(
       { error: "Content generation failed" },
       { status: 500 }
@@ -186,16 +191,49 @@ Return this exact JSON structure with no markdown, no backticks, just raw JSON:
   }
 
   const anthropicData = await anthropicRes.json();
-  const rawText: string = anthropicData.content?.[0]?.text ?? "{}";
+  const rawText: string = anthropicData.content?.[0]?.text ?? "";
 
-  let generatedContent: SiteRecord["generatedContent"];
-  try {
-    generatedContent = JSON.parse(rawText.trim());
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to parse generated content" },
-      { status: 500 }
+  // ── Robust JSON extraction ────────────────────────────────────────────────
+  function extractJSON(text: string): SiteRecord["generatedContent"] | null {
+    // Strip markdown code fences (```json ... ``` or ``` ... ```)
+    let cleaned = text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "");
+    // Trim any text before the first { and after the last }
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+    if (firstBrace === -1 || lastBrace === -1) return null;
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      return null;
+    }
+  }
+
+  // ── Fallback content if Claude returns unparseable output ─────────────────
+  function buildFallback(): SiteRecord["generatedContent"] {
+    const serviceItems = cleanServices.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 5);
+    if (serviceItems.length < 1) serviceItems.push(cleanIndustry);
+    return {
+      hero_headline: `${cleanIndustry} Services in ${cleanLocation}`,
+      hero_subheadline: `${cleanBusinessName} provides professional ${cleanIndustry.toLowerCase()} services in ${cleanLocation}. We deliver quality results you can count on.`,
+      about_text: `${cleanBusinessName} has been proudly serving ${cleanLocation} with top-quality ${cleanIndustry.toLowerCase()} services. Our team is committed to delivering outstanding results and exceptional customer service on every job.`,
+      services_list: serviceItems.length > 0 ? serviceItems : ["Consultation", "Installation", "Maintenance", "Repair", "Inspection"],
+      cta_text: "Get a Free Quote",
+      tagline: `Your trusted ${cleanIndustry.toLowerCase()} experts.`,
+      seo_title: `${cleanBusinessName} — ${cleanIndustry} in ${cleanLocation}`,
+      seo_description: `${cleanBusinessName} offers professional ${cleanIndustry.toLowerCase()} services in ${cleanLocation}. Contact us today for a free estimate.`,
+    };
+  }
+
+  let generatedContent = extractJSON(rawText);
+
+  if (!generatedContent) {
+    console.error(
+      "[sites/generate] JSON parse failed. Raw Claude output:",
+      rawText.slice(0, 500)
     );
+    // Use fallback so generation still succeeds instead of erroring
+    generatedContent = buildFallback();
   }
 
   // ── Save to Redis ─────────────────────────────────────────────────────────
