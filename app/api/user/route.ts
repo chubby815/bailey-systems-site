@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { authSchema } from "@/utils/validations";
 import { createSessionToken, getUserSession } from "@/lib/auth";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function GET() {
   const session = await getUserSession();
@@ -9,6 +10,16 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 login/signup attempts per hour per IP
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const rl = await rateLimit(`auth:${ip}`, 10, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+    );
+  }
+
   try {
     const { mode = "login", ...body } = await request.json();
     const payload = authSchema.parse(body);

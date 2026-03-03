@@ -16,10 +16,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Too many requests. Slow down.' }, { status: 429 })
   }
 
-  const { prompt, token } = await req.json()
+  const body = await req.json() as { prompt?: unknown; token?: unknown }
+  const { prompt: rawPrompt, token } = body
 
   const limit = LIMITS[token as keyof typeof LIMITS]
   if (!limit) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!rawPrompt || typeof rawPrompt !== 'string' || !rawPrompt.trim()) {
+    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+  }
+
+  // Sanitize prompt — strip HTML/control chars, enforce 1000 char max
+  const prompt = rawPrompt
+    .replace(/<[^>]*>/g, '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, 1000)
+
+  if (!prompt) return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
 
   const today = new Date().toISOString().split('T')[0]
   const imgKey = `usage:${token}:img:${today}`
