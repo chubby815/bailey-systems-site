@@ -1,11 +1,11 @@
-# Bailey Systems AI - 3D Immersive Commerce Store
+# Bailey Agents - 3D Immersive Commerce Store
 
 ## Overview
-**Bailey Systems AI** is a cutting-edge spatial commerce platform that reimagines e-commerce through immersive 3D environments. Built with React Three Fiber and Next.js 16, the store showcases AI agents and premium website templates in a high-end virtual gallery.
+**Bailey Agents** is a cutting-edge spatial commerce platform that reimagines e-commerce through immersive 3D environments. Built with React Three Fiber and Next.js 16, the store showcases AI agents and premium website templates in a high-end virtual gallery.
 
 ## Project Identity
 
-**Name:** Bailey Systems AI (Bailey Production AI)  
+**Name:** Bailey Agents  
 **Type:** Immersive Spatial Commerce Store  
 **Mission:** Transform digital product sales through cinematic 3D experiences that rival physical retail spaces.
 
@@ -466,7 +466,7 @@ const PRICE_MAP: Record<string, string> = {
 ## Support & Contact
 
 For technical support or customization inquiries:
-- **Website:** [Bailey Systems AI](#)
+- **Website:** [Bailey Agents](https://baileyagents.com)
 - **Consulting:** `/consulting` route
 - **GitHub Issues:** Report bugs and feature requests
 
@@ -474,7 +474,7 @@ For technical support or customization inquiries:
 
 ## License
 
-**Proprietary** - Bailey Systems AI  
+**Proprietary** - Bailey Agents  
 All rights reserved. Unauthorized reproduction or distribution prohibited.
 
 ---
@@ -495,4 +495,4 @@ All rights reserved. Unauthorized reproduction or distribution prohibited.
 
 ---
 
-**Built with ❤️ by Bailey Systems AI**
+**Built with ❤️ by Bailey Agents**

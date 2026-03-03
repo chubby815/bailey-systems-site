@@ -74,7 +74,7 @@ function PausedOverlay() {
             marginBottom: "2rem",
           }}
         >
-          This site is paused. Reactivate your BaileySystemsAI subscription to restore it.
+          This site is paused. Reactivate your Bailey Agents subscription to restore it.
         </p>
         <a
           href="/pricing"
@@ -376,7 +376,7 @@ export default async function SitePage({
           </div>
           <div style={{ borderTop: "1px solid #1f2937", paddingTop: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
             <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>© {new Date().getFullYear()} {businessName}. All rights reserved. · {location}</div>
-            <div style={{ fontSize: "0.7rem", color: "#374151" }}>Built with <a href="https://baileysystemsai.com" style={{ color: "#10b981", textDecoration: "none" }}>BaileySystemsAI</a></div>
+            <div style={{ fontSize: "0.7rem", color: "#374151" }}>Built with <a href="https://baileyagents.com" style={{ color: "#10b981", textDecoration: "none" }}>BaileyAgents</a></div>
           </div>
         </div>
       </footer>

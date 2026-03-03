@@ -63,7 +63,7 @@ export function FloatingVideoChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          messages: [{ role: "user", content: `You are Bailey, the AI assistant for Bailey Systems AI. Answer this: ${baileyInput}` }]
+          messages: [{ role: "user", content: `You are Bailey, the AI assistant for Bailey Agents. Answer this: ${baileyInput}` }]
         }),
       });
       const data = await response.json();

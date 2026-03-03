@@ -186,10 +186,10 @@ export function SiteFooter({ site, tokens, tagline }: Props) {
           <div style={{ fontSize: "0.7rem", color: "#374151" }}>
             Built with{" "}
             <a
-              href="https://baileysystemsai.com"
+              href="https://baileyagents.com"
               style={{ color: primaryColor, textDecoration: "none" }}
             >
-              BaileySystemsAI
+              BaileyAgents
             </a>
           </div>
         </div>

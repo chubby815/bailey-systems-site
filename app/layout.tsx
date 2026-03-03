@@ -24,7 +24,7 @@ const dmSans = DM_Sans({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "BaileySystemsAI",
+  title: "Bailey Agents",
   description: "Custom AI agents, websites, apps, and automation systems",
 };
 
@@ -38,7 +38,7 @@ export default async function RootLayout({
     headersList.get("x-pathname") ??
     headersList.get("x-invoke-path") ??
     "";
-  // Customer-generated sites must never show the BaileySystemsAI navbar or footer
+  // Customer-generated sites must never show the Bailey Agents navbar or footer
   const isCustomerSite = pathname.startsWith("/sites/");
 
   return (

@@ -121,7 +121,7 @@ export function BentoGrid() {
             <h3 className="text-3xl font-black mb-2">Let's work together.</h3>
             <p className="text-gray-400 text-sm max-w-md">
               From a simple landing page to a full AI-powered system —
-              BaileySystemsAI delivers production-ready results fast.
+              Bailey Agents delivers production-ready results fast.
             </p>
           </div>
           <a

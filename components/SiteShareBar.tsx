@@ -13,7 +13,7 @@ export function SiteShareBar({ siteId }: Props) {
   const siteUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/sites/${siteId}`
-      : `https://baileysystemsai.com/sites/${siteId}`;
+      : `https://baileyagents.com/sites/${siteId}`;
 
   function copyLink() {
     const url = `${window.location.origin}/sites/${siteId}`;
@@ -109,7 +109,7 @@ export function SiteShareBar({ siteId }: Props) {
         </Link>
 
         <a
-          href="https://baileysystemsai.com"
+          href="https://baileyagents.com"
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -124,7 +124,7 @@ export function SiteShareBar({ siteId }: Props) {
             letterSpacing: "0.02em",
           }}
         >
-          Built with BaileySystemsAI
+          Built with BaileyAgents
         </a>
       </div>
 

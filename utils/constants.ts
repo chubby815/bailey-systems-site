@@ -172,7 +172,7 @@ export const REVIEWS: Review[] = [
     name: "Ivy Kinsley",
     role: "Chief Experience Officer, Northwind Clinics",
     quote:
-      "Bailey Systems rerouted 83% of inbound calls to AI chat that felt indistinguishable from our coordinators. We're staffing weekends with three people now.",
+      "Bailey Agents rerouted 83% of inbound calls to AI chat that felt indistinguishable from our coordinators. We're staffing weekends with three people now.",
     industry: "Healthcare",
   },
   {
@@ -229,7 +229,7 @@ export const DEFAULT_CHAT_MESSAGES = [
   {
     role: "assistant" as const,
     content:
-      "Hey there! 🐕 I'm Bailey, named after Javier's beagle! I can help you with questions about our services, pricing, location, or anything about Bailey Systems AI. What would you like to know?",
+      "Hey there! 🐕 I'm Bailey, named after Javier's beagle! I can help you with questions about our services, pricing, location, or anything about Bailey Agents. What would you like to know?",
     timestamp: "09:00",
   },
   {

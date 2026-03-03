@@ -54,7 +54,7 @@ async function ThankYouContent({
           className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4"
           style={{ fontFamily: "Syne, sans-serif" }}
         >
-          Welcome to BaileySystemsAI
+          Welcome to Bailey Agents
         </h1>
 
         <p className="text-gray-400 text-lg mb-2">

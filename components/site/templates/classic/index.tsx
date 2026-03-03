@@ -500,7 +500,7 @@ function Footer({ site }: { site: SiteRecord }) {
           )}
           <span style={{ fontFamily: FF_SAN, fontSize: "0.72rem", color: "#444" }}>
             © {new Date().getFullYear()} · Built with{" "}
-            <a href="https://baileysystemsai.com" style={{ color: GOLD, textDecoration: "none" }}>BaileySystemsAI</a>
+            <a href="https://baileyagents.com" style={{ color: GOLD, textDecoration: "none" }}>BaileyAgents</a>
           </span>
         </div>
       </div>

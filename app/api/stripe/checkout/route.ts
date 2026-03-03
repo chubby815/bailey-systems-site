@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       : true; // unknown email at this point — trial eligibility checked again in webhook
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileysystemsai.com";
+      process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileyagents.com";
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",

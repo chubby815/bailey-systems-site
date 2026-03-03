@@ -41,7 +41,7 @@ export function GoogleMap() {
           <div className="flex items-center gap-3">
             <span className="text-3xl">📍</span>
             <div>
-              <p className="font-black text-black text-sm uppercase tracking-wide">BaileySystemsAI</p>
+              <p className="font-black text-black text-sm uppercase tracking-wide">BaileyAgents</p>
               <p className="text-xs text-black/70 font-bold">{location}</p>
             </div>
           </div>

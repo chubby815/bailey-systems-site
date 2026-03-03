@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileysystemsai.com";
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileyagents.com";
 
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: subscription.customerId,

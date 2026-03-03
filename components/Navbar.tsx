@@ -8,7 +8,7 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Never render the BaileySystemsAI navbar on customer-generated sites
+  // Never render the Bailey Agents navbar on customer-generated sites
   if (pathname.startsWith("/sites/")) return null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -49,8 +49,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-0.5 text-xl font-black tracking-tight font-syne">
           <span className="text-[#f0f0f0]">Bailey</span>
-          <span className="text-[#00e5a0]">Systems</span>
-          <span className="text-[#f0f0f0]">AI</span>
+          <span className="text-[#00e5a0]">Agents</span>
         </Link>
 
         {/* Desktop nav */}

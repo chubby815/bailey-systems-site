@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — BaileySystemsAI",
-  description: "Privacy Policy for BaileySystemsAI",
+  title: "Privacy Policy — Bailey Agents",
+  description: "Privacy Policy for Bailey Agents",
 };
 
 const SECTIONS = [
@@ -12,7 +12,7 @@ const SECTIONS = [
     body: `We collect only what is necessary to provide the Service:`,
     bullets: [
       "Email address — collected at sign-up and used to identify your account and send important notices.",
-      "Payment information — collected by Stripe during checkout. BaileySystemsAI never sees or stores your full card number (see Section 5).",
+      "Payment information — collected by Stripe during checkout. Bailey Agents never sees or stores your full card number (see Section 5).",
       "Usage data — aggregated counts of how many AI runs you have used in the current billing period, stored in our database.",
       "Site content — the website copy, lead search inputs, and content packages you generate are stored so you can access them from your dashboard.",
     ],
@@ -32,7 +32,7 @@ const SECTIONS = [
   },
   {
     heading: "3. We Do Not Sell Your Data",
-    body: `BaileySystemsAI does not sell, rent, or trade your personal information to any third party — ever. We do not share your data with data brokers or advertising networks.`,
+    body: `Bailey Agents does not sell, rent, or trade your personal information to any third party — ever. We do not share your data with data brokers or advertising networks.`,
   },
   {
     heading: "4. Data Sharing with Service Providers",
@@ -48,7 +48,7 @@ const SECTIONS = [
   },
   {
     heading: "5. Payment Security",
-    body: `All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. BaileySystemsAI never has access to your full credit card number, CVV, or bank account details. When you subscribe, your browser communicates directly with Stripe's secure servers. We only store your Stripe Customer ID in our database to manage your subscription.`,
+    body: `All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. Bailey Agents never has access to your full credit card number, CVV, or bank account details. When you subscribe, your browser communicates directly with Stripe's secure servers. We only store your Stripe Customer ID in our database to manage your subscription.`,
   },
   {
     heading: "6. Cookies",
@@ -73,11 +73,11 @@ const SECTIONS = [
       "Request deletion of your account and associated data.",
       "Export your generated site content from your dashboard at any time.",
     ],
-    footer: "To exercise any of these rights, email support@baileysystemsai.com.",
+    footer: "To exercise any of these rights, email support@baileyagents.com.",
   },
   {
     heading: "9. Children's Privacy",
-    body: `BaileySystemsAI is not directed at children under 13. We do not knowingly collect personal information from anyone under 13. If we become aware that a child under 13 has provided us with personal information, we will delete it immediately.`,
+    body: `Bailey Agents is not directed at children under 13. We do not knowingly collect personal information from anyone under 13. If we become aware that a child under 13 has provided us with personal information, we will delete it immediately.`,
   },
   {
     heading: "10. Changes to This Policy",
@@ -85,7 +85,7 @@ const SECTIONS = [
   },
   {
     heading: "11. Contact Us",
-    body: `If you have questions about this Privacy Policy or how we handle your data, contact us at support@baileysystemsai.com. We respond within 1–2 business days.`,
+    body: `If you have questions about this Privacy Policy or how we handle your data, contact us at support@baileyagents.com. We respond within 1–2 business days.`,
   },
 ];
 
@@ -140,7 +140,7 @@ export default function PrivacyPage() {
 
         {/* Footer nav */}
         <div className="mt-16 pt-8 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-4">
-          <span className="text-xs text-[#4b5563]">© 2026 BaileySystemsAI. All rights reserved.</span>
+          <span className="text-xs text-[#4b5563]">© 2026 Bailey Agents. All rights reserved.</span>
           <div className="flex gap-6">
             <Link href="/terms" className="text-xs text-[#6b7280] hover:text-[#f0f0f0] transition-colors">
               Terms of Service

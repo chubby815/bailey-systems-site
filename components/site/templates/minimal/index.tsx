@@ -407,7 +407,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
         </span>
         <span style={{ fontFamily: FF, fontSize: "0.78rem", color: "#bbb" }}>
           © {new Date().getFullYear()} · Built with{" "}
-          <a href="https://baileysystemsai.com" style={{ color: primaryColor, textDecoration: "none" }}>BaileySystemsAI</a>
+          <a href="https://baileyagents.com" style={{ color: primaryColor, textDecoration: "none" }}>BaileyAgents</a>
         </span>
       </div>
     </footer>

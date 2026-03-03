@@ -496,7 +496,7 @@ function Footer({ site }: { site: SiteRecord }) {
         </span>
         <span style={{ fontFamily: FF, fontSize: "0.75rem", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           © {new Date().getFullYear()} · Built with{" "}
-          <a href="https://baileysystemsai.com" style={{ color: YELLOW, textDecoration: "none" }}>BaileySystemsAI</a>
+          <a href="https://baileyagents.com" style={{ color: YELLOW, textDecoration: "none" }}>BaileyAgents</a>
         </span>
       </div>
     </footer>

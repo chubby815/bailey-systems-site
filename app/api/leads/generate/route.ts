@@ -131,8 +131,8 @@ function fallbackScore(b: InternalBusiness, industry: string): ClaudeScore {
     score,
     scoreReason: b.hasWebsite
       ? `${b.name} has an online presence with ${b.reviewCount} reviews but could benefit from a modern, AI-powered website to convert more visitors into customers.`
-      : `${b.name} has no website yet, making them a high-priority prospect for BaileySystemsAI.`,
-    outreachMessage: `Hi, I came across ${b.name} while researching ${industry.toLowerCase()} businesses in the area. With BaileySystemsAI, you can launch a professional website in minutes and start attracting more customers online. I'd love to show you how — can we connect this week?`,
+      : `${b.name} has no website yet, making them a high-priority prospect for BaileyAgents.`,
+    outreachMessage: `Hi, I came across ${b.name} while researching ${industry.toLowerCase()} businesses in the area. With Bailey Agents, you can launch a professional website in minutes and start attracting more customers online. I'd love to show you how — can we connect this week?`,
   };
 }
 
@@ -147,7 +147,7 @@ async function batchScoreLeads(
     )
     .join("\n\n");
 
-  const prompt = `Score these ${businesses.length} local ${industry} businesses as potential clients for BaileySystemsAI (an AI website builder for local businesses).
+  const prompt = `Score these ${businesses.length} local ${industry} businesses as potential clients for BaileyAgents (an AI website builder for local businesses).
 
 Scoring guide (higher = better prospect):
 - No website at all → score 8-10
@@ -161,7 +161,7 @@ ${businessList}
 For EACH business write a personalized 2-3 sentence outreach message that:
 1. Mentions their REAL business name
 2. References their specific industry (${industry})
-3. Explains how BaileySystemsAI can help them get more customers online
+3. Explains how BaileyAgents can help them get more customers online
 
 Return ONLY a JSON array with exactly ${businesses.length} objects in the same order:
 [{"score": 8, "scoreReason": "1-2 sentence reason", "outreachMessage": "personalized 2-3 sentences"}, ...]`;

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function Footer() {
   const pathname = usePathname();
 
-  // Never render the BaileySystemsAI footer on customer-generated sites
+  // Never render the Bailey Agents footer on customer-generated sites
   if (pathname.startsWith("/sites/")) return null;
 
   return (
@@ -17,8 +17,7 @@ export function Footer() {
           <div className="max-w-xs">
             <div className="text-xl font-black tracking-tight font-syne mb-3">
             <span className="text-[#f0f0f0]">Bailey</span>
-            <span className="text-[#00e5a0]">Systems</span>
-            <span className="text-[#f0f0f0]">AI</span>
+            <span className="text-[#00e5a0]">Agents</span>
             </div>
             <p className="text-sm text-[#6b7280] leading-relaxed">
               Custom AI agents, websites, apps, and automation systems for businesses ready to grow.
@@ -65,7 +64,7 @@ export function Footer() {
 
         <div className="mt-12 pt-6 border-t border-white/[0.07] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[#4b5563]">
-            © {new Date().getFullYear()} BaileySystemsAI. All rights reserved.
+            © {new Date().getFullYear()} Bailey Agents. All rights reserved.
           </p>
           <p className="text-xs text-[#4b5563]">
             🇲🇽 Se habla español · Machesney Park, IL
