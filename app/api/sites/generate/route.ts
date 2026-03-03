@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
 import { saveSite, getUserSites, type SiteRecord } from "@/lib/kv";
 import { rateLimit } from "@/lib/ratelimit";
+import { checkAndIncrementUsage, checkAndIncrementRegen } from "@/lib/usage";
 import type { StructuredSiteContent } from "@/lib/site-theme";
 
 const SITE_LIMITS: Record<string, number> = {
@@ -222,6 +223,20 @@ export async function POST(req: NextRequest) {
   const cleanGoogle  = optStr(googleBusinessUrl, 300);
   const cleanHours   = optStr(businessHours, 200);
 
+  // Monthly run limit — checked AFTER validation, BEFORE calling Claude
+  const usageCheck = await checkAndIncrementUsage(session.email, plan);
+  if (!usageCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:   "run_limit_reached",
+        message: `You've used all ${usageCheck.limit} runs for this month. Upgrade your plan for more.`,
+        used:    usageCheck.used,
+        limit:   usageCheck.limit,
+      },
+      { status: 429 }
+    );
+  }
+
   // Claude API
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -329,6 +344,17 @@ Required JSON structure:
     const existingSite = await import("@/lib/kv").then((m) => m.getSite(editSiteId));
     if (existingSite && existingSite.userId !== session.email) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    // Regeneration limit
+    const regenCheck = await checkAndIncrementRegen(session.email, editSiteId.trim(), plan);
+    if (!regenCheck.allowed) {
+      return NextResponse.json(
+        {
+          error:   "regen_limit_reached",
+          message: `You've reached the maximum of ${regenCheck.max} regenerations for this site.`,
+        },
+        { status: 429 }
+      );
     }
     siteId = editSiteId.trim();
   } else {

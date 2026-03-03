@@ -140,6 +140,7 @@ function BuildForm() {
   const [prefilling, setPrefilling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [planLimitMsg, setPlanLimitMsg] = useState<string | null>(null);
+  const [runLimitMsg, setRunLimitMsg] = useState<{ used: number; limit: number } | null>(null);
   const [step, setStep] = useState<"form" | "generating">("form");
 
   useEffect(() => {
@@ -200,6 +201,18 @@ function BuildForm() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) { router.push("/login?redirect=/dashboard/build"); return; }
+        if (res.status === 429 && data.error === "run_limit_reached") {
+          setRunLimitMsg({ used: data.used ?? 0, limit: data.limit ?? 0 });
+          setStep("form");
+          setLoading(false);
+          return;
+        }
+        if (res.status === 429 && data.error === "regen_limit_reached") {
+          setError(data.message ?? "Regeneration limit reached for this site.");
+          setStep("form");
+          setLoading(false);
+          return;
+        }
         if (res.status === 403 && data.error === "plan_limit") {
           setPlanLimitMsg(data.message ?? "You've reached your plan's site limit.");
           setStep("form");
@@ -287,6 +300,20 @@ function BuildForm() {
               : "Fill out the form below and our AI will generate a complete, professional website for you in seconds."}
           </p>
         </div>
+
+        {runLimitMsg && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-5 py-4 mb-6">
+            <p className="text-amber-400 text-sm font-semibold mb-2">⚡ Monthly limit reached</p>
+            <p className="text-amber-300/80 text-sm mb-3">
+              Monthly limit reached — {runLimitMsg.used}/{runLimitMsg.limit} runs used.
+              Upgrade your plan to continue building.
+            </p>
+            <Link href="/pricing"
+              className="inline-block text-sm font-bold bg-[#00e5a0] text-black px-4 py-2 rounded-lg hover:bg-[#00ffb2] transition-colors">
+              Upgrade Now →
+            </Link>
+          </div>
+        )}
 
         {planLimitMsg && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-5 py-4 mb-6">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
 import { kv } from "@/lib/kv";
 import { rateLimit } from "@/lib/ratelimit";
+import { checkAndIncrementUsage } from "@/lib/usage";
 
 // ── Public types (consumed by the client component) ───────────────────────────
 export type Post = {
@@ -154,6 +155,20 @@ export async function POST(req: NextRequest) {
   const cleanBusiness  = sanitize(businessType  as string).slice(0, 100);
   const cleanAudience  = sanitize(targetAudience as string).slice(0, 200);
   const cleanOffer     = typeof specialOffer === "string" ? sanitize(specialOffer).slice(0, 300) : "none";
+
+  // Monthly run limit — checked AFTER validation, BEFORE calling Claude
+  const usageCheck = await checkAndIncrementUsage(session.email, plan);
+  if (!usageCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:   "run_limit_reached",
+        message: `You've used all ${usageCheck.limit} runs for this month. Upgrade your plan for more.`,
+        used:    usageCheck.used,
+        limit:   usageCheck.limit,
+      },
+      { status: 429 }
+    );
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "AI service not configured" }, { status: 500 });

@@ -309,9 +309,10 @@ export function ContentMachine({ locked }: { locked: boolean }) {
     contentGoal:   "Get more customers",
     specialOffer:  "",
   });
-  const [content, setContent]   = useState<ContentPackage | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
+  const [content, setContent]     = useState<ContentPackage | null>(null);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [runLimit, setRunLimit]   = useState<{ used: number; limit: number } | null>(null);
   const [activeTab, setActiveTab] = useState<"posts" | "blog" | "calendar">("posts");
 
   if (locked) return <LockedState />;
@@ -325,6 +326,7 @@ export function ContentMachine({ locked }: { locked: boolean }) {
     if (!form.businessType.trim()) { setError("Please enter your business type."); return; }
     if (!form.targetAudience.trim()) { setError("Please describe your target audience."); return; }
     setError(null);
+    setRunLimit(null);
     setLoading(true);
     setContent(null);
 
@@ -335,7 +337,13 @@ export function ContentMachine({ locked }: { locked: boolean }) {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message ?? data.error ?? "Generation failed");
+      if (!res.ok) {
+        if (res.status === 429 && data.error === "run_limit_reached") {
+          setRunLimit({ used: data.used ?? 0, limit: data.limit ?? 0 });
+          return;
+        }
+        throw new Error(data.message ?? data.error ?? "Generation failed");
+      }
       setContent(data.content);
       setActiveTab("posts");
       setTimeout(() => document.getElementById("content-results")?.scrollIntoView({ behavior: "smooth" }), 100);
@@ -473,6 +481,19 @@ export function ContentMachine({ locked }: { locked: boolean }) {
             />
           </div>
         </div>
+
+        {runLimit && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-4 mb-4">
+            <p className="text-amber-400 text-sm font-semibold mb-1">⚡ Monthly limit reached</p>
+            <p className="text-amber-300/80 text-sm mb-3">
+              Monthly limit reached — {runLimit.used}/{runLimit.limit} runs used.
+              Upgrade your plan to continue generating content.
+            </p>
+            <Link href="/pricing" className="inline-block text-sm font-bold bg-[#00e5a0] text-black px-4 py-2 rounded-lg hover:bg-[#00ffb2] transition-colors">
+              Upgrade Now →
+            </Link>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm mb-4">

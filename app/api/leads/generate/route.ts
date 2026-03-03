@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
 import { kv } from "@/lib/kv";
 import { rateLimit } from "@/lib/ratelimit";
+import { checkAndIncrementUsage } from "@/lib/usage";
 
 // ── Public Lead shape (also consumed by the client component) ─────────────────
 export type Lead = {
@@ -252,6 +253,20 @@ export async function POST(req: NextRequest) {
   void (typeof urgency === "string" && VALID_URGENCY.has(urgency) ? urgency : "Show all");
 
   const cleanLocation = sanitize(location).slice(0, 100);
+
+  // Monthly run limit — checked AFTER validation, BEFORE calling Google/Claude
+  const usageCheck = await checkAndIncrementUsage(session.email, plan);
+  if (!usageCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:   "run_limit_reached",
+        message: `You've used all ${usageCheck.limit} runs for this month. Upgrade your plan for more.`,
+        used:    usageCheck.used,
+        limit:   usageCheck.limit,
+      },
+      { status: 429 }
+    );
+  }
 
   // Verify required API keys are present (keys never leave this file)
   const googleApiKey    = process.env.GOOGLE_PLACES_API_KEY;

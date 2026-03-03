@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionFromCookies, getActivePlan, getSubscriptionStatus } from "@/lib/auth";
 import { getUserSites } from "@/lib/kv";
+import { getMonthlyUsage, PLAN_LIMITS, type PlanKey } from "@/lib/usage";
 import { SiteCard } from "@/components/SiteCard";
 import { LogoutButton } from "@/components/LogoutButton";
 
@@ -12,10 +13,11 @@ export default async function DashboardPage() {
   const session = await getSessionFromCookies();
   if (!session) redirect("/login?redirect=/dashboard");
 
-  const [plan, subscription, sites] = await Promise.all([
+  const [plan, subscription, sites, monthlyUsage] = await Promise.all([
     getActivePlan(session.email),
     getSubscriptionStatus(session.email),
     getUserSites(session.email),
+    getMonthlyUsage(session.email),
   ]);
 
   // No active subscription → send to pricing
@@ -29,8 +31,15 @@ export default async function DashboardPage() {
     growth: "text-[#00e5a0] bg-[#00e5a0]/10 border-[#00e5a0]/20",
     pro: "text-blue-400 bg-blue-400/10 border-blue-400/20",
   };
-  const runLimits = { starter: 20, growth: 150, pro: "∞" };
-  const siteLimits = { starter: 1, growth: 3, pro: "∞" };
+
+  // Real limits from the plan
+  const limits        = PLAN_LIMITS[(plan ?? "starter") as PlanKey];
+  const runsLimit     = limits.runsPerMonth   === Infinity ? "∞" : limits.runsPerMonth;
+  const sitesLimit    = limits.sitesTotal      === Infinity ? "∞" : limits.sitesTotal;
+  const runsRemaining = limits.runsPerMonth    === Infinity
+    ? "∞"
+    : String(Math.max(0, limits.runsPerMonth - monthlyUsage));
+
 
   const firstName = session.name?.split(" ")[0] ?? "there";
 
@@ -91,18 +100,18 @@ export default async function DashboardPage() {
             </h1>
             <p className="text-gray-500 text-sm">
               {subscription?.status === "trialing"
-                ? `Free trial active · ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runLimits[plan]} runs`
-                : `You're on the ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runLimits[plan]} runs remaining`}
+                ? `Free trial active · ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`
+                : `You're on the ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`}
             </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { label: "Active Sites", value: String(sites.length), color: "text-[#00e5a0]" },
-              { label: "Runs Used", value: "0", color: "" },
-              { label: "Runs Remaining", value: String(runLimits[plan]), color: "" },
-              { label: "Site Limit", value: String(siteLimits[plan]), color: "" },
+              { label: "Active Sites",    value: String(sites.length), color: "text-[#00e5a0]" },
+              { label: "Runs Used",       value: String(monthlyUsage), color: "" },
+              { label: "Runs Remaining",  value: runsRemaining,        color: "" },
+              { label: "Site Limit",      value: String(sitesLimit),   color: "" },
             ].map((stat) => (
               <div key={stat.label} className="bg-[#111214] border border-white/[0.07] rounded-xl p-5">
                 <div className="text-xs text-gray-500 mb-2">{stat.label}</div>
