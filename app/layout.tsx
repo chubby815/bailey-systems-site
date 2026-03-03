@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Syne, DM_Sans } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -23,31 +24,40 @@ export const metadata: Metadata = {
   description: "Custom AI agents, websites, apps, and automation systems",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  // Customer-generated sites must never show the BaileySystemsAI navbar or footer
+  const isCustomerSite = pathname.startsWith("/sites/");
+
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17983960384"
-          strategy="afterInteractive"
-        />
-        <Script id="google-ads-tag" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'AW-17983960384');
-          `}
-        </Script>
+        {!isCustomerSite && (
+          <>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=AW-17983960384"
+              strategy="afterInteractive"
+            />
+            <Script id="google-ads-tag" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'AW-17983960384');
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body>
-        <Navbar />
+        {!isCustomerSite && <Navbar />}
         {children}
-        <Footer />
+        {!isCustomerSite && <Footer />}
       </body>
     </html>
   );
