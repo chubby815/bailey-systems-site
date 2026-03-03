@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { getSite, kv } from "@/lib/kv";
 import { getSessionFromCookies, getSubscriptionStatus } from "@/lib/auth";
 import { isStructuredContent, buildThemeConfig } from "@/lib/site-theme";
-import { SiteShareBar } from "@/components/SiteShareBar";
-import { LayoutRenderer } from "@/components/site/LayoutRenderer";
-import { SiteEditor }     from "@/components/site/SiteEditor";
+import { SiteShareBar }     from "@/components/SiteShareBar";
+import { LayoutRenderer }   from "@/components/site/LayoutRenderer";
+import { TemplateRenderer } from "@/components/site/TemplateRenderer";
+import { SiteEditor }       from "@/components/site/SiteEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -147,7 +148,7 @@ export default async function SitePage({
     return (
       <>
         {siteIsPaused && <PausedOverlay />}
-        <LayoutRenderer
+        <TemplateRenderer
           site={site}
           content={c}
           theme={theme}

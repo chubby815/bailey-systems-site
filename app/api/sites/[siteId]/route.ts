@@ -66,14 +66,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Legacy sites cannot be edited in the visual editor" }, { status: 400 });
   }
 
-  let body: { content?: StructuredSiteContent; theme?: ThemeConfig };
+  let body: { content?: StructuredSiteContent; theme?: ThemeConfig; template?: string };
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+
+  // Allowlist template keys
+  const VALID_TEMPLATES = new Set(["darkpremium", "neobrutalism", "minimal", "magazine", "classic"]);
+  const cleanTemplate = typeof body.template === "string" && VALID_TEMPLATES.has(body.template)
+    ? body.template
+    : undefined;
 
   const updated = {
     ...site,
     ...(body.content && isStructuredContent(body.content) ? { generatedContent: body.content } : {}),
-    ...(body.theme   ? { editorTheme: body.theme }         : {}),
+    ...(body.theme    ? { editorTheme: body.theme } : {}),
+    ...(cleanTemplate !== undefined ? { template: cleanTemplate } : {}),
   };
 
   await saveSite(siteId, updated);

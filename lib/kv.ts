@@ -87,6 +87,8 @@ export type SiteRecord = {
   createdAt: string;
   // Editor overrides — set when the owner edits the site in the visual editor
   editorTheme?: import("./site-theme").ThemeConfig;
+  /** Layout template key — e.g. "darkpremium" | "neobrutalism" | "minimal" | "magazine" | "classic" */
+  template?: string;
 };
 
 /** Save a generated site to Redis */

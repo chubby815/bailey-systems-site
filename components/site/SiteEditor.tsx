@@ -5,7 +5,8 @@ import Link from "next/link";
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { PRESET_THEMES } from "@/lib/site-theme";
-import { LayoutRenderer } from "./LayoutRenderer";
+import { LayoutRenderer }   from "./LayoutRenderer";
+import { TemplateRenderer } from "./TemplateRenderer";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Panel = "themes" | "content" | null;
@@ -13,13 +14,13 @@ type Panel = "themes" | "content" | null;
 type ContentSection = "style" | "hero" | "services" | "about" | "testimonials" | "cta";
 
 type Props = {
-  site:               SiteRecord;
-  content:            StructuredSiteContent;
-  theme:              ThemeConfig;
-  isOwner:            boolean;
+  site:                SiteRecord;
+  content:             StructuredSiteContent;
+  theme:               ThemeConfig;
+  isOwner:             boolean;
   /** True only when the URL contains ?edit=true. Controls editor chrome visibility. */
-  editMode:           boolean;
-  siteId:             string;
+  editMode:            boolean;
+  siteId:              string;
   initialHeroImageUrl?: string;
 };
 
@@ -72,9 +73,138 @@ function MiniSitePreview({ colors }: { colors: { primary: string; background: st
   );
 }
 
+// ── Template definitions for the picker ──────────────────────────────────────
+const TEMPLATE_DEFS: { key: string; name: string; desc: string; preview: React.ReactNode }[] = [
+  {
+    key: "darkpremium",
+    name: "Dark Premium",
+    desc: "Dark background, emerald green — sleek modern SaaS look",
+    preview: (
+      <div style={{ background: "#08090a", borderRadius: 6, overflow: "hidden", userSelect: "none" }}>
+        <div style={{ background: "#111214", height: 14, display: "flex", alignItems: "center", padding: "0 7px", gap: 5, borderBottom: "1.5px solid #00e5a022" }}>
+          <div style={{ width: 22, height: 3, background: "#f0f0f0", borderRadius: 1, opacity: 0.7 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 18, height: 7, background: "#00e5a0", borderRadius: 2 }} />
+        </div>
+        <div style={{ padding: "9px 7px 7px", background: "linear-gradient(135deg, #10b981 0%, #064e3b 100%)" }}>
+          <div style={{ width: "62%", height: 4, background: "#fff", borderRadius: 1, opacity: 0.9, marginBottom: 4 }} />
+          <div style={{ width: "78%", height: 3, background: "#fff", borderRadius: 1, opacity: 0.5, marginBottom: 7 }} />
+          <div style={{ width: 30, height: 8, background: "#00e5a0", borderRadius: 3 }} />
+        </div>
+        <div style={{ display: "flex", gap: 3, padding: "0 7px 7px" }}>
+          {[0,1,2].map(i => <div key={i} style={{ flex: 1, height: 13, background: "#111214", borderRadius: 3, borderTop: "2px solid #00e5a044" }} />)}
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "neobrutalism",
+    name: "Neo Brutalism",
+    desc: "Thick black borders, offset shadows, cream + yellow — poster aesthetic",
+    preview: (
+      <div style={{ background: "#fffef7", borderRadius: 6, overflow: "hidden", border: "2px solid #000", userSelect: "none" }}>
+        <div style={{ background: "#000", height: 14, display: "flex", alignItems: "center", padding: "0 7px", gap: 5 }}>
+          <div style={{ width: 22, height: 3, background: "#FFE500", borderRadius: 1 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 18, height: 7, background: "#FFE500", border: "1px solid #FFE500" }} />
+        </div>
+        <div style={{ padding: "8px 7px 6px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, background: "#fffef7" }}>
+          <div>
+            <div style={{ width: "80%", height: 4, background: "#000", marginBottom: 3 }} />
+            <div style={{ width: "90%", height: 3, background: "#333", opacity: 0.5, marginBottom: 6 }} />
+            <div style={{ width: 28, height: 8, background: "#000", border: "2px solid #000", boxShadow: "2px 2px 0 #000" }} />
+          </div>
+          <div style={{ background: "#eee", border: "2px solid #000", height: "100%" }} />
+        </div>
+        <div style={{ display: "flex", gap: 3, padding: "0 6px 6px" }}>
+          {[0,1,2].map(i => <div key={i} style={{ flex: 1, height: 12, background: i%2===0 ? "#fffef7" : "#FFE500", border: "2px solid #000", boxShadow: "2px 2px 0 #000" }} />)}
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "minimal",
+    name: "Modern Minimal",
+    desc: "Pure white, airy whitespace, thin type — Apple / Linear feel",
+    preview: (
+      <div style={{ background: "#ffffff", borderRadius: 6, overflow: "hidden", border: "1px solid #e8e8e8", userSelect: "none" }}>
+        <div style={{ background: "rgba(255,255,255,0.95)", height: 14, display: "flex", alignItems: "center", padding: "0 7px", gap: 5, borderBottom: "1px solid #e8e8e8" }}>
+          <div style={{ width: 20, height: 3, background: "#111", borderRadius: 1, opacity: 0.7 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 16, height: 7, background: "#0066ff", borderRadius: 3 }} />
+        </div>
+        <div style={{ padding: "10px 7px 6px", textAlign: "center", background: "#fff" }}>
+          <div style={{ width: "50%", height: 4, background: "#111", borderRadius: 1, margin: "0 auto 3px", opacity: 0.8 }} />
+          <div style={{ width: "70%", height: 2.5, background: "#888", borderRadius: 1, margin: "0 auto 6px", opacity: 0.5 }} />
+          <div style={{ width: 24, height: 8, background: "#0066ff", borderRadius: 4, margin: "0 auto" }} />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "#e8e8e8", padding: "0 0 0" }}>
+          {[0,1,2].map(i => <div key={i} style={{ background: "#fff", height: 13, padding: "2px 4px" }}>
+            <div style={{ width: "60%", height: 2, background: "#111", marginBottom: 2, opacity: 0.6 }} />
+            <div style={{ width: "80%", height: 1.5, background: "#888", opacity: 0.4 }} />
+          </div>)}
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "magazine",
+    name: "Bold Magazine",
+    desc: "Editorial serif + sans, section numbers, full-bleed hero — luxury feel",
+    preview: (
+      <div style={{ background: "#fafaf8", borderRadius: 6, overflow: "hidden", border: "1px solid #e0ddd8", userSelect: "none" }}>
+        <div style={{ background: "#fafaf8", height: 14, display: "flex", alignItems: "center", padding: "0 7px", gap: 5, borderBottom: "1px solid #e0ddd8" }}>
+          <div style={{ width: 22, height: 3.5, background: "#1a1a1a", borderRadius: 1, fontStyle: "italic", opacity: 0.75 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 16, height: 7, background: "transparent", border: "1px solid #10b981" }} />
+        </div>
+        <div style={{ height: 38, background: "#333", display: "flex", alignItems: "flex-end", padding: "0 7px 5px", position: "relative" }}>
+          <div style={{ width: "70%", height: 4.5, background: "#fff", borderRadius: 1, opacity: 0.9 }} />
+        </div>
+        <div style={{ padding: "5px 7px 6px", background: "#fafaf8", borderTop: "1px solid #e0ddd8" }}>
+          <div style={{ display: "flex", gap: 3 }}>
+            <div style={{ width: 10, height: 10, color: "transparent", WebkitTextStroke: "1px #1a1a1a", fontFamily: "serif", fontSize: 9, opacity: 0.3, lineHeight: "10px", textAlign: "center" }}>0</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ width: "50%", height: 2.5, background: "#1a1a1a", marginBottom: 2, opacity: 0.7 }} />
+              <div style={{ width: "80%", height: 2, background: "#888", opacity: 0.4 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "classic",
+    name: "Classic Business",
+    desc: "Navy header, gold accents, 3-col grid — trusted traditional look",
+    preview: (
+      <div style={{ background: "#f7f8fa", borderRadius: 6, overflow: "hidden", border: "1px solid #e0e6ef", userSelect: "none" }}>
+        <div style={{ background: "#1e3a5f", height: 14, display: "flex", alignItems: "center", padding: "0 7px", gap: 5, borderBottom: "3px solid #c9a84c" }}>
+          <div style={{ width: 22, height: 3, background: "#fff", borderRadius: 1, opacity: 0.8 }} />
+          <div style={{ flex: 1 }} />
+          <div style={{ width: 18, height: 7, background: "#c9a84c", borderRadius: 2 }} />
+        </div>
+        <div style={{ padding: "8px 7px 6px", background: "#1e3a5f", textAlign: "center" }}>
+          <div style={{ width: "55%", height: 4, background: "#fff", borderRadius: 1, margin: "0 auto 3px", opacity: 0.9 }} />
+          <div style={{ width: "72%", height: 3, background: "#caf0f8", borderRadius: 1, margin: "0 auto 6px", opacity: 0.5 }} />
+          <div style={{ width: 28, height: 8, background: "#c9a84c", borderRadius: 2, margin: "0 auto" }} />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3, padding: "5px 6px 6px", background: "#f7f8fa" }}>
+          {[0,1,2].map(i => <div key={i} style={{ background: "#fff", border: "1px solid #e0e6ef", borderTop: "3px solid #c9a84c", height: 16, padding: "2px 3px" }}>
+            <div style={{ width: "60%", height: 2, background: "#1e3a5f", marginBottom: 2, opacity: 0.7 }} />
+            <div style={{ width: "80%", height: 1.5, background: "#888", opacity: 0.4 }} />
+          </div>)}
+        </div>
+      </div>
+    ),
+  },
+];
+
 function ThemesPanel({
   currentThemeKey,
   onSelectTheme,
+  currentTemplate,
+  onSelectTemplate,
   siteId,
   currentHeroImageUrl,
   industry,
@@ -82,6 +212,8 @@ function ThemesPanel({
 }: {
   currentThemeKey:     string;
   onSelectTheme:       (key: string, theme: ThemeConfig) => void;
+  currentTemplate:     string;
+  onSelectTemplate:    (key: string) => void;
   siteId:              string;
   currentHeroImageUrl: string | null;
   industry:            string;
@@ -128,10 +260,48 @@ function ThemesPanel({
 
   return (
     <div className="p-4 space-y-6">
+      {/* ── Layout Template picker ──────────────────────────────────────────── */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
+          Layout Style
+        </p>
+        <div className="flex flex-col gap-2">
+          {TEMPLATE_DEFS.map((t) => {
+            const active = currentTemplate === t.key;
+            return (
+              <div
+                key={t.key}
+                onClick={() => onSelectTemplate(t.key)}
+                className={`flex gap-3 items-center p-2.5 rounded-xl border cursor-pointer transition-all ${
+                  active
+                    ? "border-[#00e5a0] bg-[#00e5a0]/5"
+                    : "border-white/[0.07] bg-white/[0.02] hover:border-white/20"
+                }`}
+              >
+                {/* Mini preview */}
+                <div style={{ width: 88, flexShrink: 0 }}>
+                  {t.preview}
+                </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className={`text-[11px] font-bold ${active ? "text-[#00e5a0]" : "text-[#f0f0f0]"}`}>{t.name}</span>
+                    {active && <span className="text-[9px] text-[#00e5a0] bg-[#00e5a0]/10 px-1.5 py-0.5 rounded-full font-bold">Active</span>}
+                  </div>
+                  <p className="text-[9px] text-[#4b5563] leading-snug">{t.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-white/[0.06]" />
+
       {/* Themes grid — 2 columns with mini website previews */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
-          Choose a Theme
+          Colour Theme
         </p>
         <div className="grid grid-cols-2 gap-3">
           {Object.entries(PRESET_THEMES).map(([key, preset]) => {
@@ -551,6 +721,7 @@ export function SiteEditor({
   const [currentContent, setCurrentContent]   = useState<StructuredSiteContent>(content);
   const [currentTheme, setCurrentTheme]       = useState<ThemeConfig>(theme);
   const [currentThemeKey, setCurrentThemeKey] = useState<string>("");
+  const [currentTemplate, setCurrentTemplate] = useState<string>(site.template ?? "darkpremium");
   const [heroImageUrl, setHeroImageUrl]       = useState<string | null>(initialHeroImageUrl ?? null);
   const [isSaving, setIsSaving]               = useState(false);
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
@@ -563,8 +734,8 @@ export function SiteEditor({
   // Any other visitor (or owner without the param) sees the clean published site.
   if (!isOwner || !editMode) {
     return (
-      <LayoutRenderer
-        site={site}
+      <TemplateRenderer
+        site={{ ...site, template: site.template ?? "darkpremium" }}
         content={content}
         theme={theme}
         heroImageUrl={initialHeroImageUrl}
@@ -574,14 +745,14 @@ export function SiteEditor({
 
   // ── Save function ─────────────────────────────────────────────────────────
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig) => {
+  const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig, tmpl: string) => {
     setIsSaving(true);
     setSaveError(false);
     try {
       const res = await fetch(`/api/sites/${siteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: c, theme: t }),
+        body: JSON.stringify({ content: c, theme: t, template: tmpl }),
       });
       if (res.ok) setLastSaved(new Date());
       else setSaveError(true);
@@ -597,10 +768,10 @@ export function SiteEditor({
   useEffect(() => {
     if (!hasChanges.current) return;
     const timer = setTimeout(() => {
-      startTransition(() => { doSave(currentContent, currentTheme); });
+      startTransition(() => { doSave(currentContent, currentTheme, currentTemplate); });
     }, 800);
     return () => clearTimeout(timer);
-  }, [currentContent, currentTheme, doSave, startTransition]);
+  }, [currentContent, currentTheme, currentTemplate, doSave, startTransition]);
 
   function handleContentChange(c: StructuredSiteContent) {
     hasChanges.current = true;
@@ -611,6 +782,11 @@ export function SiteEditor({
     hasChanges.current = true;
     setCurrentThemeKey(key);
     setCurrentTheme(t);
+  }
+
+  function handleSelectTemplate(tmpl: string) {
+    hasChanges.current = true;
+    setCurrentTemplate(tmpl);
   }
 
   function handleHeroImageChange(url: string | null) {
@@ -747,6 +923,8 @@ export function SiteEditor({
             <ThemesPanel
               currentThemeKey={currentThemeKey}
               onSelectTheme={handleSelectTheme}
+              currentTemplate={currentTemplate}
+              onSelectTemplate={handleSelectTemplate}
               siteId={siteId}
               currentHeroImageUrl={heroImageUrl}
               industry={site.industry}
@@ -772,8 +950,8 @@ export function SiteEditor({
           transition:  "margin-left 0.25s ease",
         }}
       >
-        <LayoutRenderer
-          site={site}
+        <TemplateRenderer
+          site={{ ...site, template: currentTemplate }}
           content={currentContent}
           theme={currentTheme}
           heroImageUrl={heroImageUrl ?? undefined}
