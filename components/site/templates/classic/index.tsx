@@ -22,6 +22,12 @@ const MUTED   = "#5a6a7a";
 const FF      = "'Georgia', 'Times New Roman', serif";
 const FF_SAN  = "'Helvetica Neue', Arial, sans-serif";
 
+// CSS-variable–aware text colors
+const C_HEADING = "var(--heading-color, #1a2332)";
+const C_BODY    = "var(--body-color, #5a6a7a)";
+const C_ACCENT  = "var(--accent-color, #c9a84c)";
+const C_BTN     = "var(--btn-text-color, #1a2332)";
+
 function Stars({ n }: { n: number }) {
   const c = Math.min(5, Math.max(1, Math.round(n)));
   return <span style={{ color: GOLD, fontSize: "1rem" }}>{"★".repeat(c)}{"☆".repeat(5 - c)}</span>;
@@ -149,10 +155,10 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
           <div style={{
             width: "48px", height: "3px", background: GOLD, margin: "0 auto 1.25rem",
           }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: TEXT, marginBottom: "0.75rem" }}>
+          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: C_HEADING, marginBottom: "0.75rem" }}>
             Our Services
           </h2>
-          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: MUTED, maxWidth: "480px", margin: "0 auto", lineHeight: 1.7 }}>
+          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: C_BODY, maxWidth: "480px", margin: "0 auto", lineHeight: 1.7 }}>
             Professional services delivered with experience and dedication to quality.
           </p>
         </div>
@@ -175,10 +181,10 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: "1.5rem", margin: "0 auto 1.25rem",
               }}>{s.icon || "✓"}</div>
-              <h3 style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.1rem", color: NAVY, marginBottom: "0.625rem" }}>
+              <h3 style={{ fontFamily: FF, fontWeight: 700, fontSize: "1.1rem", color: C_HEADING, marginBottom: "0.625rem" }}>
                 {s.name}
               </h3>
-              <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: MUTED, lineHeight: 1.7 }}>
+              <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: C_BODY, lineHeight: 1.7 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
@@ -227,25 +233,25 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
         {/* Text */}
         <div>
           <div style={{ width: "40px", height: "3px", background: GOLD, marginBottom: "1.25rem" }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2rem", color: TEXT, marginBottom: "1.25rem", lineHeight: 1.2 }}>
+          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2rem", color: C_HEADING, marginBottom: "1.25rem", lineHeight: 1.2 }}>
             {content.title}
           </h2>
-          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: MUTED, lineHeight: 1.85, marginBottom: "1.75rem" }}>
+          <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: C_BODY, lineHeight: 1.85, marginBottom: "1.75rem" }}>
             {content.body}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {site.contactEmail && (
-              <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: NAVY, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: GOLD }}>✉</span> {site.contactEmail}
+              <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ color: C_ACCENT }}>✉</span> {site.contactEmail}
               </a>
             )}
             {site.contactPhone && (
-              <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: NAVY, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: GOLD }}>✆</span> {site.contactPhone}
+              <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ color: C_ACCENT }}>✆</span> {site.contactPhone}
               </a>
             )}
-            <span style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: NAVY, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span style={{ color: GOLD }}>📍</span> {site.serviceArea || site.location}
+            <span style={{ fontFamily: FF_SAN, fontSize: "0.875rem", color: C_HEADING, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ color: C_ACCENT }}>📍</span> {site.serviceArea || site.location}
             </span>
           </div>
         </div>
@@ -262,7 +268,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
       <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <div style={{ width: "48px", height: "3px", background: GOLD, margin: "0 auto 1.25rem" }} />
-          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: TEXT }}>
+          <h2 style={{ fontFamily: FF, fontWeight: 700, fontSize: "2.25rem", color: C_HEADING }}>
             Client Testimonials
           </h2>
         </div>
@@ -276,7 +282,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
               <Stars n={t.rating} />
               <p style={{
                 fontFamily: FF, fontStyle: "italic", fontSize: "0.9rem",
-                color: TEXT, lineHeight: 1.8, margin: "0.875rem 0 1.5rem",
+                color: C_BODY, lineHeight: 1.8, margin: "0.875rem 0 1.5rem",
               }}>"{t.quote}"</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <div style={{
@@ -289,8 +295,8 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
                   {t.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.875rem", color: TEXT }}>{t.name}</div>
-                  <div style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: MUTED }}>{t.role}</div>
+                  <div style={{ fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.875rem", color: C_HEADING }}>{t.name}</div>
+                  <div style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: C_BODY }}>{t.role}</div>
                 </div>
               </div>
             </div>
@@ -324,7 +330,7 @@ function CTA({ content, contactEmail, contactPhone }: {
           {content.subtext}
         </p>
         <a href={href} style={{
-          background: GOLD, color: TEXT,
+          background: GOLD, color: C_BTN,
           fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.95rem",
           padding: "14px 36px", borderRadius: "4px", textDecoration: "none",
           display: "inline-block", boxShadow: "0 4px 20px rgba(201,168,76,0.4)",

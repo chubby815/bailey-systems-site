@@ -73,7 +73,7 @@ export function SiteCTA({ content, tokens, contactEmail, contactPhone }: Props) 
             href={contactHref}
             style={{
               background: "#fff",
-              color: primaryColor,
+              color: `var(--btn-text-color, ${primaryColor})`,
               fontWeight: 700,
               fontSize: "1rem",
               padding: "0.9375rem 2.25rem",

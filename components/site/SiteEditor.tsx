@@ -545,6 +545,55 @@ function ContentPanel({
                 })}
               </div>
             </div>
+
+            {/* Text Colors */}
+            <div>
+              <label className={LABEL}>Text Colors</label>
+              <div className="space-y-2">
+                {(
+                  [
+                    { key: "headingColor",    label: "Heading Color",     fallback: "#111111" },
+                    { key: "bodyColor",       label: "Body Text Color",   fallback: "#6b7280" },
+                    { key: "accentColor",     label: "Accent Color",      fallback: "#10b981" },
+                    { key: "buttonTextColor", label: "Button Text Color", fallback: "#ffffff" },
+                  ] as const
+                ).map(({ key, label, fallback }) => {
+                  const value = (theme[key] as string | undefined) ?? fallback;
+                  return (
+                    <div key={key} className="flex items-center justify-between gap-3">
+                      <span className="text-[11px] text-[#9ca3af] flex-1">{label}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-[#4b5563] font-mono">{value}</span>
+                        <label className="relative cursor-pointer">
+                          <span
+                            className="block w-7 h-7 rounded border border-white/20 cursor-pointer"
+                            style={{ background: value }}
+                          />
+                          <input
+                            type="color"
+                            value={value}
+                            onChange={(e) => onThemeChange({ ...theme, [key]: e.target.value })}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => onThemeChange({
+                  ...theme,
+                  headingColor: undefined,
+                  bodyColor: undefined,
+                  accentColor: undefined,
+                  buttonTextColor: undefined,
+                })}
+                className="mt-2 text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2"
+              >
+                Reset to template defaults
+              </button>
+            </div>
           </div>
         )}
       </div>

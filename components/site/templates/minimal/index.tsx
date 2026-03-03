@@ -18,12 +18,18 @@ const TEXT    = "#111111";
 const MUTED   = "#6b6b6b";
 const BORDER  = "1px solid #e8e8e8";
 
+// CSS-variable–aware text colors
+const C_HEADING = "var(--heading-color, #111111)";
+const C_BODY    = "var(--body-color, #6b6b6b)";
+const C_BTN     = "var(--btn-text-color, #ffffff)";
+
 function Label({ children, color }: { children: React.ReactNode; color: string }) {
+  const accentC = `var(--accent-color, ${color})`;
   return (
     <span style={{
       fontFamily: FF_MONO, fontSize: "0.65rem", fontWeight: 600,
       textTransform: "uppercase", letterSpacing: "0.12em",
-      color, display: "block", marginBottom: "1rem",
+      color: accentC, display: "block", marginBottom: "1rem",
     }}>{children}</span>
   );
 }
@@ -97,19 +103,19 @@ function Hero({ content, primaryColor, location }: {
           fontFamily: FF_SANS, fontWeight: 600,
           fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
           lineHeight: 1.1, letterSpacing: "-0.04em",
-          color: TEXT, marginBottom: "1.5rem",
+          color: C_HEADING, marginBottom: "1.5rem",
         }}>
           {content.headline}
         </h1>
         <p style={{
           fontFamily: FF_SANS, fontSize: "1.1rem", fontWeight: 400,
-          color: MUTED, lineHeight: 1.75, marginBottom: "2.5rem",
+          color: C_BODY, lineHeight: 1.75, marginBottom: "2.5rem",
         }}>
           {content.subheadline}
         </p>
         <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
           <a href="#contact" style={{
-            background: primaryColor, color: "#fff",
+            background: primaryColor, color: C_BTN,
             fontFamily: FF_SANS, fontWeight: 500, fontSize: "0.9rem",
             padding: "11px 28px", borderRadius: "8px", textDecoration: "none",
           }}>{content.ctaText}</a>
@@ -132,7 +138,7 @@ function Services({ content, primaryColor, location }: { content: StructuredSite
       <div style={{ maxWidth: "960px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <Label color={primaryColor}>What We Do</Label>
-          <h2 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.03em", color: TEXT }}>
+          <h2 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.03em", color: C_HEADING }}>
             Our Services
           </h2>
         </div>
@@ -146,10 +152,10 @@ function Services({ content, primaryColor, location }: { content: StructuredSite
                 width: "40px", height: "40px",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>{s.icon || "○"}</div>
-              <h3 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "0.95rem", color: TEXT, marginBottom: "0.5rem" }}>
+              <h3 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "0.95rem", color: C_HEADING, marginBottom: "0.5rem" }}>
                 {s.name}
               </h3>
-              <p style={{ fontFamily: FF_SANS, fontSize: "0.825rem", color: MUTED, lineHeight: 1.65 }}>
+              <p style={{ fontFamily: FF_SANS, fontSize: "0.825rem", color: C_BODY, lineHeight: 1.65 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
@@ -170,9 +176,9 @@ function About({ content, site, primaryColor }: { content: StructuredSiteContent
           <div>
             <h2 style={{
               fontFamily: FF_SANS, fontWeight: 600, fontSize: "1.75rem",
-              letterSpacing: "-0.03em", color: TEXT, marginBottom: "1.25rem", lineHeight: 1.2,
+              letterSpacing: "-0.03em", color: C_HEADING, marginBottom: "1.25rem", lineHeight: 1.2,
             }}>{content.title}</h2>
-            <p style={{ fontFamily: FF_SANS, fontSize: "0.9rem", color: MUTED, lineHeight: 1.85, marginBottom: "1.5rem" }}>
+            <p style={{ fontFamily: FF_SANS, fontSize: "0.9rem", color: C_BODY, lineHeight: 1.85, marginBottom: "1.5rem" }}>
               {content.body}
             </p>
             {site.contactEmail && (
@@ -215,7 +221,7 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
       <div style={{ maxWidth: "960px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <Label color={primaryColor}>Reviews</Label>
-          <h2 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.03em", color: TEXT }}>
+          <h2 style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "2rem", letterSpacing: "-0.03em", color: C_HEADING }}>
             What clients say
           </h2>
         </div>
@@ -224,11 +230,11 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
             <div key={i} style={{ background: "#fff", padding: "2rem" }}>
               <Stars n={t.rating} color={primaryColor} />
               <p style={{
-                fontFamily: FF_SANS, fontSize: "0.875rem", color: MUTED,
+                fontFamily: FF_SANS, fontSize: "0.875rem", color: C_BODY,
                 lineHeight: 1.8, margin: "1rem 0 1.5rem", fontStyle: "italic",
               }}>"{t.quote}"</p>
-              <div style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "0.8rem", color: TEXT }}>{t.name}</div>
-              <div style={{ fontFamily: FF_SANS, fontSize: "0.75rem", color: MUTED }}>{t.role}</div>
+              <div style={{ fontFamily: FF_SANS, fontWeight: 600, fontSize: "0.8rem", color: C_HEADING }}>{t.name}</div>
+              <div style={{ fontFamily: FF_SANS, fontSize: "0.75rem", color: C_BODY }}>{t.role}</div>
             </div>
           ))}
         </div>
@@ -252,14 +258,14 @@ function CTA({ content, primaryColor, contactEmail, contactPhone }: {
         <h2 style={{
           fontFamily: FF_SANS, fontWeight: 600,
           fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
-          letterSpacing: "-0.04em", color: TEXT,
+          letterSpacing: "-0.04em", color: C_HEADING,
           marginBottom: "1rem", lineHeight: 1.15,
         }}>{content.headline}</h2>
-        <p style={{ fontFamily: FF_SANS, fontSize: "0.9rem", color: MUTED, marginBottom: "2.5rem", lineHeight: 1.7 }}>
+        <p style={{ fontFamily: FF_SANS, fontSize: "0.9rem", color: C_BODY, marginBottom: "2.5rem", lineHeight: 1.7 }}>
           {content.subtext}
         </p>
         <a href={href} style={{
-          background: primaryColor, color: "#fff",
+          background: primaryColor, color: C_BTN,
           fontFamily: FF_SANS, fontWeight: 500, fontSize: "0.95rem",
           padding: "13px 32px", borderRadius: "8px", textDecoration: "none", display: "inline-block",
         }}>{content.buttonText}</a>

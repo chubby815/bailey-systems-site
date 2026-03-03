@@ -2,6 +2,8 @@
  * TemplateRenderer
  * Reads site.template and renders the correct layout.
  * Falls back to Dark Premium for legacy sites or unknown template values.
+ * Injects CSS variables from ThemeConfig so each template can use
+ * var(--heading-color), var(--body-color), var(--accent-color), var(--btn-text-color).
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
@@ -16,7 +18,7 @@ import { ClassicLayout }      from "./templates/classic";
 type Props = {
   site:           SiteRecord;
   content:        StructuredSiteContent;
-  theme:          ThemeConfig;         // used by Dark Premium
+  theme:          ThemeConfig;
   themeOverride?: Partial<ThemeConfig>;
   heroImageUrl?:  string;
 };
@@ -29,22 +31,40 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
 
   const sharedProps = { site, content, primaryColor, heroImageUrl };
 
+  // Build CSS variable overrides from ThemeConfig color fields.
+  // Only set a var when the user has explicitly chosen a value (non-empty string).
+  const cssVars: React.CSSProperties = {};
+  if (resolvedTheme.headingColor)    (cssVars as Record<string, string>)["--heading-color"]   = resolvedTheme.headingColor;
+  if (resolvedTheme.bodyColor)       (cssVars as Record<string, string>)["--body-color"]      = resolvedTheme.bodyColor;
+  if (resolvedTheme.accentColor)     (cssVars as Record<string, string>)["--accent-color"]    = resolvedTheme.accentColor;
+  if (resolvedTheme.buttonTextColor) (cssVars as Record<string, string>)["--btn-text-color"]  = resolvedTheme.buttonTextColor;
+
+  const hasCssVars = Object.keys(cssVars).length > 0;
+
+  let layout: React.ReactNode;
   switch (template) {
     case "neobrutalism":
-      return <NeoBrutalismLayout {...sharedProps} />;
+      layout = <NeoBrutalismLayout {...sharedProps} />;
+      break;
     case "minimal":
-      return <MinimalLayout {...sharedProps} />;
+      layout = <MinimalLayout {...sharedProps} />;
+      break;
     case "magazine":
-      return <MagazineLayout {...sharedProps} />;
+      layout = <MagazineLayout {...sharedProps} />;
+      break;
     case "classic":
-      return <ClassicLayout {...sharedProps} />;
+      layout = <ClassicLayout {...sharedProps} />;
+      break;
     case "darkpremium":
     default:
-      return (
-        <DarkPremiumLayout
-          {...sharedProps}
-          theme={resolvedTheme}
-        />
-      );
+      layout = <DarkPremiumLayout {...sharedProps} theme={resolvedTheme} />;
   }
+
+  if (!hasCssVars) return <>{layout}</>;
+
+  return (
+    <div style={cssVars}>
+      {layout}
+    </div>
+  );
 }

@@ -96,7 +96,7 @@ export function SiteAbout({ content, tokens, site }: Props) {
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: primaryColor,
+              color: `var(--accent-color, ${primaryColor})`,
               marginBottom: "0.75rem",
             }}
           >
@@ -108,7 +108,7 @@ export function SiteAbout({ content, tokens, site }: Props) {
               fontSize: "2rem",
               fontWeight,
               letterSpacing: "-0.03em",
-              color: "#111",
+              color: "var(--heading-color, #111)",
               marginBottom: "1.25rem",
             }}
           >
@@ -117,7 +117,7 @@ export function SiteAbout({ content, tokens, site }: Props) {
           <p
             style={{
               fontSize: "1rem",
-              color: "#6b7280",
+              color: "var(--body-color, #6b7280)",
               lineHeight: 1.8,
               marginBottom: "1.75rem",
             }}

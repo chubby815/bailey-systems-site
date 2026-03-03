@@ -21,7 +21,7 @@ export function SiteServices({ content, tokens, location }: Props) {
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: primaryColor,
+              color: `var(--accent-color, ${primaryColor})`,
               marginBottom: "0.75rem",
             }}
           >
@@ -33,7 +33,7 @@ export function SiteServices({ content, tokens, location }: Props) {
               fontSize: "2.5rem",
               fontWeight,
               letterSpacing: "-0.03em",
-              color: "#111",
+              color: "var(--heading-color, #111)",
             }}
           >
             Our Services
@@ -78,13 +78,13 @@ export function SiteServices({ content, tokens, location }: Props) {
                   fontFamily,
                   fontSize: "1rem",
                   fontWeight: 700,
-                  color: "#111",
+                  color: "var(--heading-color, #111)",
                   marginBottom: "0.5rem",
                 }}
               >
                 {service.name}
               </h3>
-              <p style={{ fontSize: "0.875rem", color: "#6b7280", lineHeight: 1.6 }}>
+              <p style={{ fontSize: "0.875rem", color: "var(--body-color, #6b7280)", lineHeight: 1.6 }}>
                 {service.description ||
                   `Professional ${service.name.toLowerCase()} services in ${location}.`}
               </p>

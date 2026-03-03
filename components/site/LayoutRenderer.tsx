@@ -40,6 +40,12 @@ export function LayoutRenderer({ site, content, theme, themeOverride, heroImageU
     content.about.title ||
     "";
 
+  const cssVarsFromTheme: Record<string, string> = {};
+  if (resolvedTheme.headingColor)    cssVarsFromTheme["--heading-color"]  = resolvedTheme.headingColor;
+  if (resolvedTheme.bodyColor)       cssVarsFromTheme["--body-color"]     = resolvedTheme.bodyColor;
+  if (resolvedTheme.accentColor)     cssVarsFromTheme["--accent-color"]   = resolvedTheme.accentColor;
+  if (resolvedTheme.buttonTextColor) cssVarsFromTheme["--btn-text-color"] = resolvedTheme.buttonTextColor;
+
   return (
     <div style={{
       fontFamily: tokens.fontFamily,
@@ -50,6 +56,7 @@ export function LayoutRenderer({ site, content, theme, themeOverride, heroImageU
       "--surface":    "#f9fafb",
       "--text-color": "#1a1a1a",
       "--accent":     tokens.primaryColor,
+      ...cssVarsFromTheme,
     } as React.CSSProperties}>
       <SiteNavbar
         businessName={site.businessName}

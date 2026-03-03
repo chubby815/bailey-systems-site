@@ -37,7 +37,7 @@ export function SiteNavbar({ businessName, ctaText, tokens }: Props) {
             fontWeight,
             fontFamily,
             fontSize: "1.25rem",
-            color: "#1a1a1a",
+            color: "var(--heading-color, #1a1a1a)",
             textDecoration: "none",
             letterSpacing: "-0.03em",
           }}
@@ -60,11 +60,11 @@ export function SiteNavbar({ businessName, ctaText, tokens }: Props) {
               {link}
             </a>
           ))}
-          <a
+            <a
             href="#contact"
             style={{
               background: primaryColor,
-              color: "#fff",
+              color: "var(--btn-text-color, #fff)",
               fontWeight: 700,
               fontSize: "0.875rem",
               padding: "0.5rem 1.25rem",

@@ -17,6 +17,11 @@ export type ThemeConfig = {
   heroStyle:    HeroStyleKey;
   layoutStyle:  LayoutStyleKey;
   buttonStyle?: ButtonStyleKey;  // optional — defaults to "rounded"
+  // Text color overrides — applied as CSS variables across all templates
+  headingColor?:    string;      // --heading-color
+  bodyColor?:       string;      // --body-color
+  accentColor?:     string;      // --accent-color (overrides primary for text labels)
+  buttonTextColor?: string;      // --btn-text-color
 };
 
 export type ThemeTokens = {

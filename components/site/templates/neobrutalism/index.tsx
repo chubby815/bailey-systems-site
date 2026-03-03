@@ -21,6 +21,12 @@ const SHADOW  = "4px 4px 0px #000";
 const SHADOW_LG = "6px 6px 0px #000";
 const FF      = "'Helvetica Neue', 'Arial Black', Arial, sans-serif";
 
+// CSS-variable–aware text colors (user can override via editor)
+const C_HEADING = "var(--heading-color, #000000)";
+const C_BODY    = "var(--body-color, #333333)";
+const C_ACCENT  = "var(--accent-color, #000000)";
+const C_BTN     = "var(--btn-text-color, #FFE500)";
+
 function Stars({ n }: { n: number }) {
   return (
     <span style={{ color: YELLOW, fontSize: "1.1rem", textShadow: "1px 1px 0 #000" }}>
@@ -92,24 +98,24 @@ function Hero({ content, heroImageUrl, primaryColor, location }: {
           }}>
             {content.badge || location}
           </div>
-          <h1 style={{
-            fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
-            lineHeight: 1.0, letterSpacing: "-0.03em",
-            color: BLACK, marginBottom: "1.5rem",
-            textTransform: "uppercase",
-          }}>
-            {content.headline}
-          </h1>
-          <p style={{
-            fontFamily: FF, fontSize: "1.05rem",
-            color: "#333", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "480px",
-          }}>
-            {content.subheadline}
-          </p>
-          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-            <a href="#contact" style={{
-              background: BLACK, color: YELLOW,
+        <h1 style={{
+          fontFamily: FF, fontWeight: 900,
+          fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+          lineHeight: 1.0, letterSpacing: "-0.03em",
+          color: C_HEADING, marginBottom: "1.5rem",
+          textTransform: "uppercase",
+        }}>
+          {content.headline}
+        </h1>
+        <p style={{
+          fontFamily: FF, fontSize: "1.05rem",
+          color: C_BODY, lineHeight: 1.7, marginBottom: "2rem", maxWidth: "480px",
+        }}>
+          {content.subheadline}
+        </p>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <a href="#contact" style={{
+            background: BLACK, color: C_BTN,
               fontFamily: FF, fontWeight: 900, fontSize: "0.95rem",
               padding: "14px 28px", border: BORDER, boxShadow: SHADOW_LG,
               textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.05em",
@@ -165,7 +171,7 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
           }}>02</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900, fontSize: "2.5rem",
-            textTransform: "uppercase", letterSpacing: "-0.02em", color: BLACK,
+            textTransform: "uppercase", letterSpacing: "-0.02em", color: C_HEADING,
           }}>Services</h2>
         </div>
         <div style={{
@@ -184,9 +190,9 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
               }}>{s.icon || "✦"}</div>
               <h3 style={{
                 fontFamily: FF, fontWeight: 900, fontSize: "1.1rem",
-                textTransform: "uppercase", color: BLACK, marginBottom: "0.5rem",
+                textTransform: "uppercase", color: C_HEADING, marginBottom: "0.5rem",
               }}>{s.name}</h3>
-              <p style={{ fontFamily: FF, fontSize: "0.875rem", color: "#333", lineHeight: 1.6 }}>
+              <p style={{ fontFamily: FF, fontSize: "0.875rem", color: C_BODY, lineHeight: 1.6 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
@@ -209,16 +215,16 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
           }}>03</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900, fontSize: "2.5rem",
-            textTransform: "uppercase", letterSpacing: "-0.02em", color: BLACK,
+            textTransform: "uppercase", letterSpacing: "-0.02em", color: C_HEADING,
           }}>About Us</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
           <div>
             <h3 style={{
               fontFamily: FF, fontWeight: 900, fontSize: "1.8rem",
-              textTransform: "uppercase", color: BLACK, marginBottom: "1rem", lineHeight: 1.1,
+              textTransform: "uppercase", color: C_HEADING, marginBottom: "1rem", lineHeight: 1.1,
             }}>{content.title}</h3>
-            <p style={{ fontFamily: FF, fontSize: "0.95rem", color: "#333", lineHeight: 1.8, marginBottom: "1.5rem" }}>
+            <p style={{ fontFamily: FF, fontSize: "0.95rem", color: C_BODY, lineHeight: 1.8, marginBottom: "1.5rem" }}>
               {content.body}
             </p>
             {site.contactEmail && (
@@ -273,6 +279,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
             fontFamily: FF, fontWeight: 900, fontSize: "2.5rem",
             textTransform: "uppercase", letterSpacing: "-0.02em", color: "#fff",
           }}>What They Say</h2>
+          {/* testimonials section heading stays white — it's on a black background */}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.25rem" }}>
           {content.map((t, i) => (
@@ -283,13 +290,13 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
             }}>
               <Stars n={t.rating} />
               <p style={{
-                fontFamily: FF, fontSize: "0.9rem", color: BLACK, lineHeight: 1.7,
+                fontFamily: FF, fontSize: "0.9rem", color: C_BODY, lineHeight: 1.7,
                 margin: "0.75rem 0 1.25rem", fontWeight: 700,
               }}>"{t.quote}"</p>
-              <div style={{ fontFamily: FF, fontWeight: 900, fontSize: "0.875rem", color: BLACK, textTransform: "uppercase" }}>
+              <div style={{ fontFamily: FF, fontWeight: 900, fontSize: "0.875rem", color: C_HEADING, textTransform: "uppercase" }}>
                 — {t.name}
               </div>
-              <div style={{ fontFamily: FF, fontSize: "0.75rem", color: "#555", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ fontFamily: FF, fontSize: "0.75rem", color: C_BODY, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {t.role}
               </div>
             </div>
@@ -318,13 +325,13 @@ function CTA({ content, contactEmail, contactPhone }: {
           fontFamily: FF, fontWeight: 900,
           fontSize: "clamp(2rem, 5vw, 3.5rem)",
           textTransform: "uppercase", letterSpacing: "-0.03em",
-          color: BLACK, marginBottom: "1rem", lineHeight: 1.0,
+          color: C_HEADING, marginBottom: "1rem", lineHeight: 1.0,
         }}>{content.headline}</h2>
-        <p style={{ fontFamily: FF, fontSize: "1rem", color: "#333", marginBottom: "2.5rem" }}>
+        <p style={{ fontFamily: FF, fontSize: "1rem", color: C_BODY, marginBottom: "2.5rem" }}>
           {content.subtext}
         </p>
         <a href={href} style={{
-          background: BLACK, color: YELLOW,
+          background: BLACK, color: C_BTN,
           fontFamily: FF, fontWeight: 900, fontSize: "1.1rem",
           padding: "18px 40px", border: BORDER,
           boxShadow: SHADOW_LG, textDecoration: "none",

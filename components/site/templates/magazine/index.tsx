@@ -19,11 +19,17 @@ const LINE   = "#e0ddd8";
 const FF_SER = "Georgia, 'Times New Roman', serif";
 const FF_SAN = "'Helvetica Neue', Arial, sans-serif";
 
+// CSS-variable–aware text colors
+const C_HEADING = "var(--heading-color, #1a1a1a)";
+const C_BODY    = "var(--body-color, #6b6b6b)";
+const C_BTN     = "var(--btn-text-color, #ffffff)";
+
 function Num({ n, color }: { n: string; color: string }) {
+  const accentC = `var(--accent-color, ${color})`;
   return (
     <span style={{
       fontFamily: FF_SER, fontWeight: 400, fontSize: "5rem",
-      color: "transparent", WebkitTextStroke: `1px ${color}`,
+      color: "transparent", WebkitTextStroke: `1px ${accentC}`,
       lineHeight: 1, display: "block", marginBottom: "0.25rem", opacity: 0.5,
     }}>{n}</span>
   );
@@ -110,7 +116,7 @@ function Hero({ content, heroImageUrl, primaryColor, location }: {
           fontFamily: FF_SER, fontWeight: 700, fontStyle: "italic",
           fontSize: "clamp(3rem, 7vw, 6rem)",
           lineHeight: 0.95, letterSpacing: "-0.03em",
-          color: "#fff", marginBottom: "1.5rem",
+          color: "#fff", marginBottom: "1.5rem", // hero text stays white — overlaid on dark image
           maxWidth: "800px",
         }}>
           {content.headline}
@@ -156,7 +162,7 @@ function Services({ content, primaryColor, location }: { content: StructuredSite
         <h2 style={{
           fontFamily: FF_SER, fontStyle: "italic", fontWeight: 700,
           fontSize: "clamp(2rem, 4vw, 3.25rem)", letterSpacing: "-0.03em",
-          color: BLACK, marginBottom: "3rem", maxWidth: "600px",
+          color: C_HEADING, marginBottom: "3rem", maxWidth: "600px",
         }}>What We Offer</h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0" }}>
@@ -169,10 +175,10 @@ function Services({ content, primaryColor, location }: { content: StructuredSite
               <div style={{ fontFamily: FF_SER, fontSize: "1.75rem", marginBottom: "0.75rem", fontStyle: "italic", color: primaryColor }}>
                 {s.icon || "§"}
               </div>
-              <h3 style={{ fontFamily: FF_SAN, fontWeight: 600, fontSize: "1rem", color: BLACK, marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <h3 style={{ fontFamily: FF_SAN, fontWeight: 600, fontSize: "1rem", color: C_HEADING, marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 {s.name}
               </h3>
-              <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: MUTED, lineHeight: 1.7 }}>
+              <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: C_BODY, lineHeight: 1.7 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
@@ -201,9 +207,9 @@ function About({ content, site, primaryColor }: { content: StructuredSiteContent
             <h2 style={{
               fontFamily: FF_SER, fontStyle: "italic", fontWeight: 700,
               fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.03em",
-              color: BLACK, marginBottom: "1.75rem", lineHeight: 1.1,
+              color: C_HEADING, marginBottom: "1.75rem", lineHeight: 1.1,
             }}>{content.title}</h2>
-            <p style={{ fontFamily: FF_SAN, fontSize: "1rem", color: MUTED, lineHeight: 1.9, marginBottom: "2rem" }}>
+            <p style={{ fontFamily: FF_SAN, fontSize: "1rem", color: C_BODY, lineHeight: 1.9, marginBottom: "2rem" }}>
               {content.body}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -255,7 +261,7 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
         <h2 style={{
           fontFamily: FF_SER, fontStyle: "italic", fontWeight: 700,
           fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.03em",
-          color: BLACK, marginBottom: "3rem",
+          color: C_HEADING, marginBottom: "3rem",
         }}>What Our Clients Say</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "2rem" }}>
           {content.map((t, i) => (
@@ -263,14 +269,14 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
               <Stars n={t.rating} color={primaryColor} />
               <p style={{
                 fontFamily: FF_SER, fontStyle: "italic", fontSize: "1rem",
-                color: BLACK, lineHeight: 1.8, margin: "1rem 0 1.25rem",
+                color: C_BODY, lineHeight: 1.8, margin: "1rem 0 1.25rem",
               }}>
                 "{t.quote}"
               </p>
-              <div style={{ fontFamily: FF_SAN, fontWeight: 600, fontSize: "0.8rem", color: BLACK, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <div style={{ fontFamily: FF_SAN, fontWeight: 600, fontSize: "0.8rem", color: C_HEADING, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 {t.name}
               </div>
-              <div style={{ fontFamily: FF_SAN, fontSize: "0.75rem", color: MUTED, marginTop: "0.125rem" }}>
+              <div style={{ fontFamily: FF_SAN, fontSize: "0.75rem", color: C_BODY, marginTop: "0.125rem" }}>
                 {t.role}
               </div>
             </div>
@@ -302,14 +308,14 @@ function CTA({ content, primaryColor, contactEmail, contactPhone }: {
         <h2 style={{
           fontFamily: FF_SER, fontStyle: "italic", fontWeight: 700,
           fontSize: "clamp(2rem, 5vw, 3.5rem)",
-          letterSpacing: "-0.03em", color: "#fff",
+          letterSpacing: "-0.03em", color: "#fff", // CTA section on black bg — stays white
           marginBottom: "1.25rem", lineHeight: 1.1,
         }}>{content.headline}</h2>
         <p style={{ fontFamily: FF_SAN, fontSize: "0.95rem", color: "rgba(255,255,255,0.55)", marginBottom: "2.5rem", lineHeight: 1.7 }}>
           {content.subtext}
         </p>
         <a href={href} style={{
-          background: primaryColor, color: "#fff",
+          background: primaryColor, color: C_BTN,
           fontFamily: FF_SAN, fontWeight: 600, fontSize: "0.875rem",
           padding: "14px 36px", textDecoration: "none",
           textTransform: "uppercase", letterSpacing: "0.1em", display: "inline-block",

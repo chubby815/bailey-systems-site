@@ -41,7 +41,7 @@ export function SiteTestimonials({ content, tokens }: Props) {
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: primaryColor,
+              color: `var(--accent-color, ${primaryColor})`,
               marginBottom: "0.75rem",
             }}
           >
@@ -53,7 +53,7 @@ export function SiteTestimonials({ content, tokens }: Props) {
               fontSize: "2.5rem",
               fontWeight,
               letterSpacing: "-0.03em",
-              color: "#111",
+              color: "var(--heading-color, #111)",
             }}
           >
             Customer Reviews
@@ -98,7 +98,7 @@ export function SiteTestimonials({ content, tokens }: Props) {
               <p
                 style={{
                   fontSize: "0.9375rem",
-                  color: "#374151",
+                  color: "var(--body-color, #374151)",
                   lineHeight: 1.75,
                   marginBottom: "1.5rem",
                   fontStyle: "italic",
@@ -126,10 +126,10 @@ export function SiteTestimonials({ content, tokens }: Props) {
                   {t.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "#111" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--heading-color, #111)" }}>
                     {t.name}
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#9ca3af" }}>{t.role}</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--body-color, #9ca3af)" }}>{t.role}</div>
                 </div>
               </div>
             </div>
