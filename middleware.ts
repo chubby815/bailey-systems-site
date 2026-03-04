@@ -44,6 +44,8 @@ export function middleware(request: NextRequest) {
       return forwardWithPathname(request, nextUrl.pathname);
     }
 
+    console.log(`[middleware] subdomain detected: "${subdomain}" (host="${host}")`);
+
     // Never rewrite API routes — they must always resolve on the main domain.
     // Without this guard, a request to elninostacos.baileyagents.com/api/admin/...
     // would get rewritten to /sites/elninostacos/api/admin/... → 404.
@@ -66,6 +68,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", `/sites/${subdomain}`);
 
+    console.log(`[middleware] rewriting to: "${rewrittenPath}"`);
     return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   }
 

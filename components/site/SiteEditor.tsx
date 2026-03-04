@@ -778,22 +778,7 @@ export function SiteEditor({
   const hasChanges                            = useRef(false);
   const [, startTransition]                   = useTransition();
 
-  // ── Clean site mode: no editor chrome ───────────────────────────────────
-  // Show the editor only when the owner explicitly visits with ?edit=true.
-  // Any other visitor (or owner without the param) sees the clean published site.
-  if (!isOwner || !editMode) {
-    return (
-      <TemplateRenderer
-        site={{ ...site, template: site.template ?? "darkpremium" }}
-        content={content}
-        theme={theme}
-        heroImageUrl={initialHeroImageUrl}
-      />
-    );
-  }
-
-  // ── Save function ─────────────────────────────────────────────────────────
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // ── Save function (must be declared before any early return per React rules) ──
   const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig, tmpl: string) => {
     setIsSaving(true);
     setSaveError(false);
@@ -812,8 +797,7 @@ export function SiteEditor({
     }
   }, [siteId]);
 
-  // ── Debounced autosave ────────────────────────────────────────────────────
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // ── Debounced autosave (must be declared before any early return) ─────────
   useEffect(() => {
     if (!hasChanges.current) return;
     const timer = setTimeout(() => {
@@ -821,6 +805,20 @@ export function SiteEditor({
     }, 800);
     return () => clearTimeout(timer);
   }, [currentContent, currentTheme, currentTemplate, doSave, startTransition]);
+
+  // ── Clean site mode: no editor chrome ───────────────────────────────────
+  // SiteEditor is only mounted by page.tsx when isOwner && editMode, but this
+  // guard is kept as a safety net in case props are passed differently.
+  if (!isOwner || !editMode) {
+    return (
+      <TemplateRenderer
+        site={{ ...site, template: site.template ?? "darkpremium" }}
+        content={content}
+        theme={theme}
+        heroImageUrl={initialHeroImageUrl}
+      />
+    );
+  }
 
   function handleContentChange(c: StructuredSiteContent) {
     hasChanges.current = true;

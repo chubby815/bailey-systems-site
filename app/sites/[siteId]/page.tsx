@@ -18,9 +18,16 @@ export const dynamic = "force-dynamic";
  * subdomain rewrites like elninostacos.baileyagents.com → /sites/elninostacos work.
  */
 async function resolveSite(siteId: string) {
+  console.log(`[resolveSite] looking up siteId="${siteId}"`);
   const direct = await getSite(siteId);
-  if (direct) return direct;
-  return getSiteBySlug(siteId);
+  if (direct) {
+    console.log(`[resolveSite] found by direct key site:${siteId}`);
+    return direct;
+  }
+  console.log(`[resolveSite] no direct match — trying slug lookup slug:${siteId}`);
+  const bySlug = await getSiteBySlug(siteId);
+  console.log(`[resolveSite] slug lookup → ${bySlug ? `found site "${bySlug.siteId}"` : "null (404)"}`);
+  return bySlug;
 }
 
 export async function generateMetadata({
@@ -140,7 +147,9 @@ export default async function SitePage({
     const storedImage      = await kv.get<string>(`site:${siteId}:hero-image`);
     const customHeroImgUrl = storedImage ? `/api/sites/${siteId}/image` : undefined;
 
-    if (isOwner) {
+    // Only mount the editor chrome when the owner explicitly visits with ?edit=true.
+    // All other visits (visitors, or owner without ?edit=true) get the clean site.
+    if (isOwner && editMode) {
       return (
         <>
           {siteIsPaused && <PausedOverlay />}
@@ -149,7 +158,7 @@ export default async function SitePage({
             content={c}
             theme={theme}
             isOwner={true}
-            editMode={editMode}
+            editMode={true}
             siteId={siteId}
             initialHeroImageUrl={customHeroImgUrl}
           />

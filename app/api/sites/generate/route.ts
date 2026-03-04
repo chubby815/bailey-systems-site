@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getActivePlan } from "@/lib/auth";
-import { saveSite, getUserSites, type SiteRecord } from "@/lib/kv";
+import { saveSite, getUserSites, kv, type SiteRecord } from "@/lib/kv";
 import { rateLimit } from "@/lib/ratelimit";
 import { checkAndIncrementUsage, checkAndIncrementRegen } from "@/lib/usage";
 import type { StructuredSiteContent } from "@/lib/site-theme";
@@ -399,8 +399,8 @@ Required JSON structure:
 
   // Save reverse-lookup key: slug:{subdomainSlug} → siteId
   // This allows the middleware subdomain rewrite to resolve the real siteId.
-  const { kv } = await import("@/lib/kv");
   await kv.set(`slug:${subdomainSlug}`, siteId);
+  console.log(`[sites/generate] slug key saved: "slug:${subdomainSlug}" → "${siteId}"`);
 
   return NextResponse.json({
     siteId,
