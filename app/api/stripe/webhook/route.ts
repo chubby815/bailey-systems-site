@@ -3,8 +3,19 @@ import { stripe } from "@/lib/stripe";
 import { kv } from "@/lib/kv";
 import Stripe from "stripe";
 
-
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+
+// ── Price ID → plan name ───────────────────────────────────────────────────────
+// Reading from the actual price ID (not subscription metadata) ensures portal
+// upgrades/downgrades are reflected correctly — metadata is only set during our
+// checkout flow and won't be updated if the user changes plan via Stripe portal.
+function planFromPriceId(priceId: string | undefined | null): "starter" | "growth" | "pro" {
+  if (priceId && priceId === process.env.STRIPE_PRICE_PRO_MONTHLY)    return "pro";
+  if (priceId && priceId === process.env.STRIPE_PRICE_GROWTH_MONTHLY) return "growth";
+  if (priceId && priceId === process.env.STRIPE_PRICE_STARTER_MONTHLY) return "starter";
+  // Fall back to metadata if price ID doesn't match known IDs (e.g. legacy price)
+  return "starter";
+}
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -35,7 +46,20 @@ export async function POST(req: NextRequest) {
         const email = session.customer_email ?? session.customer_details?.email;
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
-        const plan = session.metadata?.plan ?? "starter";
+
+        // Resolve the plan from the actual price ID on the subscription.
+        // Fall back to session metadata for cases where the subscription
+        // hasn't expanded line items (e.g. some older API versions).
+        let plan: string = session.metadata?.plan ?? "starter";
+        if (subscriptionId) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(subscriptionId);
+            const priceId = sub.items.data[0]?.price?.id;
+            plan = planFromPriceId(priceId);
+          } catch {
+            // Non-fatal — keep the metadata fallback
+          }
+        }
 
         if (email) {
           await kv.set(`sub:${email}`, {
@@ -63,8 +87,13 @@ export async function POST(req: NextRequest) {
         const email = await kv.get<string>(`sub:cust:${customerId}`);
         if (!email) break;
 
-        const plan = sub.metadata?.plan ?? "starter";
-        const status = sub.status; // active | past_due | canceled | etc.
+        // Read plan from the actual price ID — NOT metadata.
+        // When a user upgrades/downgrades via the Stripe billing portal,
+        // our checkout metadata isn't updated, but the price ID always reflects
+        // the current plan correctly.
+        const priceId = sub.items.data[0]?.price?.id;
+        const plan = planFromPriceId(priceId);
+        const status = sub.status; // active | past_due | canceled | trialing | etc.
 
         await kv.set(`sub:${email}`, {
           plan,
@@ -74,7 +103,7 @@ export async function POST(req: NextRequest) {
           updatedAt: new Date().toISOString(),
         });
 
-        console.log(`[webhook] updated ${email} → ${plan} (${status})`);
+        console.log(`[webhook] updated ${email} → ${plan} (${status}) priceId=${priceId}`);
         break;
       }
 

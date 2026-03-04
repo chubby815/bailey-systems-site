@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { authSchema } from "@/utils/validations";
-import { createSessionToken, getUserSession } from "@/lib/auth";
+import { createSessionToken, getSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 
-export async function GET() {
-  const session = await getUserSession();
+export async function GET(req: NextRequest) {
+  // Use getSession(req) — reads directly from NextRequest cookies.
+  // getUserSession() uses next/headers cookies() which can silently return null
+  // in Route Handlers on Vercel, causing the navbar to show Login when logged in.
+  const session = await getSession(req);
   return NextResponse.json({ session });
 }
 
