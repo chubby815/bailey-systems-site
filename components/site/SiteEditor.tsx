@@ -928,7 +928,9 @@ export function SiteEditor({
             {saveError ? "Save failed" : isSaving ? "Saving…" : lastSaved ? "Saved ✓" : ""}
           </span>
           <a
-            href={`/sites/${siteId}`}
+            href={site.subdomainSlug
+              ? `https://${site.subdomainSlug}.baileyagents.com`
+              : `/sites/${siteId}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

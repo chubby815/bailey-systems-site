@@ -148,6 +148,7 @@ export default async function DashboardPage() {
                     businessName={site.businessName}
                     industry={site.industry}
                     createdAt={site.createdAt}
+                    subdomainSlug={site.subdomainSlug}
                   />
                 ))}
               </div>

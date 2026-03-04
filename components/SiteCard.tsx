@@ -9,16 +9,21 @@ type Props = {
   businessName: string;
   industry: string;
   createdAt: string;
+  subdomainSlug?: string;
 };
 
-export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
+export function SiteCard({ siteId, businessName, industry, createdAt, subdomainSlug }: Props) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Prefer the subdomain URL; fall back to the /sites/ path
+  const liveUrl = subdomainSlug
+    ? `https://${subdomainSlug}.baileyagents.com`
+    : `${typeof window !== "undefined" ? window.location.origin : "https://baileyagents.com"}/sites/${siteId}`;
+
   function copyLink() {
-    const url = `${window.location.origin}/sites/${siteId}`;
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard.writeText(liveUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -80,14 +85,14 @@ export function SiteCard({ siteId, businessName, industry, createdAt }: Props) {
         >
           Edit Site ✏️
         </Link>
-        <Link
-          href={`/sites/${siteId}`}
+        <a
+          href={liveUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs font-medium text-[#6b7280] border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 rounded-lg hover:text-white hover:border-white/20 transition-all"
         >
           View Site ↗
-        </Link>
+        </a>
         <button
           onClick={copyLink}
           className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-all ${

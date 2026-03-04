@@ -130,7 +130,10 @@ export default async function SitePage({
   if (!site) notFound();
 
   const viewerSession  = await getSessionFromCookies();
-  const isOwner        = viewerSession?.email === site.userId;
+  // Case-insensitive comparison: old sites may have mixed-case userId from before
+  // email normalization was added. Current sessions always use lowercase email.
+  const isOwner        = !!viewerSession?.email &&
+    viewerSession.email.toLowerCase() === (site.userId ?? "").toLowerCase();
   const ownerSub       = await getSubscriptionStatus(site.userId);
   const siteIsPaused   =
     ownerSub !== null &&

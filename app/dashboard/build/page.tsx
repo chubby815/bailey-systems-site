@@ -222,7 +222,8 @@ function BuildForm() {
         if (res.status === 403) { router.push("/pricing?reason=subscription_required"); return; }
         throw new Error(data.error ?? "Generation failed");
       }
-      router.push(data.url);
+      // Redirect into the editor so the owner sees the site with the edit bar and share URL.
+      router.push(`${data.url}?edit=true`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setStep("form");
