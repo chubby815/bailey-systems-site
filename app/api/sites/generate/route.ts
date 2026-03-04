@@ -396,6 +396,8 @@ Required JSON structure:
     enableChat:        enableChat === true,
   };
 
+  console.log(`[sites/generate] siteId="${siteId}" enableChat=${siteData.enableChat}`);
+
   // Save site record
   await saveSite(siteId, siteData);
 

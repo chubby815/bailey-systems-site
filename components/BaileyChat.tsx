@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -38,6 +39,7 @@ CONTACT:
 Be friendly, concise, and helpful. Always encourage users to start their free trial at baileyagents.com`;
 
 export function BaileyChat() {
+  const pathname                = usePathname();
   const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hi! I'm Bailey 👋 Ask me anything about BaileyAgents — pricing, features, or how our AI tools work." },
@@ -46,6 +48,11 @@ export function BaileyChat() {
   const [loading, setLoading]   = useState(false);
   const bottomRef               = useRef<HTMLDivElement>(null);
   const inputRef                = useRef<HTMLInputElement>(null);
+
+  // Never show BaileyAgents support chat on customer site pages — those have
+  // their own SiteChat.  The root layout's server-side isCustomerSite check
+  // doesn't re-evaluate on client-side navigation, so we guard here too.
+  if (pathname?.startsWith("/sites/")) return null;
 
   // Scroll to bottom when messages change
   useEffect(() => {
