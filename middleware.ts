@@ -44,6 +44,13 @@ export function middleware(request: NextRequest) {
       return forwardWithPathname(request, nextUrl.pathname);
     }
 
+    // Never rewrite API routes — they must always resolve on the main domain.
+    // Without this guard, a request to elninostacos.baileyagents.com/api/admin/...
+    // would get rewritten to /sites/elninostacos/api/admin/... → 404.
+    if (nextUrl.pathname.startsWith("/api/")) {
+      return forwardWithPathname(request, nextUrl.pathname);
+    }
+
     // Preserve the request path so deep links work:
     //   elninostacos.baileyagents.com/         → /sites/elninostacos
     //   elninostacos.baileyagents.com?edit=true → /sites/elninostacos?edit=true
