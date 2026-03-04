@@ -177,6 +177,7 @@ export async function POST(req: NextRequest) {
     facebookUrl, instagramUrl, googleBusinessUrl,
     businessHours, serviceArea,
     fontStyle, heroStyle, layoutStyle,
+    enableChat,
   } = body;
 
   // Required field checks
@@ -392,6 +393,7 @@ Required JSON structure:
     generatedContent,
     createdAt:         new Date().toISOString(),
     subdomainSlug,
+    enableChat:        enableChat === true,
   };
 
   // Save site record

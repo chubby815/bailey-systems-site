@@ -7,6 +7,7 @@ import { SiteShareBar }     from "@/components/SiteShareBar";
 import { LayoutRenderer }   from "@/components/site/LayoutRenderer";
 import { TemplateRenderer } from "@/components/site/TemplateRenderer";
 import { SiteEditor }       from "@/components/site/SiteEditor";
+import { SiteChat }         from "@/components/site/SiteChat";
 
 export const dynamic = "force-dynamic";
 
@@ -156,7 +157,6 @@ export default async function SitePage({
       // SiteEditor's own bar is fixed at top:0, height 52px, zIndex 200.
       // SiteShareBar uses offsetTop=52 so it sits just below the editor bar
       // instead of covering it (zIndex 9999 would win otherwise).
-      // The extra 48px spacer keeps content from hiding under the share bar.
       return (
         <>
           {siteIsPaused && <PausedOverlay />}
@@ -194,6 +194,7 @@ export default async function SitePage({
           theme={theme}
           heroImageUrl={customHeroImgUrl}
         />
+        {site.enableChat && <SiteChat site={site} />}
       </>
     );
   }
@@ -421,6 +422,7 @@ export default async function SitePage({
         </div>
       </footer>
 
+      {site.enableChat && <SiteChat site={site} />}
     </div>
   );
 }

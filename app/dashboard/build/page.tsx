@@ -73,6 +73,8 @@ type FormData = {
   fontStyle: string;
   heroStyle: string;
   layoutStyle: string;
+  // Optional features
+  enableChat: boolean;
 };
 
 const INITIAL: FormData = {
@@ -95,6 +97,7 @@ const INITIAL: FormData = {
   fontStyle: "Modern",
   heroStyle: "Photo Background",
   layoutStyle: "Standard",
+  enableChat: false,
 };
 
 // ── Section wrapper ──────────────────────────────────────────────────────────
@@ -170,6 +173,7 @@ function BuildForm() {
             fontStyle:        site.fontStyle       ?? "Modern",
             heroStyle:        site.heroStyle       ?? "Photo Background",
             layoutStyle:      site.layoutStyle     ?? "Standard",
+            enableChat:       site.enableChat      ?? false,
           });
         }
       })
@@ -177,7 +181,7 @@ function BuildForm() {
       .finally(() => setPrefilling(false));
   }, [editSiteId]);
 
-  function set(field: keyof FormData, value: string) {
+  function set(field: keyof FormData, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -542,6 +546,37 @@ function BuildForm() {
               </div>
             </Field>
 
+          </Section>
+
+          {/* ── AI CHAT ASSISTANT ─────────────────────────────────── */}
+          <Section label="Optional Features">
+            <button
+              type="button"
+              onClick={() => set("enableChat", !form.enableChat)}
+              className={`w-full flex items-start gap-4 p-4 rounded-xl border text-left transition-all ${
+                form.enableChat
+                  ? "border-[#00e5a0] bg-[#00e5a0]/5"
+                  : "border-white/[0.07] bg-[#111214] hover:border-white/20"
+              }`}
+            >
+              <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                form.enableChat ? "border-[#00e5a0] bg-[#00e5a0]" : "border-white/20"
+              }`}>
+                {form.enableChat && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <path d="M1 4L3.5 6.5L9 1" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <p className={`text-sm font-semibold ${form.enableChat ? "text-[#00e5a0]" : "text-[#f0f0f0]"}`}>
+                  Add AI Chat Assistant
+                </p>
+                <p className="text-xs text-[#6b7280] mt-0.5 leading-relaxed">
+                  Visitors can ask your AI assistant questions about your business 24/7
+                </p>
+              </div>
+            </button>
           </Section>
 
           {/* ── SUBMIT ────────────────────────────────────────────────── */}

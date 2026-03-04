@@ -1,35 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ZodError } from "zod";
-import { chatSchema } from "@/utils/validations";
-import { generateAssistantReply } from "@/lib/openai";
 import { rateLimit } from "@/lib/ratelimit";
 
-export async function POST(request: NextRequest) {
-  // Rate limit: 20 requests per hour per IP (no auth on this route)
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  const rl = await rateLimit(`chat-legacy:${ip}`, 20, 3600);
+export async function POST(req: NextRequest) {
+  // Rate limit by IP — 20 requests per hour, no auth required
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  const rl = await rateLimit(`chat:${ip}`, 20, 3600);
   if (!rl.allowed) {
     return NextResponse.json(
-      { error: "Rate limit reached. Try again later." },
-      { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+      { error: "Too many messages. Please wait a moment." },
+      { status: 429 }
     );
+  }
+
+  let body: { messages?: unknown; systemPrompt?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { messages, systemPrompt } = body;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json({ error: "messages required" }, { status: 400 });
+  }
+  if (typeof systemPrompt !== "string" || !systemPrompt.trim()) {
+    return NextResponse.json({ error: "systemPrompt required" }, { status: 400 });
+  }
+
+  // Validate and sanitise message array
+  type CleanMsg = { role: "user" | "assistant"; content: string };
+  const cleaned: CleanMsg[] = [];
+  for (const m of messages) {
+    if (
+      typeof m !== "object" || m === null ||
+      !("role" in m) || !("content" in m) ||
+      ((m as { role: unknown }).role !== "user" && (m as { role: unknown }).role !== "assistant") ||
+      typeof (m as { content: unknown }).content !== "string"
+    ) continue;
+    cleaned.push({
+      role: (m as CleanMsg).role,
+      content: ((m as CleanMsg).content).slice(0, 2000),
+    });
+    if (cleaned.length >= 20) break;
+  }
+
+  if (cleaned.length === 0) {
+    return NextResponse.json({ error: "No valid messages" }, { status: 400 });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Service unavailable." }, { status: 500 });
   }
 
   try {
-    const payload = chatSchema.parse(await request.json());
-    const result = await generateAssistantReply(payload.messages);
-    return NextResponse.json(result);
-  } catch (error) {
-    if (error instanceof ZodError) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type":   "application/json",
+        "x-api-key":      apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model:      "claude-haiku-4-5",
+        max_tokens: 500,
+        system:     systemPrompt.slice(0, 4000),
+        messages:   cleaned,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[chat/route] Anthropic error:", errText);
       return NextResponse.json(
-        { error: "Invalid chat payload." },
-        { status: 422 },
+        { error: "AI unavailable. Please try again." },
+        { status: 500 }
       );
     }
+
+    const data = await res.json() as {
+      content?: Array<{ type: string; text?: string }>;
+    };
+    const reply = data.content?.[0]?.text ?? "";
+
+    return NextResponse.json({ reply });
+  } catch (err) {
+    console.error("[chat/route] fetch error:", err);
     return NextResponse.json(
-      { error: "Unable to reach the assistant right now." },
-      { status: 500 },
+      { error: "AI unavailable. Please try again." },
+      { status: 500 }
     );
   }
 }
-

@@ -94,6 +94,8 @@ export type SiteRecord = {
    * Maps to the reverse-lookup Redis key:  slug:{subdomainSlug} → siteId
    */
   subdomainSlug?: string;
+  /** Whether the owner opted in to an AI chat assistant on their site */
+  enableChat?: boolean;
 };
 
 /** Save a generated site to Redis */

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { BaileyChat } from "@/components/BaileyChat";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default async function RootLayout({
         {!isCustomerSite && <Navbar />}
         {children}
         {!isCustomerSite && <Footer />}
+        {!isCustomerSite && <BaileyChat />}
       </body>
     </html>
   );
