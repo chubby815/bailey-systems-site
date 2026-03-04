@@ -23,11 +23,14 @@ export async function POST(request: NextRequest) {
   try {
     const { mode = "login", ...body } = await request.json();
     const payload = authSchema.parse(body);
-    const token = await createSessionToken(payload.email);
+    // Always store and compare emails in lowercase to prevent duplicate accounts
+    // (e.g. lilianajs27@gmail.com vs Lilianajs27@gmail.com treated as one account).
+    const email = payload.email.toLowerCase();
+    const token = await createSessionToken(email);
     const response = NextResponse.json({
       success: true,
       mode,
-      user: { email: payload.email },
+      user: { email },
     });
     response.cookies.set({
       name: "auth-token",
