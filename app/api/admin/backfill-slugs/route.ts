@@ -14,9 +14,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionFromCookies }     from "@/lib/auth";
-import { kv, getSite, saveSite }     from "@/lib/kv";
-import type { SiteRecord }            from "@/lib/kv";
+import { getSession }                from "@/lib/auth";
+import { kv, saveSite }             from "@/lib/kv";
+import type { SiteRecord }           from "@/lib/kv";
 
 // ── Slug helper (mirrors the one in app/api/sites/generate/route.ts) ──────────
 function slugify(text: string): string {
@@ -36,12 +36,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "ADMIN_EMAIL not configured" }, { status: 500 });
   }
 
-  const session = await getSessionFromCookies();
+  // Use getSession(req) — reads directly from NextRequest cookies.
+  // getSessionFromCookies() uses next/headers cookies() which can be unreliable
+  // in Route Handlers; all other working API routes use this pattern instead.
+  const session = await getSession(req);
+
+  // Temporary debug log — remove once confirmed working
+  console.log("[backfill-slugs] session email:", session?.email ?? "(no session)");
+  console.log("[backfill-slugs] admin email:  ", adminEmail);
+
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (session.email !== adminEmail) {
-    return NextResponse.json({ error: "Forbidden — admin only" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Forbidden — admin only", sessionEmail: session.email, adminEmail },
+      { status: 403 }
+    );
   }
 
   // ── Scan all site:* keys ────────────────────────────────────────────────────
