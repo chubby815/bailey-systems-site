@@ -5,9 +5,13 @@ import { useState } from "react";
 type Props = {
   siteId:         string;
   subdomainSlug?: string;
+  /** Offset from the top of the viewport in px. Default 0.
+   *  Pass 52 when rendered inside the site editor so the bar
+   *  sits below the editor's own fixed top bar instead of on top of it. */
+  offsetTop?: number;
 };
 
-export function SiteShareBar({ siteId, subdomainSlug }: Props) {
+export function SiteShareBar({ siteId, subdomainSlug, offsetTop = 0 }: Props) {
   const [copied, setCopied] = useState(false);
 
   // Prefer the custom subdomain URL; fall back to the /sites/ path URL
@@ -34,7 +38,7 @@ export function SiteShareBar({ siteId, subdomainSlug }: Props) {
     <div
       style={{
         position: "fixed",
-        top: 0,
+        top: offsetTop,
         left: 0,
         right: 0,
         zIndex: 9999,

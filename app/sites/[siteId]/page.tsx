@@ -153,11 +153,18 @@ export default async function SitePage({
     // Only mount the editor chrome when the owner explicitly visits with ?edit=true.
     // All other visits (visitors, or owner without ?edit=true) get the clean site.
     if (isOwner && editMode) {
-      // SiteEditor has its own full top bar — do NOT add SiteShareBar here.
-      // Adding it would stack two fixed bars, hide the editor tabs, and break the UI.
+      // SiteEditor's own bar is fixed at top:0, height 52px, zIndex 200.
+      // SiteShareBar uses offsetTop=52 so it sits just below the editor bar
+      // instead of covering it (zIndex 9999 would win otherwise).
+      // The extra 48px spacer keeps content from hiding under the share bar.
       return (
         <>
           {siteIsPaused && <PausedOverlay />}
+          <SiteShareBar
+            siteId={site.siteId}
+            subdomainSlug={site.subdomainSlug}
+            offsetTop={52}
+          />
           <SiteEditor
             site={site}
             content={c}
