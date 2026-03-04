@@ -4,20 +4,28 @@ import { useState } from "react";
 import Link from "next/link";
 
 type Props = {
-  siteId: string;
+  siteId:         string;
+  subdomainSlug?: string;
 };
 
-export function SiteShareBar({ siteId }: Props) {
+export function SiteShareBar({ siteId, subdomainSlug }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const siteUrl =
+  // Prefer the custom subdomain URL; fall back to the /sites/ path URL
+  const subdomainUrl = subdomainSlug
+    ? `https://${subdomainSlug}.baileyagents.com`
+    : null;
+
+  const fallbackUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/sites/${siteId}`
       : `https://baileyagents.com/sites/${siteId}`;
 
+  const displayUrl = subdomainUrl ?? fallbackUrl;
+
   function copyLink() {
-    const url = `${window.location.origin}/sites/${siteId}`;
-    navigator.clipboard.writeText(url).then(() => {
+    const urlToCopy = subdomainUrl ?? `${window.location.origin}/sites/${siteId}`;
+    navigator.clipboard.writeText(urlToCopy).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
@@ -51,25 +59,29 @@ export function SiteShareBar({ siteId }: Props) {
             borderRadius: "50%",
             background: "#00e5a0",
             flexShrink: 0,
-            animation: "pulse 2s infinite",
+            animation: "ssbPulse 2s infinite",
           }}
         />
         <span style={{ fontSize: "0.75rem", color: "#9ca3af", flexShrink: 0 }}>
           Your site is live →
         </span>
-        <span
+        <a
+          href={displayUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
             fontSize: "0.75rem",
-            color: "#f0f0f0",
+            color: subdomainUrl ? "#00e5a0" : "#f0f0f0",
             fontFamily: "monospace",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            maxWidth: "280px",
+            maxWidth: "320px",
+            textDecoration: "none",
           }}
         >
-          {siteUrl}
-        </span>
+          {displayUrl}
+        </a>
       </div>
 
       {/* Right: action buttons + badge */}
@@ -129,7 +141,7 @@ export function SiteShareBar({ siteId }: Props) {
       </div>
 
       <style>{`
-        @keyframes pulse {
+        @keyframes ssbPulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
         }

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSite, kv } from "@/lib/kv";
+import { getSite, getSiteBySlug, kv } from "@/lib/kv";
 import { getSessionFromCookies, getSubscriptionStatus } from "@/lib/auth";
 import { isStructuredContent, buildThemeConfig } from "@/lib/site-theme";
 import { SiteShareBar }     from "@/components/SiteShareBar";
@@ -11,13 +11,25 @@ import { SiteEditor }       from "@/components/site/SiteEditor";
 export const dynamic = "force-dynamic";
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
+/**
+ * Resolve a siteId param to a SiteRecord.
+ * Tries the direct key first (site:{siteId}), then falls back to the
+ * slug reverse-lookup key (slug:{siteId} → real siteId) so that
+ * subdomain rewrites like elninostacos.baileyagents.com → /sites/elninostacos work.
+ */
+async function resolveSite(siteId: string) {
+  const direct = await getSite(siteId);
+  if (direct) return direct;
+  return getSiteBySlug(siteId);
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ siteId: string }>;
 }): Promise<Metadata> {
   const { siteId } = await params;
-  const site = await getSite(siteId);
+  const site = await resolveSite(siteId);
   if (!site) return { title: "Site Not Found" };
 
   const c = site.generatedContent;
@@ -107,7 +119,7 @@ export default async function SitePage({
   const { siteId } = await params;
   const sp       = await searchParams;
   const editMode = sp.edit === "true";
-  const site = await getSite(siteId);
+  const site = await resolveSite(siteId);
   if (!site) notFound();
 
   const viewerSession  = await getSessionFromCookies();
@@ -230,7 +242,7 @@ export default async function SitePage({
   return (
     <div style={{ fontFamily: font.body, color: "#1a1a1a", background: "#ffffff" }}>
 
-      {isOwner && <SiteShareBar siteId={siteId} />}
+      {isOwner && <SiteShareBar siteId={site.siteId} subdomainSlug={site.subdomainSlug} />}
       {siteIsPaused && <PausedOverlay />}
       {isOwner && <div style={{ height: "48px" }} />}
       

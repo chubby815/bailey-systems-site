@@ -338,13 +338,19 @@ Required JSON structure:
       return buildFallback(cleanName, cleanInd, cleanLoc, cleanSvc, cleanTag, cleanDesc);
     })();
 
-  // Determine siteId
+  // Determine siteId and subdomainSlug
+  const baseSlug = slugify(cleanName).slice(0, 60); // DNS label max 63 chars
+
   let siteId: string;
+  let subdomainSlug: string = baseSlug;
+
   if (typeof editSiteId === "string" && editSiteId.trim()) {
     const existingSite = await import("@/lib/kv").then((m) => m.getSite(editSiteId));
     if (existingSite && existingSite.userId !== session.email) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+    // Preserve the existing slug on regeneration, or derive from current name
+    subdomainSlug = existingSite?.subdomainSlug ?? baseSlug;
     // Regeneration limit
     const regenCheck = await checkAndIncrementRegen(session.email, editSiteId.trim(), plan);
     if (!regenCheck.allowed) {
@@ -358,7 +364,7 @@ Required JSON structure:
     }
     siteId = editSiteId.trim();
   } else {
-    siteId = `${slugify(cleanName)}-${randomSuffix()}`;
+    siteId = `${baseSlug}-${randomSuffix()}`;
   }
 
   const siteData: SiteRecord = {
@@ -384,9 +390,22 @@ Required JSON structure:
     heroStyle:         cleanHeroStyle,
     layoutStyle:       cleanLayoutStyle,
     generatedContent,
-    createdAt: new Date().toISOString(),
+    createdAt:         new Date().toISOString(),
+    subdomainSlug,
   };
 
+  // Save site record
   await saveSite(siteId, siteData);
-  return NextResponse.json({ siteId, url: `/sites/${siteId}` });
+
+  // Save reverse-lookup key: slug:{subdomainSlug} → siteId
+  // This allows the middleware subdomain rewrite to resolve the real siteId.
+  const { kv } = await import("@/lib/kv");
+  await kv.set(`slug:${subdomainSlug}`, siteId);
+
+  return NextResponse.json({
+    siteId,
+    url:           `/sites/${siteId}`,
+    subdomainSlug,
+    subdomainUrl:  `https://${subdomainSlug}.baileyagents.com`,
+  });
 }

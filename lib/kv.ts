@@ -89,6 +89,11 @@ export type SiteRecord = {
   editorTheme?: import("./site-theme").ThemeConfig;
   /** Layout template key — e.g. "darkpremium" | "neobrutalism" | "minimal" | "magazine" | "classic" */
   template?: string;
+  /**
+   * Clean slug used as the subdomain: e.g. "el-nino-tacos"
+   * Maps to the reverse-lookup Redis key:  slug:{subdomainSlug} → siteId
+   */
+  subdomainSlug?: string;
 };
 
 /** Save a generated site to Redis */
@@ -104,6 +109,16 @@ export async function getSite(siteId: string): Promise<SiteRecord | null> {
 /** Delete a generated site from Redis */
 export async function deleteSite(siteId: string): Promise<void> {
   await kv.del(`site:${siteId}`);
+}
+
+/**
+ * Resolve a subdomain slug to a SiteRecord.
+ * Looks up the reverse key:  slug:{slug}  →  siteId  →  SiteRecord
+ */
+export async function getSiteBySlug(slug: string): Promise<SiteRecord | null> {
+  const siteId = await kv.get<string>(`slug:${slug}`);
+  if (!siteId) return null;
+  return getSite(siteId);
 }
 
 /** Get all sites belonging to a specific user, sorted newest first */
