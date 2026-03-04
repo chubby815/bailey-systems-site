@@ -156,6 +156,7 @@ export default async function SitePage({
       return (
         <>
           {siteIsPaused && <PausedOverlay />}
+          <SiteShareBar siteId={site.siteId} subdomainSlug={site.subdomainSlug} />
           <SiteEditor
             site={site}
             content={c}
@@ -172,6 +173,9 @@ export default async function SitePage({
     return (
       <>
         {siteIsPaused && <PausedOverlay />}
+        {isOwner && (
+          <SiteShareBar siteId={site.siteId} subdomainSlug={site.subdomainSlug} />
+        )}
         <TemplateRenderer
           site={site}
           content={c}

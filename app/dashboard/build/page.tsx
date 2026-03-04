@@ -278,7 +278,7 @@ function BuildForm() {
       {/* Top bar */}
       <header className="border-b border-white/[0.07] bg-[#111214] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link href="/dashboard" className="font-syne font-black text-lg">
-          Bailey<span className="text-[#00e5a0]">Systems</span>AI
+          Bailey<span className="text-[#00e5a0]">Agents</span>
         </Link>
         <Link href="/dashboard" className="text-sm text-[#6b7280] hover:text-[#f0f0f0] transition-colors">
           ← Back to Dashboard

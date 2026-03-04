@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       {/* ── Top bar ── */}
       <header className="border-b border-white/[0.07] bg-[#111214] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-extrabold tracking-tight" style={{ fontFamily: "Syne, sans-serif" }}>
-          Bailey<span className="text-[#00e5a0]">Systems</span>AI
+          Bailey<span className="text-[#00e5a0]">Agents</span>
         </Link>
         <div className="flex items-center gap-4">
           <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${planColors[plan]}`}>
