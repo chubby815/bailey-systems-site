@@ -34,11 +34,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headersList = await headers();
-  const pathname =
-    headersList.get("x-pathname") ??
-    headersList.get("x-invoke-path") ??
-    "";
-  // Customer-generated sites must never show the Bailey Agents navbar or footer
+  // Only trust x-pathname — set exclusively by our own middleware.ts.
+  // Do NOT fall back to x-invoke-path: Vercel injects that as an internal
+  // routing header and it can contain /sites/* values for non-site pages,
+  // which would incorrectly hide the navbar/footer everywhere.
+  const pathname = headersList.get("x-pathname") ?? "";
   const isCustomerSite = pathname.startsWith("/sites/");
 
   return (
