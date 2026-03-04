@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 type Props = {
   siteId:         string;
@@ -103,8 +102,11 @@ export function SiteShareBar({ siteId, subdomainSlug }: Props) {
           {copied ? "✓ Copied!" : "Copy Link"}
         </button>
 
-        <Link
-          href={`/sites/${siteId}?edit=true`}
+        {/* Absolute URL so this works when viewed on a subdomain.
+            Relative paths on *.baileyagents.com get double-rewritten by
+            middleware (subdomain + /sites/ path) and 404. */}
+        <a
+          href={`https://baileyagents.com/sites/${siteId}?edit=true`}
           style={{
             fontSize: "0.75rem",
             fontWeight: 600,
@@ -118,7 +120,7 @@ export function SiteShareBar({ siteId, subdomainSlug }: Props) {
           }}
         >
           Edit Site ✏️
-        </Link>
+        </a>
 
         <a
           href="https://baileyagents.com"
