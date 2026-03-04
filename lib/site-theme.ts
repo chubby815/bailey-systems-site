@@ -210,6 +210,61 @@ export type PresetTheme = {
   colors:  PresetThemeColors;
 };
 
+// ── Typography scales per font style ─────────────────────────────────────────
+export type TypographyScale = {
+  heroSize:       string;
+  h2Size:         string;
+  h3Size:         string;
+  letterSpacing:  string;
+  lineHeight:     string;
+  sectionSpacing: string;
+  bodySize:       string;
+  bodyLineHeight: string;
+};
+
+export const TYPOGRAPHY_SCALES: Record<FontStyleKey, TypographyScale> = {
+  modern: {
+    heroSize:       "clamp(3rem, 8vw, 6rem)",
+    h2Size:         "clamp(1.8rem, 4vw, 3rem)",
+    h3Size:         "clamp(1.2rem, 2vw, 1.5rem)",
+    letterSpacing:  "-0.02em",
+    lineHeight:     "1.1",
+    sectionSpacing: "120px",
+    bodySize:       "1.125rem",
+    bodyLineHeight: "1.7",
+  },
+  classic: {
+    heroSize:       "clamp(2.5rem, 6vw, 5rem)",
+    h2Size:         "clamp(1.6rem, 3vw, 2.5rem)",
+    h3Size:         "clamp(1.1rem, 2vw, 1.4rem)",
+    letterSpacing:  "0.01em",
+    lineHeight:     "1.2",
+    sectionSpacing: "100px",
+    bodySize:       "1.1rem",
+    bodyLineHeight: "1.8",
+  },
+  bold: {
+    heroSize:       "clamp(4rem, 10vw, 9rem)",
+    h2Size:         "clamp(2rem, 5vw, 4rem)",
+    h3Size:         "clamp(1.3rem, 2vw, 1.8rem)",
+    letterSpacing:  "-0.03em",
+    lineHeight:     "0.95",
+    sectionSpacing: "140px",
+    bodySize:       "1.1rem",
+    bodyLineHeight: "1.6",
+  },
+  minimal: {
+    heroSize:       "clamp(2rem, 5vw, 4.5rem)",
+    h2Size:         "clamp(1.4rem, 3vw, 2.2rem)",
+    h3Size:         "clamp(1rem, 2vw, 1.3rem)",
+    letterSpacing:  "0.02em",
+    lineHeight:     "1.3",
+    sectionSpacing: "160px",
+    bodySize:       "1rem",
+    bodyLineHeight: "1.9",
+  },
+};
+
 export const PRESET_THEMES: Record<string, PresetTheme> = {
   modernDark: {
     name:    "Modern Dark",

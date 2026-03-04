@@ -4,6 +4,8 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent } from "@/lib/site-theme";
+import { RatingBadge } from "@/components/site/TrustBadges";
+import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
   site:          SiteRecord;
@@ -201,12 +203,13 @@ function Hero({ content, heroImageUrl, location }: {
               {content.subheadline}
             </p>
 
-            <div className="cb-hero-btns" style={{ display: "flex", gap: "0.875rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+            <div className="cb-hero-btns" style={{ display: "flex", gap: "0.875rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
               <a href="#contact" className="cb-btn-gold">{content.ctaText}</a>
               <a href="#services" className="cb-btn-outline">Our Services</a>
             </div>
+            <RatingBadge theme="dark" mt="0" />
 
-            <p style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <p style={{ fontFamily: FF_SAN, fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "1.25rem" }}>
               Proudly serving {location}
             </p>
           </div>
@@ -259,11 +262,12 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
           <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
         </div>
 
+        <ScrollAnimator>
         <div className="cb-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1.25rem",
         }}>
           {content.map((s, i) => (
-            <div key={i} className="cb-service-card">
+            <div key={i} className={`cb-service-card card-hover${i === 0 ? " cb-service-featured" : ""}`}>
               <div style={{
                 width: "60px", height: "60px", borderRadius: "50%",
                 background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`,
@@ -281,6 +285,7 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );
@@ -400,12 +405,13 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
           }}>What Our Clients Say</h2>
           <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
         </div>
+        <ScrollAnimator>
         <div className="cb-testimonials" style={{
           display: "flex", gap: "1.25rem", overflowX: "auto",
           paddingBottom: "1rem", scrollbarWidth: "none",
         }}>
           {content.map((t, i) => (
-            <div key={i} className="cb-testimonial">
+            <div key={i} className="cb-testimonial card-hover">
               <div style={{ marginBottom: "0.75rem" }}>
                 <Stars n={t.rating} />
               </div>
@@ -429,6 +435,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );

@@ -4,6 +4,8 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent } from "@/lib/site-theme";
+import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
+import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
   site:          SiteRecord;
@@ -183,6 +185,8 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
           <a href="#contact" className="mg-btn-filled">{content.ctaText}</a>
           <a href="#services" className="mg-btn-outline">Our Services ↓</a>
         </div>
+        <TrustBadges primaryColor={primaryColor} mt="1.75rem" />
+        <RatingBadge theme="dark" mt="0.75rem" />
 
         {/* Location badge */}
         <div style={{
@@ -228,11 +232,12 @@ function Services({ content, primaryColor, location }: {
           }}>What we offer</h2>
         </div>
 
+        <ScrollAnimator>
         <div className="mg-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem",
         }}>
           {content.map((s, i) => (
-            <div key={i} className="mg-service-card">
+            <div key={i} className="mg-service-card card-hover">
               {/* Image / color placeholder */}
               <div className="mg-service-img" style={{
                 background: `linear-gradient(135deg, ${primaryColor}${i % 2 === 0 ? "cc" : "88"}, ${primaryColor}22)`,
@@ -273,6 +278,7 @@ function Services({ content, primaryColor, location }: {
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );
@@ -392,12 +398,13 @@ function Testimonials({ content, primaryColor }: {
             color: "#fff", marginTop: "0.75rem",
           }}>What our clients say</h2>
         </div>
+        <ScrollAnimator>
         <div className="mg-testimonials" style={{
           display: "flex", gap: "1.5rem", overflowX: "auto",
           paddingBottom: "1rem", scrollbarWidth: "none",
         }}>
           {content.map((t, i) => (
-            <div key={i} style={{
+            <div key={i} className="card-hover" style={{
               flex: "0 0 clamp(300px, 38vw, 400px)",
               borderTop: `3px solid ${i === 0 ? primaryColor : "#333"}`,
               paddingTop: "1.5rem",
@@ -421,6 +428,7 @@ function Testimonials({ content, primaryColor }: {
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );

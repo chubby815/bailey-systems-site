@@ -4,6 +4,8 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
+import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
+import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
   site:          SiteRecord;
@@ -202,6 +204,10 @@ function Hero({ content, primaryColor, location }: {
             backdropFilter: "blur(8px)",
           }}>Explore Services →</a>
         </div>
+        <TrustBadges primaryColor={primaryColor} center mt="2rem" />
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <RatingBadge theme="dark" mt="0.875rem" />
+        </div>
       </div>
     </section>
   );
@@ -229,6 +235,7 @@ function Services({ content, primaryColor, location }: {
           }}>Services built for results</h2>
         </div>
 
+        <ScrollAnimator>
         <div className="dp-bento" style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
@@ -237,7 +244,7 @@ function Services({ content, primaryColor, location }: {
           {content.slice(0, 5).map((s, i) => (
             <div
               key={i}
-              className="dp-card"
+              className="dp-card card-hover"
               style={{ gridColumn: i === 0 ? "span 2" : "span 1" }}
             >
               <div className="dp-card-inner" style={{
@@ -274,7 +281,7 @@ function Services({ content, primaryColor, location }: {
             </div>
           ))}
           {content.slice(5).map((s, i) => (
-            <div key={`extra-${i}`} className="dp-card">
+            <div key={`extra-${i}`} className="dp-card card-hover">
               <div className="dp-card-inner" style={{ minHeight: "180px" }}>
                 <div style={{
                   fontSize: "1.4rem", marginBottom: "1rem",
@@ -291,6 +298,7 @@ function Services({ content, primaryColor, location }: {
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );
@@ -391,12 +399,13 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
             letterSpacing: "-0.04em", color: C_HEADING,
           }}>Trusted by hundreds</h2>
         </div>
+        <ScrollAnimator>
         <div className="dp-testimonials-track" style={{
           display: "flex", gap: "1rem", overflowX: "auto",
           paddingBottom: "1rem", scrollbarWidth: "none",
         }}>
           {content.map((t, i) => (
-            <div key={i} className="dp-testimonial">
+            <div key={i} className="dp-testimonial card-hover">
               <div className="dp-testimonial-inner">
                 <Stars n={t.rating} color={primaryColor} />
                 <p style={{
@@ -421,6 +430,7 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );

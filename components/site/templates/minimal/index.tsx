@@ -3,6 +3,8 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent } from "@/lib/site-theme";
+import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
+import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
   site:          SiteRecord;
@@ -161,6 +163,10 @@ function Hero({ content, primaryColor, location }: {
           <a href="#contact" className="mn-btn">{content.ctaText}</a>
           <a href="#services" className="mn-btn-outline">See Services ↓</a>
         </div>
+        <TrustBadges primaryColor={primaryColor} center mt="2rem" />
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <RatingBadge theme="light" mt="0.875rem" />
+        </div>
       </div>
     </section>
   );
@@ -221,6 +227,7 @@ function Services({ content, primaryColor, location }: {
           }}>What we offer</h2>
         </div>
 
+        <ScrollAnimator>
         <div style={{ borderTop: `1px solid ${LINE}` }}>
           {content.map((s, i) => (
             <div key={i} className="mn-service-row">
@@ -243,6 +250,7 @@ function Services({ content, primaryColor, location }: {
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );
@@ -335,12 +343,13 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
             letterSpacing: "-0.04em", color: C_HEADING, marginTop: "0.75rem",
           }}>What clients say</h2>
         </div>
+        <ScrollAnimator>
         <div className="mn-testimonials-track" style={{
           display: "flex", gap: "1.25rem", overflowX: "auto",
           paddingBottom: "1rem", scrollbarWidth: "none",
         }}>
           {content.map((t, i) => (
-            <div key={i} className="mn-testimonial">
+            <div key={i} className="mn-testimonial card-hover">
               <Stars n={t.rating} color={primaryColor} />
               <p style={{
                 fontFamily: FF, fontSize: "0.9rem", color: C_BODY,
@@ -353,6 +362,7 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );

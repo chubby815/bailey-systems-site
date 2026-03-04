@@ -4,6 +4,7 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent } from "@/lib/site-theme";
+import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
   site:          SiteRecord;
@@ -198,6 +199,31 @@ function Hero({ content, heroImageUrl, location }: {
             <a href="#contact" className="nb-btn-primary">{content.ctaText}</a>
             <a href="#services" className="nb-btn-outline">Our Work →</a>
           </div>
+          {/* Brutalist trust badges */}
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "1.75rem" }}>
+            {["✓ No Fluff", "✓ Real Results", "✓ Locally Owned", "✓ 5-Star Service"].map((b, i) => (
+              <span key={i} style={{
+                display: "inline-block",
+                background: i % 2 === 0 ? YELLOW : BG,
+                border: `2px solid ${BLACK}`,
+                boxShadow: `2px 2px 0 ${BLACK}`,
+                padding: "3px 12px",
+                fontFamily: FF, fontWeight: 900, fontSize: "0.65rem",
+                textTransform: "uppercase", letterSpacing: "0.08em", color: BLACK,
+              }}>{b}</span>
+            ))}
+          </div>
+          {/* Rating badge */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            marginTop: "1rem",
+            background: BLACK,
+            border: `2px solid ${YELLOW}`,
+            padding: "5px 14px",
+            fontFamily: FF, fontWeight: 700, fontSize: "0.75rem", color: YELLOW,
+          }}>
+            ⭐ 5.0 · 200+ Reviews · Google
+          </div>
         </div>
 
         {/* Right: image box */}
@@ -243,6 +269,7 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
           }}>Services</h2>
         </div>
 
+        <ScrollAnimator>
         <div className="nb-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem",
         }}>
@@ -260,9 +287,16 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
               <p style={{ fontFamily: FF, fontSize: "0.9rem", color: C_BODY, lineHeight: 1.65 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
+              <div style={{
+                marginTop: "1.25rem",
+                fontFamily: FF, fontWeight: 900, fontSize: "0.72rem",
+                textTransform: "uppercase", letterSpacing: "0.08em",
+                color: C_HEADING, display: "flex", alignItems: "center", gap: "4px",
+              }}>Learn More →</div>
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );
@@ -416,6 +450,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
             textTransform: "uppercase", letterSpacing: "-0.03em", color: "#fff",
           }}>What They Say</h2>
         </div>
+        <ScrollAnimator>
         <div className="nb-testimonials" style={{ display: "flex", gap: "1.25rem", overflowX: "auto", paddingBottom: "1rem" }}>
           {content.map((t, i) => (
             <div key={i} style={{
@@ -425,7 +460,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
               boxShadow: `5px 5px 0 ${i % 2 === 0 ? YELLOW : BLACK}`,
               padding: "2rem",
             }}>
-              <div style={{ fontFamily: "Georgia, serif", fontSize: "5rem", color: BLACK, lineHeight: 0.8, marginBottom: "0.5rem", opacity: 0.15 }}>
+              <div style={{ fontFamily: "Georgia, serif", fontSize: "5rem", color: i % 2 === 0 ? YELLOW : BLACK, lineHeight: 0.8, marginBottom: "0.5rem", opacity: 0.6 }}>
                 "
               </div>
               <Stars n={t.rating} />
@@ -442,6 +477,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
             </div>
           ))}
         </div>
+        </ScrollAnimator>
       </div>
     </section>
   );

@@ -7,7 +7,7 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
-import { getHeroImageUrl, COLOR_MAP } from "@/lib/site-theme";
+import { getHeroImageUrl, COLOR_MAP, TYPOGRAPHY_SCALES } from "@/lib/site-theme";
 
 import { DarkPremiumLayout } from "./templates/darkpremium";
 import { NeoBrutalismLayout } from "./templates/neobrutalism";
@@ -31,15 +31,27 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
 
   const sharedProps = { site, content, primaryColor, heroImageUrl };
 
-  // Build CSS variable overrides from ThemeConfig color fields.
-  // Only set a var when the user has explicitly chosen a value (non-empty string).
-  const cssVars: React.CSSProperties = {};
-  if (resolvedTheme.headingColor)    (cssVars as Record<string, string>)["--heading-color"]   = resolvedTheme.headingColor;
-  if (resolvedTheme.bodyColor)       (cssVars as Record<string, string>)["--body-color"]      = resolvedTheme.bodyColor;
-  if (resolvedTheme.accentColor)     (cssVars as Record<string, string>)["--accent-color"]    = resolvedTheme.accentColor;
-  if (resolvedTheme.buttonTextColor) (cssVars as Record<string, string>)["--btn-text-color"]  = resolvedTheme.buttonTextColor;
+  // Build CSS variable object — text color overrides + typography scale.
+  // These cascade to all template child elements via the wrapper div.
+  const cssVars: Record<string, string> = {};
 
-  const hasCssVars = Object.keys(cssVars).length > 0;
+  // User-chosen text color overrides
+  if (resolvedTheme.headingColor)    cssVars["--heading-color"]    = resolvedTheme.headingColor;
+  if (resolvedTheme.bodyColor)       cssVars["--body-color"]       = resolvedTheme.bodyColor;
+  if (resolvedTheme.accentColor)     cssVars["--accent-color"]     = resolvedTheme.accentColor;
+  if (resolvedTheme.buttonTextColor) cssVars["--btn-text-color"]   = resolvedTheme.buttonTextColor;
+
+  // Typography scale — derived from fontStyle, applied as CSS vars so templates can
+  // consume them via var(--hero-size), var(--h2-size), etc. with their own fallbacks.
+  const typo = TYPOGRAPHY_SCALES[resolvedTheme.fontStyle ?? "modern"] ?? TYPOGRAPHY_SCALES.modern;
+  cssVars["--hero-size"]        = typo.heroSize;
+  cssVars["--h2-size"]          = typo.h2Size;
+  cssVars["--h3-size"]          = typo.h3Size;
+  cssVars["--letter-spacing"]   = typo.letterSpacing;
+  cssVars["--line-height"]      = typo.lineHeight;
+  cssVars["--section-spacing"]  = typo.sectionSpacing;
+  cssVars["--body-size"]        = typo.bodySize;
+  cssVars["--body-line-height"] = typo.bodyLineHeight;
 
   let layout: React.ReactNode;
   switch (template) {
@@ -60,10 +72,9 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
       layout = <DarkPremiumLayout {...sharedProps} theme={resolvedTheme} />;
   }
 
-  if (!hasCssVars) return <>{layout}</>;
-
+  // Always wrap so CSS vars cascade to all template children
   return (
-    <div style={cssVars}>
+    <div style={cssVars as React.CSSProperties}>
       {layout}
     </div>
   );
