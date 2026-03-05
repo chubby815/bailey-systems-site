@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Bailey Agents",
-  description: "Custom AI agents, websites, apps, and automation systems",
+  description: "AI builds your complete business website in 60 seconds + finds leads on autopilot. 2,400+ businesses trust BaileyAgents. 7-day free trial.",
 };
 
 export default async function RootLayout({

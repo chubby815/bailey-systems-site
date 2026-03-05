@@ -36,24 +36,36 @@ function parseReport(report: string) {
   };
 }
 
+function flames(score: number): string {
+  if (score <= 3) return "🔥";
+  if (score <= 6) return "🔥🔥";
+  if (score <= 9) return "🔥🔥🔥";
+  return "🔥🔥🔥🔥🔥";
+}
+
 function ScoreDisplay({ score }: { score: number | null }) {
   if (score === null) return null;
   const color =
     score >= 8 ? "#00e5a0" :
-    score >= 5 ? "#f59e0b" :
+    score >= 5 ? "#eab308" :
     "#ef4444";
+  const label =
+    score >= 8 ? "Great website!" :
+    score >= 5 ? "Needs work" :
+    "Serious issues found";
   return (
     <div className="flex flex-col items-center justify-center bg-[#111214] border border-white/[0.07] rounded-2xl p-8 mb-6">
-      <div className="text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">
+      <div className="text-xs uppercase tracking-widest text-gray-500 mb-3 font-bold">
         Overall Score
       </div>
-      <div className="text-7xl font-extrabold" style={{ color, fontFamily: "Syne, sans-serif" }}>
-        {score}
+      <div className="flex items-end gap-1 mb-2">
+        <span className="text-8xl font-extrabold leading-none" style={{ color, fontFamily: "Syne, sans-serif" }}>
+          {score}
+        </span>
+        <span className="text-2xl text-gray-500 font-bold mb-3">/10</span>
       </div>
-      <div className="text-xl text-gray-400 font-bold">/10</div>
-      <div className="mt-3 text-sm font-semibold" style={{ color }}>
-        {score >= 8 ? "Great website!" : score >= 5 ? "Needs work" : "Serious issues found"}
-      </div>
+      <div className="text-2xl mb-3 tracking-widest">{flames(score)}</div>
+      <div className="text-sm font-semibold" style={{ color }}>{label}</div>
     </div>
   );
 }
@@ -128,6 +140,14 @@ export default function RoastPage() {
       setLoading(false);
     }
   }
+
+  // Parse score client-side as a fallback in case the API regex missed it
+  const resolvedScore: number | null = result
+    ? (result.score ?? (() => {
+        const m = result.report.match(/SCORE:\s*(\d+)\s*\/\s*10/i);
+        return m ? parseInt(m[1], 10) : null;
+      })())
+    : null;
 
   const parsed = result ? parseReport(result.report) : null;
 
@@ -210,7 +230,7 @@ export default function RoastPage() {
               <div className="text-xs text-gray-500 truncate">{result.url}</div>
             </div>
 
-            <ScoreDisplay score={result.score} />
+            <ScoreDisplay score={resolvedScore} />
 
             <ReportSection icon="🎨" title="Design"         content={parsed.design} />
             <ReportSection icon="🔍" title="SEO"            content={parsed.seo} />

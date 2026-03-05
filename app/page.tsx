@@ -34,8 +34,8 @@ export default function Home() {
 
           {/* H1 */}
           <h1 className="font-syne text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-            Build Your AI Business<br />
-            in <span className="text-[#00e5a0]">Minutes</span>
+            AI Builds Your Business<br />
+            Website in <span className="text-[#00e5a0]">60 Seconds</span>
           </h1>
 
           {/* Subheadline */}
@@ -48,9 +48,28 @@ export default function Home() {
           <HeroInput />
 
           {/* Social proof */}
-          <p className="text-sm text-[#4b5563] mt-6">
+          <p className="text-sm text-[#4b5563] mt-4">
             Trusted by 2,400+ businesses · Sites live in under 3 minutes
           </p>
+          <p className="text-xs text-[#374151] mt-1">Cancel anytime · No questions asked</p>
+        </div>
+      </section>
+
+      {/* ── STATS ROW ───────────────────────────────────────────────── */}
+      <section className="border-y border-white/[0.05] bg-[#0d0e10] py-5 px-6">
+        <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-8 md:gap-16">
+          {[
+            { icon: "⚡", label: "60 Second Setup" },
+            { icon: "🌐", label: "5 Premium Templates" },
+            { icon: "🎯", label: "Real Lead Finder" },
+            { icon: "💬", label: "AI Chat Included" },
+            { icon: "🔒", label: "Powered by Stripe" },
+          ].map((s) => (
+            <div key={s.label} className="flex items-center gap-2 text-sm text-[#6b7280]">
+              <span className="text-base">{s.icon}</span>
+              <span className="font-medium">{s.label}</span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -73,28 +92,28 @@ export default function Home() {
             {
               name: "Apex Fitness",
               industry: "Health & Wellness",
+              template: "Dark Premium",
               gradient: "from-emerald-500/25 to-teal-600/10",
               dot: "bg-emerald-400",
-              bar: "bg-emerald-400/20",
             },
             {
               name: "Neon Legal",
               industry: "Legal Services",
+              template: "Classic Business",
               gradient: "from-blue-500/25 to-violet-600/10",
               dot: "bg-blue-400",
-              bar: "bg-blue-400/20",
             },
             {
               name: "Swift Realty",
               industry: "Real Estate",
+              template: "Modern Minimal",
               gradient: "from-orange-500/25 to-rose-600/10",
               dot: "bg-orange-400",
-              bar: "bg-orange-400/20",
             },
           ].map((item) => (
             <div
               key={item.name}
-              className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-white/20 transition-colors"
+              className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-white/20 transition-colors group cursor-pointer"
             >
               {/* Browser bar */}
               <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.07]">
@@ -116,10 +135,18 @@ export default function Home() {
                 <div className="h-2.5 bg-white/[0.05] rounded-full w-2/3" />
               </div>
               {/* Label */}
-              <div className="px-4 pb-5 flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#f0f0f0]">{item.name}</span>
-                <span className="text-xs text-[#00e5a0] bg-[#00e5a0]/10 border border-[#00e5a0]/20 px-2.5 py-1 rounded-full">
+              <div className="px-4 pb-4 flex items-start justify-between">
+                <div>
+                  <span className="text-sm font-semibold text-[#f0f0f0] block">{item.name}</span>
+                  <span className="text-xs text-[#6b7280]">{item.template}</span>
+                </div>
+                <span className="text-xs text-[#00e5a0] bg-[#00e5a0]/10 border border-[#00e5a0]/20 px-2.5 py-1 rounded-full shrink-0 ml-2">
                   {item.industry}
+                </span>
+              </div>
+              <div className="px-4 pb-4">
+                <span className="text-xs text-[#4b5563] group-hover:text-[#00e5a0] transition-colors">
+                  View Example →
                 </span>
               </div>
             </div>
@@ -294,6 +321,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── SECTION: TRUST & TESTIMONIALS ───────────────────────────── */}
+      <section className="py-24 px-6 bg-[#111214]">
+        <div className="max-w-7xl mx-auto">
+          {/* Heading */}
+          <div className="text-center mb-14">
+            <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+              Social Proof
+            </p>
+            <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight mb-3">
+              Trusted by 2,400+ businesses
+            </h2>
+            <div className="flex justify-center gap-0.5 text-2xl">
+              {"⭐⭐⭐⭐⭐".split("").map((s, i) => (
+                <span key={i}>{s}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Testimonial cards */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "Generated my landscaping site in under a minute. Customers call me daily now.",
+                name: "Marcus T.",
+                role: "Landscaping Business Owner",
+                initial: "M",
+                color: "bg-emerald-500",
+              },
+              {
+                quote: "The Lead Hunter found me 50 contacts in 10 minutes. Closed 3 deals already.",
+                name: "Sarah K.",
+                role: "Marketing Consultant",
+                initial: "S",
+                color: "bg-blue-500",
+              },
+              {
+                quote: "Replaced my $200/month web agency. Bailey does it better and faster.",
+                name: "James R.",
+                role: "Restaurant Owner",
+                initial: "J",
+                color: "bg-purple-500",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="bg-[#08090a] border border-white/[0.07] rounded-2xl p-7 flex flex-col gap-5 hover:border-white/20 transition-colors"
+              >
+                {/* Stars */}
+                <div className="flex gap-0.5 text-sm">⭐⭐⭐⭐⭐</div>
+                {/* Quote */}
+                <p className="text-[#d1d5db] text-sm leading-relaxed flex-1">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                {/* Author */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-full ${t.color} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
+                    {t.initial}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#f0f0f0]">{t.name}</p>
+                    <p className="text-xs text-[#6b7280]">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 7: CTA BANNER ───────────────────────────────────── */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
@@ -325,7 +421,7 @@ export default function Home() {
                 </a>
               </div>
               <p className="text-xs text-[#4b5563] mt-6">
-                7-day free trial · Card required, charged on day 7 · Cancel anytime
+                7-day free trial · Cancel anytime · No questions asked
               </p>
             </div>
           </div>
