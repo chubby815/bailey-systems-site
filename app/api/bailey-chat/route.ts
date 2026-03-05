@@ -3,7 +3,7 @@ import { kv } from '@vercel/kv'
 import { rateLimit } from '@/lib/ratelimit'
 
 const LIMITS = {
-  bailey_pro_2026:   { msgs: 20, imgs: 2 },
+  bailey_pro_2026:   { msgs: 10, imgs: 2 },
   bailey_elite_2026: { msgs: 100, imgs: 3 },
 }
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       error: 'limit_reached',
       message: isElite
         ? "Bailey is resting! You've hit your daily limit of 100 messages. Resets at midnight. 🌙"
-        : "You've hit your daily limit of 20 messages! Upgrade to Bailey Elite for 100 messages/day and more power. 👑",
+        : "You've hit your daily limit of 10 messages! Upgrade to Bailey Elite for 100 messages/day and more power. 👑",
       showUpgrade: !isElite
     }, { status: 429 })
   }

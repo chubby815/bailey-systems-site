@@ -31,7 +31,7 @@ function Paywall({ tier }: { tier: string }) {
             </>
           ) : (
             <>
-              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>20 messages per day</span></div>
+              <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>10 messages per day</span></div>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>2 AI image generations per day</span></div>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>Bailey AI powered</span></div>
               <div className="flex items-center gap-3 text-sm"><span className="text-[#00c48c]">✓</span><span>🇲🇽 Se habla español</span></div>
@@ -45,7 +45,7 @@ function Paywall({ tier }: { tier: string }) {
             : (process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_LINK || '#')}
           className="block bg-[#00c48c] text-black font-black py-4 rounded-2xl text-lg hover:bg-white transition"
         >
-          {isElite ? 'Join Elite — $19.99/mo' : 'Join Pro — $4.99/mo'}
+          {isElite ? 'Join Elite — $19.99/mo' : 'Join Pro — $9.99/mo'}
         </a>
         <p className="text-gray-600 text-xs mt-4">🔒 Secure payment via Stripe · Cancel anytime</p>
       </div>
@@ -59,7 +59,7 @@ function ProChat() {
   const [checking, setChecking] = useState(true)
   const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
-    content: "Hey! I'm Bailey Pro 🚀 Ask me anything — code, writing, business, math, research. You have 20 messages and 2 images today. Use the 🎨 button to generate images!\n\n🇲🇽 ¡También puedo ayudarte en español! Solo escríbeme en español y te respondo igual."
+    content: "Hey! I'm Bailey Pro 🚀 Ask me anything — code, writing, business, math, research. You have 10 messages and 2 images today. Use the 🎨 button to generate images!\n\n🇲🇽 ¡También puedo ayudarte en español! Solo escríbeme en español y te respondo igual."
   }])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -175,7 +175,7 @@ function ProChat() {
           </div>
         </div>
         <div className="flex gap-4 text-xs text-gray-500">
-          <span>💬 {Math.max(0, 20 - usage.msgs)} msgs left</span>
+          <span>💬 {Math.max(0, 10 - usage.msgs)} msgs left</span>
           <span>🎨 {Math.max(0, 2 - usage.imgs)} images left</span>
         </div>
       </div>
