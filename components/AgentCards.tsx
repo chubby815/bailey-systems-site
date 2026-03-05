@@ -2,21 +2,21 @@
 
 const agents = [
   {
-    icon: "🌐",
+    icon: "🔥",
     label: "Agent 01",
-    labelColor: "text-[#00e5a0]",
-    title: "Website Builder",
-    desc: "Describe your business and get a production-ready website in minutes. Mobile-first, SEO-ready, and conversion-optimized.",
+    labelColor: "text-orange-400",
+    title: "Website Roast",
+    desc: "Get a brutally honest AI critique of any website. Score, fixes, and recommendations instantly.",
     features: [
-      "Custom design, 0 code required",
-      "Mobile responsive by default",
-      "Contact forms & booking",
-      "SEO meta tags included",
-      "Delivered in 48 hours",
+      "Design & UX analysis",
+      "SEO issue detection",
+      "Trust signal audit",
+      "Conversion rate review",
+      "Top 5 action fixes",
     ],
-    checkColor: "text-[#00e5a0]",
-    hoverBorder: "hover:border-[#00e5a0]/30",
-    glowColor: "rgba(0,229,160,0.08)",
+    checkColor: "text-orange-400",
+    hoverBorder: "hover:border-orange-500/30",
+    glowColor: "rgba(249,115,22,0.08)",
   },
   {
     icon: "🎯",

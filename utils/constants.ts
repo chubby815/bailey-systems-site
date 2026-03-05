@@ -97,10 +97,10 @@ export const PRICING_PLANS: SaaSPricingPlan[] = [
     description: "Perfect for solo operators and new businesses getting online fast.",
     features: [
       "1 AI Website",
-      "Website Builder agent",
+      "Website Roast Agent",
       "20 AI runs/month",
       "Basic templates",
-      "/sites/[id] hosting",
+      "Custom subdomain hosting",
       "1 Basic AI Chatbot",
       "Email support",
     ],
