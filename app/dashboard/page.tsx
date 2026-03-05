@@ -68,6 +68,7 @@ export default async function DashboardPage() {
               { icon: "🌐", label: "My Sites", href: "/dashboard" },
               { icon: "🎯", label: "Lead Hunter", href: "/dashboard/leads" },
               { icon: "✍️", label: "Content Machine", href: "/dashboard/content" },
+              { icon: "🔥", label: "Website Roast", href: "/dashboard/roast" },
               { icon: "📊", label: "Usage", href: "/dashboard/usage" },
               { icon: "💳", label: "Billing", href: "/dashboard/billing" },
             ].map((item, i) => (
@@ -179,14 +180,6 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 {
-                  icon: "🌐",
-                  name: "Website Builder",
-                  desc: "Generate a full business site in minutes.",
-                  href: "/dashboard/build",
-                  available: true,
-                  color: "emerald",
-                },
-                {
                   icon: "🎯",
                   name: "Lead Hunter",
                   desc: "Find qualified leads with outreach copy.",
@@ -201,6 +194,14 @@ export default async function DashboardPage() {
                   href: "/dashboard/content",
                   available: plan === "growth" || plan === "pro",
                   color: "purple",
+                },
+                {
+                  icon: "🔥",
+                  name: "Website Roast",
+                  desc: "Get a brutally honest AI critique of any website.",
+                  href: "/dashboard/roast",
+                  available: true,
+                  color: "orange",
                 },
               ].map((agent) => (
                 <div
