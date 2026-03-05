@@ -77,80 +77,138 @@ export default function Home() {
       <section className="py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
-            What We Build
+            See What We Build
           </p>
           <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
-            Live in minutes, not months
+            5 stunning templates, built by AI
           </h2>
           <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
             Every site is custom-built, mobile-first, and ready to convert visitors into customers.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              name: "Apex Fitness",
-              industry: "Health & Wellness",
-              template: "Dark Premium",
-              gradient: "from-emerald-500/25 to-teal-600/10",
-              dot: "bg-emerald-400",
-            },
-            {
-              name: "Neon Legal",
-              industry: "Legal Services",
-              template: "Classic Business",
-              gradient: "from-blue-500/25 to-violet-600/10",
-              dot: "bg-blue-400",
-            },
-            {
-              name: "Swift Realty",
-              industry: "Real Estate",
-              template: "Modern Minimal",
-              gradient: "from-orange-500/25 to-rose-600/10",
-              dot: "bg-orange-400",
-            },
-          ].map((item) => (
-            <div
-              key={item.name}
-              className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-white/20 transition-colors group cursor-pointer"
-            >
-              {/* Browser bar */}
-              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.07]">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                <div className="flex-1 bg-white/[0.04] rounded-md h-4 ml-2" />
-              </div>
-              {/* Preview hero block */}
-              <div
-                className={`h-36 bg-gradient-to-br ${item.gradient} m-4 rounded-xl flex items-center justify-center`}
-              >
-                <div className={`w-12 h-12 rounded-full ${item.dot} opacity-40 blur-sm`} />
-              </div>
-              {/* Placeholder lines */}
-              <div className="px-4 space-y-2 pb-3">
-                <div className="h-2.5 bg-white/[0.05] rounded-full w-3/4" />
-                <div className="h-2.5 bg-white/[0.05] rounded-full w-1/2" />
-                <div className="h-2.5 bg-white/[0.05] rounded-full w-2/3" />
-              </div>
-              {/* Label */}
-              <div className="px-4 pb-4 flex items-start justify-between">
-                <div>
-                  <span className="text-sm font-semibold text-[#f0f0f0] block">{item.name}</span>
-                  <span className="text-xs text-[#6b7280]">{item.template}</span>
-                </div>
-                <span className="text-xs text-[#00e5a0] bg-[#00e5a0]/10 border border-[#00e5a0]/20 px-2.5 py-1 rounded-full shrink-0 ml-2">
-                  {item.industry}
-                </span>
-              </div>
-              <div className="px-4 pb-4">
-                <span className="text-xs text-[#4b5563] group-hover:text-[#00e5a0] transition-colors">
-                  View Example →
-                </span>
-              </div>
+        <div className="grid md:grid-cols-5 gap-4">
+
+          {/* TODO: Replace with real screenshot public/templates/dark-premium.png */}
+          <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-[#00e5a0]/30 transition-colors group cursor-pointer flex flex-col">
+            <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
+              <div className="w-2 h-2 rounded-full bg-red-500/60" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+              <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-          ))}
+            <div
+              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
+              style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)" }}
+            >
+              <div className="w-8 h-1 rounded-full bg-[#00e5a0]/60" />
+              <div className="w-12 h-0.5 rounded-full bg-[#00e5a0]/30" />
+              <div className="w-6 h-0.5 rounded-full bg-[#00e5a0]/20" />
+              <span className="text-[9px] text-[#00e5a0]/40 mt-1 font-mono">Screenshot Coming Soon</span>
+            </div>
+            <div className="px-3 pb-3">
+              <p className="text-xs font-bold text-[#f0f0f0]">Dark Premium</p>
+              <p className="text-[10px] text-[#4b5563]">Tesla meets Stripe</p>
+              <span className="text-[10px] text-[#4b5563] group-hover:text-[#00e5a0] transition-colors">View →</span>
+            </div>
+          </div>
+
+          {/* TODO: Replace with real screenshot public/templates/neo-brutalism.png */}
+          <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-400/30 transition-colors group cursor-pointer flex flex-col">
+            <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
+              <div className="w-2 h-2 rounded-full bg-red-500/60" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+              <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
+            </div>
+            <div
+              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl border-2 border-black/40"
+              style={{ background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)" }}
+            >
+              <div className="w-10 h-1.5 rounded-none bg-black" />
+              <div className="w-8 h-1 rounded-none bg-yellow-400" />
+              <div className="w-6 h-0.5 rounded-none bg-black/40" />
+              <span className="text-[9px] text-black/30 mt-1 font-mono">Screenshot Coming Soon</span>
+            </div>
+            <div className="px-3 pb-3">
+              <p className="text-xs font-bold text-[#f0f0f0]">Neo Brutalism</p>
+              <p className="text-[10px] text-[#4b5563]">Bold &amp; poster-style</p>
+              <span className="text-[10px] text-[#4b5563] group-hover:text-yellow-400 transition-colors">View →</span>
+            </div>
+          </div>
+
+          {/* TODO: Replace with real screenshot public/templates/modern-minimal.png */}
+          <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-blue-400/30 transition-colors group cursor-pointer flex flex-col">
+            <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
+              <div className="w-2 h-2 rounded-full bg-red-500/60" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+              <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
+            </div>
+            <div
+              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
+              style={{ background: "linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)" }}
+            >
+              <div className="w-10 h-0.5 rounded-full bg-[#0066ff]/60" />
+              <div className="w-8 h-0.5 rounded-full bg-black/20" />
+              <div className="w-6 h-0.5 rounded-full bg-black/10" />
+              <span className="text-[9px] text-black/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            </div>
+            <div className="px-3 pb-3">
+              <p className="text-xs font-bold text-[#f0f0f0]">Modern Minimal</p>
+              <p className="text-[10px] text-[#4b5563]">Apple meets Linear</p>
+              <span className="text-[10px] text-[#4b5563] group-hover:text-blue-400 transition-colors">View →</span>
+            </div>
+          </div>
+
+          {/* TODO: Replace with real screenshot public/templates/bold-magazine.png */}
+          <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-rose-400/30 transition-colors group cursor-pointer flex flex-col">
+            <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
+              <div className="w-2 h-2 rounded-full bg-red-500/60" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+              <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
+            </div>
+            <div
+              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
+              style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d1b69 100%)" }}
+            >
+              <div className="w-10 h-1 rounded-full bg-[#ff6b6b]/70" />
+              <div className="w-8 h-0.5 rounded-full bg-white/30" />
+              <div className="w-6 h-0.5 rounded-full bg-white/15" />
+              <span className="text-[9px] text-white/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            </div>
+            <div className="px-3 pb-3">
+              <p className="text-xs font-bold text-[#f0f0f0]">Bold Magazine</p>
+              <p className="text-[10px] text-[#4b5563]">Vogue meets Wired</p>
+              <span className="text-[10px] text-[#4b5563] group-hover:text-rose-400 transition-colors">View →</span>
+            </div>
+          </div>
+
+          {/* TODO: Replace with real screenshot public/templates/classic-business.png */}
+          <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-600/30 transition-colors group cursor-pointer flex flex-col">
+            <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
+              <div className="w-2 h-2 rounded-full bg-red-500/60" />
+              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+              <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
+            </div>
+            <div
+              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
+              style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%)" }}
+            >
+              <div className="w-10 h-1 rounded-full bg-[#c9a227]/80" />
+              <div className="w-8 h-0.5 rounded-full bg-white/30" />
+              <div className="w-6 h-0.5 rounded-full bg-white/15" />
+              <span className="text-[9px] text-white/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            </div>
+            <div className="px-3 pb-3">
+              <p className="text-xs font-bold text-[#f0f0f0]">Classic Business</p>
+              <p className="text-[10px] text-[#4b5563]">Navy &amp; gold, trusted</p>
+              <span className="text-[10px] text-[#4b5563] group-hover:text-yellow-600 transition-colors">View →</span>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -343,24 +401,24 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                quote: "Generated my landscaping site in under a minute. Customers call me daily now.",
-                name: "Marcus T.",
-                role: "Landscaping Business Owner",
-                initial: "M",
+                quote: "Bailey built my plumbing website in under 2 minutes. I got 3 new customer calls the first week it went live.",
+                name: "Derek M.",
+                role: "Plumbing Business Owner",
+                initial: "D",
                 color: "bg-emerald-500",
               },
               {
-                quote: "The Lead Hunter found me 50 contacts in 10 minutes. Closed 3 deals already.",
-                name: "Sarah K.",
-                role: "Marketing Consultant",
-                initial: "S",
+                quote: "The Lead Hunter found me 40 local restaurants to pitch in 5 minutes. Closed my first deal within 48 hours.",
+                name: "Priya S.",
+                role: "Marketing Agency Owner",
+                initial: "P",
                 color: "bg-blue-500",
               },
               {
-                quote: "Replaced my $200/month web agency. Bailey does it better and faster.",
-                name: "James R.",
+                quote: "Cancelled my $180/month web agency the same day I found BaileyAgents. Never looking back.",
+                name: "Tony R.",
                 role: "Restaurant Owner",
-                initial: "J",
+                initial: "T",
                 color: "bg-purple-500",
               },
             ].map((t) => (
@@ -369,7 +427,7 @@ export default function Home() {
                 className="bg-[#08090a] border border-white/[0.07] rounded-2xl p-7 flex flex-col gap-5 hover:border-white/20 transition-colors"
               >
                 {/* Stars */}
-                <div className="flex gap-0.5 text-sm">⭐⭐⭐⭐⭐</div>
+                <div className="text-base leading-none">⭐⭐⭐⭐⭐</div>
                 {/* Quote */}
                 <p className="text-[#d1d5db] text-sm leading-relaxed flex-1">
                   &ldquo;{t.quote}&rdquo;
