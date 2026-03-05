@@ -89,7 +89,6 @@ export default function Home() {
 
         <div className="grid md:grid-cols-5 gap-4">
 
-          {/* TODO: Replace with real screenshot public/templates/dark-premium.png */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-[#00e5a0]/30 transition-colors group cursor-pointer flex flex-col">
             <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
               <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -97,14 +96,12 @@ export default function Home() {
               <div className="w-2 h-2 rounded-full bg-green-500/60" />
               <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-            <div
-              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)" }}
-            >
-              <div className="w-8 h-1 rounded-full bg-[#00e5a0]/60" />
-              <div className="w-12 h-0.5 rounded-full bg-[#00e5a0]/30" />
-              <div className="w-6 h-0.5 rounded-full bg-[#00e5a0]/20" />
-              <span className="text-[9px] text-[#00e5a0]/40 mt-1 font-mono">Screenshot Coming Soon</span>
+            <div className="mx-3 my-3 rounded-xl overflow-hidden">
+              <img
+                src="/templates/dark-premium.png"
+                alt="Dark Premium Template"
+                style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+              />
             </div>
             <div className="px-3 pb-3">
               <p className="text-xs font-bold text-[#f0f0f0]">Dark Premium</p>
@@ -113,7 +110,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* TODO: Replace with real screenshot public/templates/neo-brutalism.png */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-400/30 transition-colors group cursor-pointer flex flex-col">
             <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
               <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -121,14 +117,12 @@ export default function Home() {
               <div className="w-2 h-2 rounded-full bg-green-500/60" />
               <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-            <div
-              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl border-2 border-black/40"
-              style={{ background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)" }}
-            >
-              <div className="w-10 h-1.5 rounded-none bg-black" />
-              <div className="w-8 h-1 rounded-none bg-yellow-400" />
-              <div className="w-6 h-0.5 rounded-none bg-black/40" />
-              <span className="text-[9px] text-black/30 mt-1 font-mono">Screenshot Coming Soon</span>
+            <div className="mx-3 my-3 rounded-xl overflow-hidden">
+              <img
+                src="/templates/neo-brutalism.png"
+                alt="Neo Brutalism Template"
+                style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+              />
             </div>
             <div className="px-3 pb-3">
               <p className="text-xs font-bold text-[#f0f0f0]">Neo Brutalism</p>
@@ -137,7 +131,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* TODO: Replace with real screenshot public/templates/modern-minimal.png */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-blue-400/30 transition-colors group cursor-pointer flex flex-col">
             <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
               <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -145,14 +138,12 @@ export default function Home() {
               <div className="w-2 h-2 rounded-full bg-green-500/60" />
               <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-            <div
-              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%)" }}
-            >
-              <div className="w-10 h-0.5 rounded-full bg-[#0066ff]/60" />
-              <div className="w-8 h-0.5 rounded-full bg-black/20" />
-              <div className="w-6 h-0.5 rounded-full bg-black/10" />
-              <span className="text-[9px] text-black/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            <div className="mx-3 my-3 rounded-xl overflow-hidden">
+              <img
+                src="/templates/modern-minimal.png"
+                alt="Modern Minimal Template"
+                style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+              />
             </div>
             <div className="px-3 pb-3">
               <p className="text-xs font-bold text-[#f0f0f0]">Modern Minimal</p>
@@ -161,7 +152,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* TODO: Replace with real screenshot public/templates/bold-magazine.png */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-rose-400/30 transition-colors group cursor-pointer flex flex-col">
             <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
               <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -169,14 +159,12 @@ export default function Home() {
               <div className="w-2 h-2 rounded-full bg-green-500/60" />
               <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-            <div
-              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d1b69 100%)" }}
-            >
-              <div className="w-10 h-1 rounded-full bg-[#ff6b6b]/70" />
-              <div className="w-8 h-0.5 rounded-full bg-white/30" />
-              <div className="w-6 h-0.5 rounded-full bg-white/15" />
-              <span className="text-[9px] text-white/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            <div className="mx-3 my-3 rounded-xl overflow-hidden">
+              <img
+                src="/templates/bold-magazine.png"
+                alt="Bold Magazine Template"
+                style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+              />
             </div>
             <div className="px-3 pb-3">
               <p className="text-xs font-bold text-[#f0f0f0]">Bold Magazine</p>
@@ -185,7 +173,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* TODO: Replace with real screenshot public/templates/classic-business.png */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-600/30 transition-colors group cursor-pointer flex flex-col">
             <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
               <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -193,14 +180,12 @@ export default function Home() {
               <div className="w-2 h-2 rounded-full bg-green-500/60" />
               <div className="flex-1 bg-white/[0.04] rounded h-3 ml-1.5" />
             </div>
-            <div
-              className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 mx-3 my-3 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%)" }}
-            >
-              <div className="w-10 h-1 rounded-full bg-[#c9a227]/80" />
-              <div className="w-8 h-0.5 rounded-full bg-white/30" />
-              <div className="w-6 h-0.5 rounded-full bg-white/15" />
-              <span className="text-[9px] text-white/25 mt-1 font-mono">Screenshot Coming Soon</span>
+            <div className="mx-3 my-3 rounded-xl overflow-hidden">
+              <img
+                src="/templates/classic-business.png"
+                alt="Classic Business Template"
+                style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+              />
             </div>
             <div className="px-3 pb-3">
               <p className="text-xs font-bold text-[#f0f0f0]">Classic Business</p>
