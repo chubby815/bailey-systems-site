@@ -10,7 +10,7 @@ const SYSTEM_PROMPT = `You are Bailey, the friendly AI assistant for BaileyAgent
 PLANS & PRICING:
 - Starter: $29/month — 1 site, 20 runs/month
 - Growth: $79/month — 3 sites, 150 runs/month
-- Pro: $149/month — unlimited sites, unlimited runs
+- Pro: $149/month — 25 sites, unlimited runs
 - All plans include 7-day free trial
 - Card required, cancel anytime
 

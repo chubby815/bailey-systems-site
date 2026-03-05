@@ -10,7 +10,7 @@ import { kv } from "@/lib/kv";
 export const PLAN_LIMITS = {
   starter: { runsPerMonth: 20,       sitesTotal: 1,        maxRegenerationsPerSite: 3 },
   growth:  { runsPerMonth: 150,      sitesTotal: 3,        maxRegenerationsPerSite: 5 },
-  pro:     { runsPerMonth: Infinity, sitesTotal: Infinity,  maxRegenerationsPerSite: 5 },
+  pro:     { runsPerMonth: Infinity, sitesTotal: 25,        maxRegenerationsPerSite: 5 },
 } as const;
 
 export type PlanKey = keyof typeof PLAN_LIMITS;

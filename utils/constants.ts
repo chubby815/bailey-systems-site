@@ -136,7 +136,7 @@ export const PRICING_PLANS: SaaSPricingPlan[] = [
     description:
       "For agencies and power users who need unlimited output and custom branding.",
     features: [
-      "Unlimited AI Websites",
+      "Up to 25 AI Websites",
       "All 3 AI Agents",
       "Unlimited runs (fair use)",
       "Advanced templates",
