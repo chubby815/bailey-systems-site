@@ -6,17 +6,28 @@ import type { SiteRecord } from "@/lib/kv";
 type Message = { role: "user" | "assistant"; content: string };
 
 function buildSystemPrompt(site: SiteRecord): string {
-  return `You are the AI assistant for ${site.businessName}, a ${site.industry} business located in ${site.location}.
+  const lines: string[] = [
+    `You are the AI assistant for ${site.businessName}, a ${site.industry} business in ${site.location}.`,
+    `Services: ${site.services}`,
+  ];
 
-About us: ${site.description || site.tagline || `We are a professional ${site.industry} business.`}
-Services we offer: ${site.services}
-${site.yearsInBusiness ? `Years in business: ${site.yearsInBusiness}` : ""}
-${site.serviceArea ? `Service area: ${site.serviceArea}` : ""}
-${site.businessHours ? `Business hours: ${site.businessHours}` : ""}
-${site.contactEmail ? `Contact email: ${site.contactEmail}` : ""}
-${site.contactPhone ? `Contact phone: ${site.contactPhone}` : ""}
+  if (site.businessHours) lines.push(`Hours: ${site.businessHours}`);
+  if (site.contactPhone)   lines.push(`Phone: ${site.contactPhone}`);
+  if (site.contactEmail)   lines.push(`Email: ${site.contactEmail}`);
+  if (site.serviceArea)    lines.push(`Service area: ${site.serviceArea}`);
+  if (site.description || site.tagline)
+    lines.push(`About: ${site.description || site.tagline}`);
 
-Answer visitor questions about this business helpfully and concisely. If asked about pricing, suggest they contact us directly. Always encourage visitors to get in touch. Never make up information not provided above.`;
+  lines.push(
+    "",
+    "Answer visitor questions about THIS business only.",
+    "Never mention BaileyAgents or any other platform.",
+    "If asked about pricing, suggest they contact the business directly.",
+    "Encourage visitors to call or contact the business.",
+    "Never make up information not listed above.",
+  );
+
+  return lines.join("\n");
 }
 
 type Props = { site: SiteRecord };
