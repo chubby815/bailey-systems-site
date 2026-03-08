@@ -123,6 +123,29 @@ export async function getSiteBySlug(slug: string): Promise<SiteRecord | null> {
   return getSite(siteId);
 }
 
+// ── Facebook page record shape ────────────────────────────────────────────────
+export type FacebookPageRecord = {
+  pageId: string;
+  pageName: string;
+  pageAccessToken: string;
+  connectedAt: string;
+};
+
+/** Save a connected Facebook page for a user */
+export async function saveFacebookPage(
+  email: string,
+  data: FacebookPageRecord
+): Promise<void> {
+  await kv.set(`facebook:${email}`, data);
+}
+
+/** Get the connected Facebook page for a user */
+export async function getFacebookPage(
+  email: string
+): Promise<FacebookPageRecord | null> {
+  return kv.get<FacebookPageRecord>(`facebook:${email}`);
+}
+
 /** Get all sites belonging to a specific user, sorted newest first */
 export async function getUserSites(email: string): Promise<SiteRecord[]> {
   const keys = await kv.keys("site:*");

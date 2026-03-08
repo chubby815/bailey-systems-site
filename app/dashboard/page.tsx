@@ -69,6 +69,7 @@ export default async function DashboardPage() {
               { icon: "🎯", label: "Lead Hunter", href: "/dashboard/leads" },
               { icon: "✍️", label: "Content Machine", href: "/dashboard/content" },
               { icon: "🔥", label: "Website Roast", href: "/dashboard/roast" },
+              { icon: "📘", label: "Facebook", href: "/dashboard/facebook" },
               { icon: "📊", label: "Usage", href: "/dashboard/usage" },
               { icon: "💳", label: "Billing", href: "/dashboard/billing" },
             ].map((item, i) => (
@@ -202,6 +203,14 @@ export default async function DashboardPage() {
                   href: "/dashboard/roast",
                   available: true,
                   color: "orange",
+                },
+                {
+                  icon: "📘",
+                  name: "Facebook Agent",
+                  desc: "Generate and publish AI posts to your Facebook business page.",
+                  href: "/dashboard/facebook",
+                  available: plan === "growth" || plan === "pro",
+                  color: "blue",
                 },
               ].map((agent) => (
                 <div
