@@ -126,6 +126,29 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      // ── Payment succeeded (re-activates past_due accounts) ───────────────
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        const email = await kv.get<string>(`sub:cust:${customerId}`);
+        if (!email) break;
+
+        const current = await kv.get<Record<string, unknown>>(`sub:${email}`);
+        if (!current) break;
+
+        // Only update if currently past_due — don't overwrite active subscriptions
+        if (current.status === "past_due") {
+          await kv.set(`sub:${email}`, {
+            ...current,
+            status: "active",
+            updatedAt: new Date().toISOString(),
+          });
+          console.log(`[webhook] payment_succeeded — reactivated account for ${email}`);
+        }
+        break;
+      }
+
       // ── Payment failed ────────────────────────────────────────────────────
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
