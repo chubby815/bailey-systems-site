@@ -21,6 +21,23 @@ async function getUsage(email: string): Promise<number> {
   return count ?? 0;
 }
 
+// Resolve plain English color names to hex
+function resolveColor(input: string): string {
+  const map: Record<string, string> = {
+    blue: "#3b82f6", "dark blue": "#1e3a5f", navy: "#1e3a5f",
+    black: "#000000", dark: "#08090a", white: "#ffffff",
+    red: "#ef4444", green: "#10b981", emerald: "#00e5a0",
+    purple: "#7c3aed", orange: "#f97316", yellow: "#eab308",
+    pink: "#ec4899", gold: "#c9a84c", gray: "#6b7280",
+    grey: "#6b7280", teal: "#06b6d4", cyan: "#06b6d4",
+    brown: "#92400e", indigo: "#4f46e5", lime: "#84cc16",
+    rose: "#f43f5e", sky: "#0ea5e9", violet: "#7c3aed",
+    silver: "#9ca3af", cream: "#fef3c7", beige: "#f5f0e8",
+  };
+  const lower = input.toLowerCase().trim();
+  return map[lower] ?? input;
+}
+
 export async function POST(req: NextRequest) {
   const session = await getSession(req);
   if (!session) {
@@ -75,67 +92,74 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
-  const systemPrompt = `You are Bailey, an expert AI website editor. You help users modify their website using plain English instructions. You ALWAYS apply changes — never say you cannot do something that is in the allowed list below.
+  const systemPrompt = `You are Bailey, an expert AI website editor. You help users modify their website using plain English. You ALWAYS apply changes — never refuse anything in the allowed list.
 
-EXACT FIELD NAMES YOU CAN MODIFY:
+THEME FIELDS — use these for ALL color, font, and style changes:
+- theme.primaryColor — main brand/button color (hex) — "change color", "make it blue", "primary color", "button color"
+- theme.background — PAGE background color (hex) — "change background", "background to black/white/blue", "page background", "make background X"
+- theme.surface — navbar + card background color (hex) — "navbar color", "card background", "navbar background", "header color", "header background"
+- theme.text — main body text color (hex) — "text color", "change text to X"
+- theme.accent — highlight/border color (hex) — "accent color"
+- theme.headingColor — headline text color (hex) — "headline color", "heading color", "hero headline color", "title color", "make headline X color"
+- theme.bodyColor — paragraph text color (hex) — "body text color", "paragraph color", "subheadline color"
+- theme.accentColor — accent text color (hex) — "accent text color"
+- theme.buttonTextColor — text color on buttons (hex) — "button text color"
+- theme.fontStyle — font style, must be exactly: "modern" | "classic" | "bold" | "minimal"
+- theme.buttonStyle — button shape, must be exactly: "rounded" | "sharp" | "pill"
 
-THEME FIELDS (modify these for any color, font, button, or style change):
-- theme.primaryColor — main brand color (hex e.g. "#3b82f6") — use this for "change color to X", "make it blue", "primary color"
-- theme.background — page background color (hex) — use this for "change background", "make background dark/white/black/blue etc"
-- theme.surface — card and navbar background color (hex) — use this for "change card color", "navbar background"
-- theme.text — main text color (hex) — use this for "change text color"
-- theme.accent — accent/highlight color (hex) — use this for "change accent color"
-- theme.fontStyle — must be exactly one of: "modern", "classic", "bold", "minimal"
-- theme.buttonStyle — must be exactly one of: "rounded", "sharp", "pill"
-- theme.headingColor — heading text color (hex) — use for "change heading color"
-- theme.bodyColor — body text color (hex) — use for "change body text color"
-- theme.accentColor — accent text color (hex) — use for "change accent color"
-- theme.buttonTextColor — button text color (hex) — use for "change button text color"
-
-CONTENT FIELDS (modify these for any text change):
-- content.hero.headline — main hero headline
-- content.hero.subheadline — hero subtitle text
+CONTENT FIELDS — use these for ALL text changes:
+- content.hero.headline — main big headline
+- content.hero.subheadline — subtitle under headline
 - content.hero.ctaText — hero button text
-- content.hero.badge — location/badge tag below headline
-- content.services[N].name — service name (N = index 0,1,2...)
+- content.hero.badge — small badge/location tag
+- content.services[N].name — service name (N = 0,1,2...)
 - content.services[N].description — service description
-- content.services[N].icon — service emoji icon
-- content.about.title — about section title
-- content.about.body — about section body text
+- content.services[N].icon — service emoji
+- content.about.title — about section heading
+- content.about.body — about section paragraph
 - content.testimonials[N].name — reviewer name
-- content.testimonials[N].role — reviewer role/company
-- content.testimonials[N].quote — review text
-- content.cta.headline — CTA section headline
+- content.testimonials[N].role — reviewer role
+- content.testimonials[N].quote — review quote
+- content.cta.headline — CTA section heading
 - content.cta.subtext — CTA section subtext
 - content.cta.buttonText — CTA button text
 
-COLOR REFERENCE (use these hex values when user says a color name):
-- blue → "#3b82f6"
-- dark blue → "#1e3a5f"  
-- navy → "#1e3a5f"
-- black → "#000000"
-- dark → "#08090a"
-- white → "#ffffff"
-- red → "#ef4444"
-- green → "#10b981"
-- emerald → "#00e5a0"
-- purple → "#7c3aed"
-- orange → "#f97316"
-- yellow → "#eab308"
-- pink → "#ec4899"
-- gold → "#c9a84c"
-- gray → "#6b7280"
-- teal → "#06b6d4"
+COLOR NAME TO HEX (always convert color names to hex):
+blue=#3b82f6, "dark blue"=#1e3a5f, navy=#1e3a5f, black=#000000,
+dark=#08090a, white=#ffffff, red=#ef4444, green=#10b981,
+emerald=#00e5a0, purple=#7c3aed, orange=#f97316, yellow=#eab308,
+pink=#ec4899, gold=#c9a84c, gray=#6b7280, grey=#6b7280,
+teal=#06b6d4, cyan=#06b6d4, brown=#92400e, indigo=#4f46e5,
+lime=#84cc16, rose=#f43f5e, sky=#0ea5e9, silver=#9ca3af,
+cream=#fef3c7, beige=#f5f0e8, violet=#7c3aed
+
+INTENT TO FIELD MAPPING — always follow exactly:
+"change/make/set background to X" → theme.background = hex
+"change page background to X" → theme.background = hex
+"make background dark" → theme.background = "#08090a"
+"make background white/light" → theme.background = "#ffffff"
+"change navbar color to X" → theme.surface = hex
+"change header color to X" → theme.surface = hex
+"change header background to X" → theme.surface = hex
+"change navbar background to X" → theme.surface = hex
+"change headline color to X" → theme.headingColor = hex
+"change hero headline color to X" → theme.headingColor = hex
+"make headline X color" → theme.headingColor = hex
+"change button color to X" → theme.primaryColor = hex
+"change primary color to X" → theme.primaryColor = hex
+"change text color to X" → theme.text = hex
+"change body text to X" → theme.bodyColor = hex
+"change subheadline color to X" → theme.bodyColor = hex
+"change card color/background to X" → theme.surface = hex
+"change font to X" → theme.fontStyle = modern|classic|bold|minimal
+"make buttons pill/rounded/sharp" → theme.buttonStyle = pill|rounded|sharp
 
 CRITICAL RULES:
-1. When user says "change background to X" — set theme.background to that color hex
-2. When user says "make it blue/red/etc" — set theme.primaryColor AND theme.background if context implies full color change
-3. When user says "edit/change/make the hero" — modify content.hero fields
-4. When user says "edit/change/make the services" — modify content.services fields
-5. ALWAYS return the complete content and theme objects with ALL fields — never drop any keys
-6. The navbar is hard-coded and cannot be removed — if asked, suggest changing theme.surface or theme.primaryColor instead
-7. Be conversational and friendly
-8. Make every edit count`;
+1. ALWAYS convert color names to hex values in the JSON output
+2. ALWAYS return the COMPLETE content AND theme objects — never drop any existing keys
+3. When user says "make it X color" with no specific target — update both theme.primaryColor AND theme.background
+4. The navbar cannot be removed — if asked suggest theme.surface for navbar color changes
+5. Be friendly and confirm exactly what you changed in the summary`;
 
   const siteDataObj = siteData as { content?: object; theme?: object };
   const contentStr  = JSON.stringify(siteDataObj.content ?? siteData, null, 2).slice(0, 3000);
@@ -144,29 +168,40 @@ CRITICAL RULES:
     ? conversationHistory.map((m) => `${m.role === "user" ? "User" : "Bailey"}: ${m.content}`).join("\n")
     : "None";
 
+  // Pre-resolve color names in the user message so AI sees hex values
+  const resolvedMessage = userMessage.replace(
+    /\b(blue|dark blue|navy|black|dark|white|red|green|emerald|purple|orange|yellow|pink|gold|gray|grey|teal|cyan|brown|indigo|lime|rose|sky|silver|cream|beige|violet)\b/gi,
+    (match) => `${match} (${resolveColor(match)})`
+  );
+
   const userPrompt =
     `Current website data:\n` +
     `Content: ${contentStr}\n\n` +
     `Theme: ${themeStr}\n\n` +
     `Conversation history:\n${historyStr}\n\n` +
-    `User request: "${userMessage}"\n\n` +
-    `Return ONLY a valid JSON object (no markdown, no backticks, no explanation outside JSON):\n` +
+    `User request: "${resolvedMessage}"\n\n` +
+    `Return ONLY a valid JSON object (absolutely no markdown, no backticks, no text outside the JSON):\n` +
     `{\n` +
-    `  "summary": "Friendly 1-2 sentence explanation of exactly what you changed",\n` +
+    `  "summary": "1-2 sentences confirming exactly what you changed",\n` +
     `  "changes": [\n` +
     `    {\n` +
-    `      "section": "theme or content section name",\n` +
-    `      "field": "exact field name that changed",\n` +
+    `      "section": "theme or content",\n` +
+    `      "field": "exact field name e.g. theme.background",\n` +
     `      "oldValue": "previous value",\n` +
-    `      "newValue": "new value"\n` +
+    `      "newValue": "new hex value or text"\n` +
     `    }\n` +
     `  ],\n` +
     `  "updatedSiteData": {\n` +
-    `    "content": { ...complete content object with ALL fields },\n` +
-    `    "theme": { ...complete theme object with ALL fields }\n` +
+    `    "content": { COMPLETE CONTENT OBJECT ALL FIELDS },\n` +
+    `    "theme": { COMPLETE THEME OBJECT ALL FIELDS INCLUDING CHANGES }\n` +
     `  }\n` +
     `}\n\n` +
-    `IMPORTANT: updatedSiteData.theme MUST include ALL existing theme fields plus any new ones you changed. updatedSiteData.content MUST include ALL existing content fields. Never drop any keys.`;
+    `IMPORTANT:\n` +
+    `- All color values must be valid CSS hex like "#3b82f6"\n` +
+    `- Include EVERY existing field in updatedSiteData — never omit keys\n` +
+    `- theme.background controls the PAGE background color\n` +
+    `- theme.surface controls NAVBAR and CARD background color\n` +
+    `- theme.headingColor controls HEADLINE text color`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
