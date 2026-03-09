@@ -207,7 +207,7 @@ export default function Home() {
             Your AI team, working 24/7
           </h2>
           <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
-            Three specialized agents that handle the work you hate — automatically.
+            Eight specialized agents that handle the work you hate — automatically.
           </p>
         </div>
 
