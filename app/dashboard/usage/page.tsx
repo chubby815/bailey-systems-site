@@ -38,7 +38,7 @@ export default async function UsagePage() {
       {/* Top bar */}
       <header className="border-b border-white/[0.07] bg-[#111214] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-extrabold tracking-tight" style={{ fontFamily: "Syne, sans-serif" }}>
-          Bailey<span className="text-[#00e5a0]">Systems</span>AI
+          Bailey<span className="text-[#00e5a0]">Agents</span>
         </Link>
         <Link href="/dashboard" className="text-xs text-gray-500 hover:text-white transition-colors">
           ← Back to Dashboard
