@@ -17,11 +17,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const scope = [
-    "pages_show_list",
-    "pages_manage_posts",
-    "pages_read_engagement",
-  ].join(",");
+  const scope = ["public_profile", "email"].join(",");
 
   const oauthUrl = new URL("https://www.facebook.com/v18.0/dialog/oauth");
   oauthUrl.searchParams.set("client_id", appId);
