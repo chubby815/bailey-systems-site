@@ -16,9 +16,13 @@ export type TemplateProps = {
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-const BG      = "#080808";
-const CARD    = "#0d0e10";
 const BORDER  = "rgba(255,255,255,0.06)";
+
+function hexToRgba(hex: string, alpha: number): string {
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return "rgba(8,8,8,0.85)";
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 const C_HEADING = "var(--heading-color, #ffffff)";
 const C_BODY    = "var(--body-color, #9ca3af)";
@@ -32,7 +36,7 @@ function Stars({ n, color }: { n: number; color: string }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles({ p }: { p: string }) {
+function Styles({ p, card }: { p: string; card: string }) {
   return (
     <style>{`
       @keyframes dp-glow {
@@ -57,10 +61,10 @@ function Styles({ p }: { p: string }) {
         box-shadow: 0 20px 60px ${p}22, 0 0 0 1px ${p}33;
       }
       .dp-card-inner {
-        background: ${CARD}; border-radius: 19px; padding: 2rem; height: 100%;
+        background: ${card}; border-radius: 19px; padding: 2rem; height: 100%;
       }
       .dp-stat-card {
-        background: ${CARD}; border: 1px solid ${BORDER}; border-radius: 16px;
+        background: ${card}; border: 1px solid ${BORDER}; border-radius: 16px;
         padding: 1.5rem 1.25rem; text-align: center;
         transition: border-color 0.3s ease;
       }
@@ -71,7 +75,7 @@ function Styles({ p }: { p: string }) {
         flex: 0 0 320px;
       }
       .dp-testimonial-inner {
-        background: ${CARD}; border-radius: 19px; padding: 1.75rem; height: 100%;
+        background: ${card}; border-radius: 19px; padding: 1.75rem; height: 100%;
       }
       @media (max-width: 768px) {
         .dp-hero-btns { flex-direction: column !important; }
@@ -88,11 +92,11 @@ function Styles({ p }: { p: string }) {
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, primaryColor }: { businessName: string; ctaText: string; primaryColor: string }) {
+function Navbar({ businessName, ctaText, primaryColor, navBackground }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string }) {
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-      background: "rgba(8,8,8,0.85)", backdropFilter: "blur(20px) saturate(180%)",
+      background: navBackground, backdropFilter: "blur(20px) saturate(180%)",
       borderBottom: `1px solid ${BORDER}`,
       padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
@@ -125,14 +129,15 @@ function Navbar({ businessName, ctaText, primaryColor }: { businessName: string;
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, primaryColor, location }: {
+function Hero({ content, primaryColor, location, bg }: {
   content: StructuredSiteContent["hero"];
   primaryColor: string;
   location: string;
+  bg: string;
 }) {
   return (
     <section id="home" style={{
-      minHeight: "100vh", background: BG,
+      minHeight: "100vh", backgroundColor: bg,
       display: "flex", alignItems: "center", justifyContent: "center",
       position: "relative", overflow: "hidden", padding: "8rem clamp(1rem, 5vw, 3rem) 5rem",
       backgroundImage: GRAIN, backgroundBlendMode: "overlay",
@@ -140,14 +145,14 @@ function Hero({ content, primaryColor, location }: {
       {/* Animated radial glow */}
       <div className="dp-glow" style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse 80% 60% at 30% 40%, ${primaryColor}20 0%, transparent 60%),
+        backgroundImage: `radial-gradient(ellipse 80% 60% at 30% 40%, ${primaryColor}20 0%, transparent 60%),
                      radial-gradient(ellipse 60% 80% at 80% 70%, #0066ff15 0%, transparent 60%)`,
         animation: "dp-glow 4s ease-in-out infinite",
       }} />
       {/* Bottom gradient fade */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, height: "200px", pointerEvents: "none",
-        background: `linear-gradient(to bottom, transparent, ${BG})`,
+        backgroundImage: `linear-gradient(to bottom, transparent, ${bg})`,
       }} />
 
       <div style={{ position: "relative", maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
@@ -174,7 +179,7 @@ function Hero({ content, primaryColor, location }: {
           fontSize: "clamp(3rem, 8vw, 7rem)",
           lineHeight: 1.0, letterSpacing: "-0.04em",
           color: C_HEADING, marginBottom: "1.75rem",
-          background: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
+          backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           backgroundClip: "text",
         }}>
@@ -214,13 +219,14 @@ function Hero({ content, primaryColor, location }: {
 }
 
 // ── Services (Bento Grid) ─────────────────────────────────────────────────────
-function Services({ content, primaryColor, location }: {
+function Services({ content, primaryColor, location, bg }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
+  bg: string;
 }) {
   return (
-    <section id="services" style={{ background: BG, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ marginBottom: "3.5rem" }}>
           <p style={{
@@ -305,14 +311,15 @@ function Services({ content, primaryColor, location }: {
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site, primaryColor }: {
+function About({ content, site, primaryColor, card }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
+  card: string;
 }) {
   return (
     <section id="about" style={{
-      background: CARD,
+      backgroundColor: card,
       backgroundImage: `radial-gradient(ellipse 80% 60% at 100% 50%, ${primaryColor}08 0%, transparent 60%)`,
       padding: "7rem clamp(1rem, 5vw, 3rem)",
     }}>
@@ -382,10 +389,10 @@ function About({ content, site, primaryColor }: {
 }
 
 // ── Testimonials ───────────────────────────────────────────────────────────────
-function Testimonials({ content, primaryColor }: { content: StructuredSiteContent["testimonials"]; primaryColor: string }) {
+function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteContent["testimonials"]; primaryColor: string; bg: string }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: BG, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
+    <section style={{ background: bg, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ marginBottom: "3.5rem" }}>
           <p style={{
@@ -416,7 +423,7 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <div style={{
                     width: "40px", height: "40px", borderRadius: "50%",
-                    background: `linear-gradient(135deg, ${primaryColor}, #0066ff)`,
+                    backgroundImage: `linear-gradient(135deg, ${primaryColor}, #0066ff)`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: "#000", fontFamily: FF, fontWeight: 700, fontSize: "1rem",
                     flexShrink: 0,
@@ -437,10 +444,11 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
 }
 
 // ── Stats row ─────────────────────────────────────────────────────────────────
-function StatsRow({ content, site, primaryColor }: {
+function StatsRow({ content, site, primaryColor, card }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
+  card: string;
 }) {
   const stats = [
     { value: site.yearsInBusiness ?? "5+",   label: "Years in Business" },
@@ -450,7 +458,7 @@ function StatsRow({ content, site, primaryColor }: {
   ];
   return (
     <div style={{
-      background: CARD, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
+      background: card, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
       padding: "2.5rem clamp(1rem, 5vw, 3rem)",
     }}>
       <div className="dp-stats-row" style={{
@@ -474,16 +482,17 @@ function StatsRow({ content, site, primaryColor }: {
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, card }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
   contactPhone?: string;
+  card: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
     <section id="contact" style={{
-      background: CARD, borderTop: `1px solid ${BORDER}`,
+      backgroundColor: card, borderTop: `1px solid ${BORDER}`,
       padding: "8rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
       backgroundImage: `radial-gradient(ellipse 80% 80% at 50% 100%, ${primaryColor}14 0%, transparent 60%)`,
     }}>
@@ -503,7 +512,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone }: {
           {content.subtext}
         </p>
         <a href={href} style={{
-          background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+          backgroundImage: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
           color: C_BTN, fontFamily: FF, fontWeight: 700, fontSize: "1rem",
           padding: "16px 48px", borderRadius: "14px", textDecoration: "none",
           display: "inline-block",
@@ -539,18 +548,21 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl }: TemplateProps) {
+export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, theme }: TemplateProps) {
+  const BG   = theme?.background ?? "#080808";
+  const CARD = theme?.surface ?? "#0d0e10";
+  const navBackground = hexToRgba(BG, 0.85);
   return (
     <>
-      <Styles p={primaryColor} />
+      <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "hidden" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} />
-        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} />
-        <StatsRow content={content.about} site={site} primaryColor={primaryColor} />
-        <Services content={content.services} primaryColor={primaryColor} location={site.location} />
-        <About content={content.about} site={site} primaryColor={primaryColor} />
-        <Testimonials content={content.testimonials} primaryColor={primaryColor} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={navBackground} />
+        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
+        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <About content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
+        <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} />
         <Footer site={site} primaryColor={primaryColor} />
       </div>
     </>

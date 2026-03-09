@@ -2,7 +2,7 @@
  * Modern Minimal — Apple meets Linear. Obsessive whitespace. Thin and elegant.
  */
 import type { SiteRecord } from "@/lib/kv";
-import type { StructuredSiteContent } from "@/lib/site-theme";
+import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
@@ -11,6 +11,7 @@ export type TemplateProps = {
   content:       StructuredSiteContent;
   primaryColor:  string;
   heroImageUrl?: string;
+  theme?:        ThemeConfig;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -30,7 +31,7 @@ function Stars({ n, color }: { n: number; color: string }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles({ p }: { p: string }) {
+function Styles({ p, offBg, bg }: { p: string; offBg: string; bg: string }) {
   return (
     <style>{`
       .mn-service-row {
@@ -38,7 +39,7 @@ function Styles({ p }: { p: string }) {
         border-bottom: 1px solid ${LINE}; transition: background 0.15s;
         cursor: default;
       }
-      .mn-service-row:hover { background: #f9fafb; margin: 0 -2rem; padding-left: 2rem; padding-right: 2rem; }
+      .mn-service-row:hover { background: ${offBg}; margin: 0 -2rem; padding-left: 2rem; padding-right: 2rem; }
       .mn-trust-pill {
         background: #f3f4f6; border: 1px solid ${LINE}; border-radius: 100px;
         padding: 8px 20px; white-space: nowrap;
@@ -61,7 +62,7 @@ function Styles({ p }: { p: string }) {
       }
       .mn-btn-outline:hover { background: ${OFF_BG}; }
       .mn-testimonial {
-        background: #fff; border: 1px solid ${LINE}; border-radius: 16px;
+        background: ${bg}; border: 1px solid ${LINE}; border-radius: 16px;
         padding: 1.75rem; transition: box-shadow 0.2s;
         flex: 0 0 300px;
       }
@@ -80,11 +81,11 @@ function Styles({ p }: { p: string }) {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor }: { businessName: string; primaryColor: string }) {
+function Navbar({ businessName, primaryColor, surface }: { businessName: string; primaryColor: string; surface: string }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
-      background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px) saturate(180%)",
+      background: surface, backdropFilter: "blur(20px) saturate(180%)",
       borderBottom: `1px solid ${LINE}`, padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
@@ -113,20 +114,21 @@ function Navbar({ businessName, primaryColor }: { businessName: string; primaryC
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, primaryColor, location }: {
+function Hero({ content, primaryColor, location, bg }: {
   content: StructuredSiteContent["hero"];
   primaryColor: string;
   location: string;
+  bg: string;
 }) {
   return (
     <section id="home" style={{
-      background: "#fff", padding: "9rem clamp(1rem, 5vw, 3rem) 7rem",
+      background: bg, padding: "9rem clamp(1rem, 5vw, 3rem) 7rem",
       textAlign: "center", position: "relative",
     }}>
       {/* Subtle radial */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse 60% 50% at 50% 0%, ${primaryColor}08 0%, transparent 70%)`,
+        backgroundImage: `radial-gradient(ellipse 60% 50% at 50% 0%, ${primaryColor}08 0%, transparent 70%)`,
       }} />
 
       <div style={{ position: "relative", maxWidth: "760px", margin: "0 auto" }}>
@@ -206,13 +208,14 @@ function TrustStrip({ location }: { location: string }) {
 }
 
 // ── Services ───────────────────────────────────────────────────────────────────
-function Services({ content, primaryColor, location }: {
+function Services({ content, primaryColor, location, bg }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
+  bg: string;
 }) {
   return (
-    <section id="services" style={{ background: "#fff", padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{ marginBottom: "3.5rem" }}>
           <span style={{
@@ -257,13 +260,14 @@ function Services({ content, primaryColor, location }: {
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site, primaryColor }: {
+function About({ content, site, primaryColor, bg }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
+  bg: string;
 }) {
   return (
-    <section id="about" style={{ background: OFF_BG, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
+    <section id="about" style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div className="mn-about-grid" style={{ display: "flex", gap: "6rem", alignItems: "flex-start", flexWrap: "wrap" }}>
           {/* Left: pull quote */}
@@ -326,10 +330,10 @@ function About({ content, site, primaryColor }: {
 }
 
 // ── Testimonials ───────────────────────────────────────────────────────────────
-function Testimonials({ content, primaryColor }: { content: StructuredSiteContent["testimonials"]; primaryColor: string }) {
+function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteContent["testimonials"]; primaryColor: string; bg: string }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: "#fff", borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
+    <section style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{ marginBottom: "3.5rem" }}>
           <span style={{
@@ -369,16 +373,17 @@ function Testimonials({ content, primaryColor }: { content: StructuredSiteConten
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, bg }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
   contactPhone?: string;
+  bg: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
     <section id="contact" style={{
-      background: OFF_BG, borderTop: `1px solid ${LINE}`,
+      background: bg, borderTop: `1px solid ${LINE}`,
       padding: "8rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
     }}>
       <div style={{ maxWidth: "600px", margin: "0 auto" }}>
@@ -405,9 +410,9 @@ function CTA({ content, primaryColor, contactEmail, contactPhone }: {
 }
 
 // ── Footer ─────────────────────────────────────────────────────────────────────
-function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string }) {
+function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: string; bg: string }) {
   return (
-    <footer style={{ background: "#fff", borderTop: `1px solid ${LINE}`, padding: "2rem clamp(1rem, 5vw, 3rem)" }}>
+    <footer style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "2rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{
         maxWidth: "1100px", margin: "0 auto",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem",
@@ -425,19 +430,21 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MinimalLayout({ site, content, primaryColor }: TemplateProps) {
+export function MinimalLayout({ site, content, primaryColor, theme }: TemplateProps) {
+  const BG      = theme?.background ?? "#ffffff";
+  const SURFACE = theme?.surface ?? "rgba(255,255,255,0.92)";
   return (
     <>
-      <Styles p={primaryColor} />
-      <div style={{ fontFamily: FF, background: "#fff", color: TEXT, overflowX: "hidden" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} />
-        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} />
+      <Styles p={primaryColor} offBg={OFF_BG} bg={BG} />
+      <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "hidden" }}>
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
+        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} />
         <TrustStrip location={site.location} />
-        <Services content={content.services} primaryColor={primaryColor} location={site.location} />
-        <About content={content.about} site={site} primaryColor={primaryColor} />
-        <Testimonials content={content.testimonials} primaryColor={primaryColor} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
-        <Footer site={site} primaryColor={primaryColor} />
+        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} />
+        <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} />
+        <Footer site={site} primaryColor={primaryColor} bg={BG} />
       </div>
     </>
   );

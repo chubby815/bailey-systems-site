@@ -3,7 +3,7 @@
  * Navy gradient, gold accents, trust badges, traditional layout.
  */
 import type { SiteRecord } from "@/lib/kv";
-import type { StructuredSiteContent } from "@/lib/site-theme";
+import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
@@ -12,6 +12,7 @@ export type TemplateProps = {
   content:       StructuredSiteContent;
   primaryColor:  string;
   heroImageUrl?: string;
+  theme?:        ThemeConfig;
 };
 
 const NAVY   = "#1a2744";
@@ -19,7 +20,6 @@ const NAVY2  = "#0f1729";
 const GOLD   = "#c9a84c";
 const GOLD_L = "#e8c86a";
 const WHITE  = "#ffffff";
-const OFF    = "#f8f9fa";
 const LIGHT  = "#e8edf5";
 const TEXT   = "#1e2d4a";
 const MUTED  = "#5a6a7a";
@@ -105,10 +105,10 @@ function Styles() {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, contactPhone }: { businessName: string; ctaText: string; contactPhone?: string }) {
+function Navbar({ businessName, ctaText, contactPhone, surface }: { businessName: string; ctaText: string; contactPhone?: string; surface: string }) {
   return (
     <nav style={{
-      background: `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+      background: surface,
       padding: "0 clamp(1rem, 5vw, 3rem)",
       boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
       position: "sticky", top: 0, zIndex: 50,
@@ -162,14 +162,14 @@ function Hero({ content, heroImageUrl, location }: {
 
   return (
     <section id="home" style={{
-      background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 60%, #0a1020 100%)`,
+      backgroundImage: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 60%, #0a1020 100%)`,
       padding: "6rem clamp(1rem, 5vw, 3rem) 5rem",
       position: "relative", overflow: "hidden",
     }}>
       {/* Subtle texture */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse 70% 60% at 80% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+        backgroundImage: `radial-gradient(ellipse 70% 60% at 80% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
                      radial-gradient(ellipse 50% 80% at 10% 80%, rgba(255,255,255,0.03) 0%, transparent 60%)`,
       }} />
 
@@ -220,13 +220,13 @@ function Hero({ content, heroImageUrl, location }: {
               width: "clamp(200px, 30vw, 380px)", height: "clamp(200px, 30vw, 380px)",
               borderRadius: "50%",
               padding: "6px",
-              background: `linear-gradient(135deg, ${GOLD}, ${GOLD_L}, ${GOLD})`,
+              backgroundImage: `linear-gradient(135deg, ${GOLD}, ${GOLD_L}, ${GOLD})`,
               boxShadow: `0 0 0 1px rgba(201,168,76,0.3), 0 20px 60px rgba(0,0,0,0.4)`,
             }}>
               <div style={{
                 width: "100%", height: "100%", borderRadius: "50%",
                 overflow: "hidden",
-                background: heroImageUrl
+                backgroundImage: heroImageUrl
                   ? `url(${heroImageUrl}) center/cover`
                   : `linear-gradient(160deg, ${NAVY} 0%, #2a4080 100%)`,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -244,9 +244,9 @@ function Hero({ content, heroImageUrl, location }: {
 }
 
 // ── Services (3-col icon grid) ─────────────────────────────────────────────────
-function Services({ content, location }: { content: StructuredSiteContent["services"]; location: string }) {
+function Services({ content, location, bg }: { content: StructuredSiteContent["services"]; location: string; bg: string }) {
   return (
-    <section id="services" style={{ background: OFF, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{
@@ -300,7 +300,7 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
           {/* Left: navy panel */}
           <div style={{
             flex: "1 1 340px",
-            background: `linear-gradient(160deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+            backgroundImage: `linear-gradient(160deg, ${NAVY} 0%, ${NAVY2} 100%)`,
             padding: "4rem clamp(2rem, 4vw, 3.5rem)",
           }}>
             <span style={{
@@ -388,10 +388,10 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
 }
 
 // ── Testimonials ───────────────────────────────────────────────────────────────
-function Testimonials({ content }: { content: StructuredSiteContent["testimonials"] }) {
+function Testimonials({ content, bg }: { content: StructuredSiteContent["testimonials"]; bg: string }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: OFF, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <span style={{
@@ -422,7 +422,7 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", borderTop: `1px solid ${LINE}`, paddingTop: "1rem" }}>
                 <div style={{
                   width: "44px", height: "44px", borderRadius: "50%", flexShrink: 0,
-                  background: `linear-gradient(135deg, ${NAVY} 0%, #2a4080 100%)`,
+                  backgroundImage: `linear-gradient(135deg, ${NAVY} 0%, #2a4080 100%)`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: WHITE, fontFamily: FF, fontWeight: 700, fontSize: "1rem",
                   boxShadow: `0 0 0 2px ${GOLD}`,
@@ -450,13 +450,13 @@ function CTA({ content, contactEmail, contactPhone }: {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
     <section id="contact" style={{
-      background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 100%)`,
+      backgroundImage: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 100%)`,
       padding: "7rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
       position: "relative", overflow: "hidden",
     }}>
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse 60% 80% at 50% 100%, rgba(201,168,76,0.10) 0%, transparent 60%)`,
+        backgroundImage: `radial-gradient(ellipse 60% 80% at 50% 100%, rgba(201,168,76,0.10) 0%, transparent 60%)`,
       }} />
       <div style={{ maxWidth: "680px", margin: "0 auto", position: "relative" }}>
         <h2 style={{
@@ -516,16 +516,18 @@ function Footer({ site }: { site: SiteRecord }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function ClassicLayout({ site, content, heroImageUrl }: TemplateProps) {
+export function ClassicLayout({ site, content, heroImageUrl, theme }: TemplateProps) {
+  const BG      = theme?.background ?? "#f8f9fa";
+  const SURFACE = theme?.surface ?? `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`;
   return (
     <>
       <Styles />
-      <div style={{ fontFamily: FF_SAN, background: OFF, color: TEXT, overflowX: "hidden" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} />
+      <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "hidden" }}>
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
-        <Services content={content.services} location={site.location} />
+        <Services content={content.services} location={site.location} bg={BG} />
         <About content={content.about} site={site} />
-        <Testimonials content={content.testimonials} />
+        <Testimonials content={content.testimonials} bg={BG} />
         <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
         <Footer site={site} />
       </div>

@@ -3,7 +3,7 @@
  * Cream background, thick black borders, yellow accents, marquee ticker.
  */
 import type { SiteRecord } from "@/lib/kv";
-import type { StructuredSiteContent } from "@/lib/site-theme";
+import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
@@ -11,9 +11,9 @@ export type TemplateProps = {
   content:       StructuredSiteContent;
   primaryColor:  string;
   heroImageUrl?: string;
+  theme?:        ThemeConfig;
 };
 
-const BG      = "#fffef7";
 const BLACK   = "#0a0a0a";
 const YELLOW  = "#FFE500";
 const FF      = "'Helvetica Neue', 'Arial Black', Arial, sans-serif";
@@ -113,10 +113,10 @@ function Ticker() {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText }: { businessName: string; ctaText: string }) {
+function Navbar({ businessName, ctaText, surface }: { businessName: string; ctaText: string; surface: string }) {
   return (
     <nav style={{
-      background: BLACK, borderBottom: `3px solid ${BLACK}`,
+      background: surface, borderBottom: `3px solid ${BLACK}`,
       padding: "0 clamp(1rem, 5vw, 3rem)", position: "sticky", top: 0, zIndex: 50,
     }}>
       <div style={{
@@ -145,13 +145,14 @@ function Navbar({ businessName, ctaText }: { businessName: string; ctaText: stri
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, heroImageUrl, location }: {
+function Hero({ content, heroImageUrl, location, bg }: {
   content: StructuredSiteContent["hero"];
   heroImageUrl?: string;
   location: string;
+  bg: string;
 }) {
   return (
-    <section id="home" style={{ background: BG, padding: "5rem clamp(1rem, 5vw, 3rem) 4rem", borderBottom: `3px solid ${BLACK}` }}>
+    <section id="home" style={{ background: bg, padding: "5rem clamp(1rem, 5vw, 3rem) 4rem", borderBottom: `3px solid ${BLACK}` }}>
       <div className="nb-hero-grid" style={{
         maxWidth: "1280px", margin: "0 auto",
         display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "3rem", alignItems: "center",
@@ -204,7 +205,7 @@ function Hero({ content, heroImageUrl, location }: {
             {["✓ No Fluff", "✓ Real Results", "✓ Locally Owned", "✓ 5-Star Service"].map((b, i) => (
               <span key={i} style={{
                 display: "inline-block",
-                background: i % 2 === 0 ? YELLOW : BG,
+                background: i % 2 === 0 ? YELLOW : bg,
                 border: `2px solid ${BLACK}`,
                 boxShadow: `2px 2px 0 ${BLACK}`,
                 padding: "3px 12px",
@@ -236,7 +237,7 @@ function Hero({ content, heroImageUrl, location }: {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           ) : (
-            <div style={{ width: "100%", height: "100%", background: `repeating-linear-gradient(45deg, #f0eedf 0, #f0eedf 10px, #e8e6d8 10px, #e8e6d8 20px)` }} />
+            <div style={{ width: "100%", height: "100%", backgroundImage: `repeating-linear-gradient(45deg, #f0eedf 0, #f0eedf 10px, #e8e6d8 10px, #e8e6d8 20px)` }} />
           )}
           <div style={{
             position: "absolute", bottom: "1rem", left: "1rem",
@@ -253,9 +254,9 @@ function Hero({ content, heroImageUrl, location }: {
 }
 
 // ── Services ───────────────────────────────────────────────────────────────────
-function Services({ content, location }: { content: StructuredSiteContent["services"]; location: string }) {
+function Services({ content, location, bg }: { content: StructuredSiteContent["services"]; location: string; bg: string }) {
   return (
-    <section id="services" style={{ background: BG, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
+    <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
@@ -275,7 +276,7 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
         }}>
           {content.map((s, i) => (
             <div key={i} className="nb-card" style={{
-              background: i % 3 === 1 ? YELLOW : i % 3 === 0 ? BG : "#fff",
+              background: i % 3 === 1 ? YELLOW : i % 3 === 0 ? bg : "#fff",
               padding: "2rem",
             }}>
               <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{s.icon || "◆"}</div>
@@ -303,9 +304,9 @@ function Services({ content, location }: { content: StructuredSiteContent["servi
 }
 
 // ── Featured Work ──────────────────────────────────────────────────────────────
-function FeaturedWork({ heroImageUrl, businessName }: { heroImageUrl?: string; businessName: string }) {
+function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: string; businessName: string; surface: string }) {
   return (
-    <section id="work" style={{ background: BLACK, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${YELLOW}` }}>
+    <section id="work" style={{ background: surface, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${YELLOW}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
@@ -322,7 +323,7 @@ function FeaturedWork({ heroImageUrl, businessName }: { heroImageUrl?: string; b
         <div className="nb-work-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "1.25rem" }}>
           <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
             <div style={{
-              height: "340px", background: heroImageUrl
+              height: "340px", backgroundImage: heroImageUrl
                 ? `url(${heroImageUrl}) center/cover`
                 : `repeating-linear-gradient(-45deg, #1a1a1a 0, #1a1a1a 10px, #222 10px, #222 20px)`,
               position: "relative",
@@ -348,7 +349,7 @@ function FeaturedWork({ heroImageUrl, businessName }: { heroImageUrl?: string; b
           <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
             <div style={{
               height: "200px",
-              background: `repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 10px, #222 10px, #222 20px)`,
+              backgroundImage: `repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 10px, #222 10px, #222 20px)`,
               position: "relative",
             }}>
               <div style={{
@@ -370,9 +371,9 @@ function FeaturedWork({ heroImageUrl, businessName }: { heroImageUrl?: string; b
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site }: { content: StructuredSiteContent["about"]; site: SiteRecord }) {
+function About({ content, site, bg }: { content: StructuredSiteContent["about"]; site: SiteRecord; bg: string }) {
   return (
-    <section id="about" style={{ background: BG, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
+    <section id="about" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
@@ -409,7 +410,7 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {content.stats.map((st, i) => (
               <div key={i} className="nb-card" style={{
-                background: i === 0 ? BLACK : i === 1 ? YELLOW : BG,
+                background: i === 0 ? BLACK : i === 1 ? YELLOW : bg,
                 padding: "1.25rem 1.5rem",
                 display: "flex", justifyContent: "space-between", alignItems: "center",
               }}>
@@ -434,10 +435,10 @@ function About({ content, site }: { content: StructuredSiteContent["about"]; sit
 }
 
 // ── Testimonials ───────────────────────────────────────────────────────────────
-function Testimonials({ content }: { content: StructuredSiteContent["testimonials"] }) {
+function Testimonials({ content, surface, bg }: { content: StructuredSiteContent["testimonials"]; surface: string; bg: string }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: BLACK, borderBottom: `3px solid ${YELLOW}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section style={{ background: surface, borderBottom: `3px solid ${YELLOW}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
@@ -452,10 +453,10 @@ function Testimonials({ content }: { content: StructuredSiteContent["testimonial
         </div>
         <ScrollAnimator>
         <div className="nb-testimonials" style={{ display: "flex", gap: "1.25rem", overflowX: "auto", paddingBottom: "1rem" }}>
-          {content.map((t, i) => (
+            {content.map((t, i) => (
             <div key={i} style={{
               flex: "0 0 clamp(280px, 35vw, 360px)",
-              background: i % 2 === 0 ? BG : YELLOW,
+              background: i % 2 === 0 ? bg : YELLOW,
               border: `3px solid ${i % 2 === 0 ? YELLOW : BLACK}`,
               boxShadow: `5px 5px 0 ${i % 2 === 0 ? YELLOW : BLACK}`,
               padding: "2rem",
@@ -520,9 +521,9 @@ function CTA({ content, contactEmail, contactPhone }: {
 }
 
 // ── Footer ─────────────────────────────────────────────────────────────────────
-function Footer({ site }: { site: SiteRecord }) {
+function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
   return (
-    <footer style={{ background: BLACK, padding: "2.5rem clamp(1rem, 5vw, 3rem)" }}>
+    <footer style={{ background: surface, padding: "2.5rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{
         maxWidth: "1280px", margin: "0 auto",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem",
@@ -540,20 +541,22 @@ function Footer({ site }: { site: SiteRecord }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function NeoBrutalismLayout({ site, content, heroImageUrl }: TemplateProps) {
+export function NeoBrutalismLayout({ site, content, heroImageUrl, theme }: TemplateProps) {
+  const BG      = theme?.background ?? "#fffef7";
+  const SURFACE = theme?.surface ?? "#0a0a0a";
   return (
     <>
       <Styles />
       <div style={{ fontFamily: FF, background: BG, overflowX: "hidden" }}>
         <Ticker />
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} />
-        <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
-        <Services content={content.services} location={site.location} />
-        <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} />
-        <About content={content.about} site={site} />
-        <Testimonials content={content.testimonials} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} />
+        <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} />
+        <Services content={content.services} location={site.location} bg={BG} />
+        <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />
+        <About content={content.about} site={site} bg={BG} />
+        <Testimonials content={content.testimonials} surface={SURFACE} bg={BG} />
         <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
-        <Footer site={site} />
+        <Footer site={site} surface={SURFACE} />
       </div>
     </>
   );

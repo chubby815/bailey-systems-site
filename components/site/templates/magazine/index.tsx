@@ -3,7 +3,7 @@
  * Full-bleed hero, bottom-left text, serif x sans, section numbers.
  */
 import type { SiteRecord } from "@/lib/kv";
-import type { StructuredSiteContent } from "@/lib/site-theme";
+import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
@@ -12,9 +12,9 @@ export type TemplateProps = {
   content:       StructuredSiteContent;
   primaryColor:  string;
   heroImageUrl?: string;
+  theme?:        ThemeConfig;
 };
 
-const BG     = "#fafaf8";
 const BLACK  = "#1a1a1a";
 const MUTED  = "#6b6b6b";
 const LINE   = "#e8e5df";
@@ -80,11 +80,11 @@ function Styles({ p }: { p: string }) {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor }: { businessName: string; primaryColor: string }) {
+function Navbar({ businessName, primaryColor, surface }: { businessName: string; primaryColor: string; surface: string }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
-      background: BG, borderBottom: `1px solid ${LINE}`,
+      background: surface, borderBottom: `1px solid ${LINE}`,
       padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
@@ -142,12 +142,12 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
       {/* Gradient overlay — dark bottom, light top */}
       <div style={{
         position: "absolute", inset: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)",
+        backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)",
       }} />
       {/* Side gradient */}
       <div style={{
         position: "absolute", inset: 0,
-        background: "linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 60%)",
+        backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 60%)",
       }} />
 
       <div style={{
@@ -203,13 +203,14 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
 }
 
 // ── Services (editorial card grid with image overlays) ────────────────────────
-function Services({ content, primaryColor, location }: {
+function Services({ content, primaryColor, location, bg }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
+  bg: string;
 }) {
   return (
-    <section id="services" style={{ background: BG, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
+    <section id="services" style={{ background: bg, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
       {/* Large section number behind heading */}
       <div style={{
         position: "absolute", top: "4rem", left: "clamp(1rem, 5vw, 3rem)",
@@ -240,7 +241,7 @@ function Services({ content, primaryColor, location }: {
             <div key={i} className="mg-service-card card-hover">
               {/* Image / color placeholder */}
               <div className="mg-service-img" style={{
-                background: `linear-gradient(135deg, ${primaryColor}${i % 2 === 0 ? "cc" : "88"}, ${primaryColor}22)`,
+                backgroundImage: `linear-gradient(135deg, ${primaryColor}${i % 2 === 0 ? "cc" : "88"}, ${primaryColor}22)`,
               }}>
                 <div style={{
                   width: "100%", height: "100%",
@@ -253,7 +254,7 @@ function Services({ content, primaryColor, location }: {
                 {/* Bottom overlay */}
                 <div style={{
                   position: "absolute", bottom: 0, left: 0, right: 0,
-                  background: "linear-gradient(to top, rgba(0,0,0,0.55), transparent)",
+                  backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.55), transparent)",
                   height: "60%", pointerEvents: "none",
                 }} />
                 <div style={{
@@ -285,13 +286,14 @@ function Services({ content, primaryColor, location }: {
 }
 
 // ── About (two-column editorial) ──────────────────────────────────────────────
-function About({ content, site, primaryColor }: {
+function About({ content, site, primaryColor, bg }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
+  bg: string;
 }) {
   return (
-    <section id="about" style={{ background: "#fff", borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
+    <section id="about" style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
       <div style={{
         position: "absolute", top: "4rem", right: "clamp(1rem, 5vw, 3rem)",
         fontFamily: FF_SER, fontWeight: 700, fontSize: "18vw",
@@ -303,7 +305,7 @@ function About({ content, site, primaryColor }: {
           {/* Left: editorial image placeholder */}
           <div style={{ flex: "1 1 300px" }}>
             <div style={{
-              aspectRatio: "3/4", background: `linear-gradient(160deg, ${primaryColor}22, ${primaryColor}08)`,
+              aspectRatio: "3/4", backgroundImage: `linear-gradient(160deg, ${primaryColor}22, ${primaryColor}08)`,
               borderBottom: `4px solid ${primaryColor}`, position: "relative",
               overflow: "hidden", maxWidth: "360px",
             }}>
@@ -507,12 +509,14 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MagazineLayout({ site, content, primaryColor, heroImageUrl }: TemplateProps) {
+export function MagazineLayout({ site, content, primaryColor, heroImageUrl, theme }: TemplateProps) {
+  const BG      = theme?.background ?? "#fafaf8";
+  const SURFACE = theme?.surface ?? "#fafaf8";
   return (
     <>
       <Styles p={primaryColor} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "hidden" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} />
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
         <Hero
           content={content.hero}
           heroImageUrl={heroImageUrl}
@@ -520,8 +524,8 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl }: Te
           location={site.location}
           industry={site.industry}
         />
-        <Services content={content.services} primaryColor={primaryColor} location={site.location} />
-        <About content={content.about} site={site} primaryColor={primaryColor} />
+        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <About content={content.about} site={site} primaryColor={primaryColor} bg="#fff" />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} />
         <CTA
           content={content.cta}

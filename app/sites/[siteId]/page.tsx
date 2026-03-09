@@ -42,7 +42,10 @@ export async function generateMetadata({
 
   const c = site.generatedContent;
   if (isStructuredContent(c)) {
-    return { title: c.seo.title, description: c.seo.description };
+    return {
+      title: c.seo?.title ?? c.hero?.headline ?? "Bailey Agents Site",
+      description: c.seo?.description ?? c.hero?.subheadline ?? "",
+    };
   }
   return { title: c.seo_title, description: c.seo_description };
 }

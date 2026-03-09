@@ -22,6 +22,9 @@ export type ThemeConfig = {
   bodyColor?:       string;      // --body-color
   accentColor?:     string;      // --accent-color (overrides primary for text labels)
   buttonTextColor?: string;      // --btn-text-color
+  // Background and surface — optional so existing sites are not broken
+  background?:      string;      // page/section background
+  surface?:         string;      // navbar, cards, elevated surfaces
 };
 
 export type ThemeTokens = {

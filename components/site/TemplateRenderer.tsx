@@ -29,7 +29,7 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
   const primaryColor = resolvedTheme.primaryColor ?? COLOR_MAP[site.primaryColor] ?? "#10b981";
   const template = site.template ?? "darkpremium";
 
-  const sharedProps = { site, content, primaryColor, heroImageUrl };
+  const sharedProps = { site, content, primaryColor, heroImageUrl, theme: resolvedTheme };
 
   // Build CSS variable object — text color overrides + typography scale.
   // These cascade to all template child elements via the wrapper div.
@@ -40,6 +40,8 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
   if (resolvedTheme.bodyColor)       cssVars["--body-color"]       = resolvedTheme.bodyColor;
   if (resolvedTheme.accentColor)     cssVars["--accent-color"]     = resolvedTheme.accentColor;
   if (resolvedTheme.buttonTextColor) cssVars["--btn-text-color"]   = resolvedTheme.buttonTextColor;
+  cssVars["--site-bg"]      = resolvedTheme.background ?? "";
+  cssVars["--site-surface"] = resolvedTheme.surface ?? "";
 
   // Typography scale — derived from fontStyle, applied as CSS vars so templates can
   // consume them via var(--hero-size), var(--h2-size), etc. with their own fallbacks.
@@ -69,7 +71,7 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
       break;
     case "darkpremium":
     default:
-      layout = <DarkPremiumLayout {...sharedProps} theme={resolvedTheme} />;
+      layout = <DarkPremiumLayout {...sharedProps} />;
   }
 
   // Always wrap so CSS vars cascade to all template children
