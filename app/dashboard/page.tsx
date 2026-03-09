@@ -211,7 +211,8 @@ export default async function DashboardPage() {
                   name: "Facebook Agent",
                   desc: "Generate and publish AI posts to your Facebook business page.",
                   href: "/dashboard/facebook",
-                  available: plan === "growth" || plan === "pro",
+                  available: false,
+                  comingSoon: true,
                   color: "blue",
                 },
                 {
@@ -220,6 +221,7 @@ export default async function DashboardPage() {
                   desc: "Generate cold emails, follow-ups and newsletters that get replies.",
                   href: "/dashboard/email",
                   available: true,
+                  comingSoon: false,
                   color: "emerald",
                 },
                 {
@@ -228,21 +230,38 @@ export default async function DashboardPage() {
                   desc: "Write blog posts, ads, and landing page copy that converts.",
                   href: "/dashboard/copywriter",
                   available: true,
+                  comingSoon: false,
                   color: "purple",
                 },
               ].map((agent) => (
                 <div
                   key={agent.name}
-                  className={`bg-[#111214] border rounded-xl p-5 transition-all
-                    ${agent.available
-                      ? "border-white/[0.07] hover:border-white/20 hover:-translate-y-0.5"
-                      : "border-white/[0.04] opacity-50"
+                  className={`bg-[#111214] border rounded-xl p-5 transition-all relative
+                    ${agent.comingSoon
+                      ? "border-white/[0.06] opacity-75 cursor-default"
+                      : agent.available
+                        ? "border-white/[0.07] hover:border-white/20 hover:-translate-y-0.5"
+                        : "border-white/[0.04] opacity-50"
                     }`}
                 >
+                  {agent.comingSoon && (
+                    <span
+                      className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{
+                        background: "rgba(251,146,60,0.1)",
+                        border: "1px solid rgba(251,146,60,0.3)",
+                        color: "#fb923c",
+                      }}
+                    >
+                      Coming Soon
+                    </span>
+                  )}
                   <div className="text-2xl mb-3">{agent.icon}</div>
                   <h3 className="font-bold text-sm mb-1">{agent.name}</h3>
                   <p className="text-gray-500 text-xs mb-4">{agent.desc}</p>
-                  {agent.available ? (
+                  {agent.comingSoon ? (
+                    <span className="text-xs text-[#4b5563]">Coming Soon</span>
+                  ) : agent.available ? (
                     <Link
                       href={agent.href}
                       className="text-xs font-bold text-[#00e5a0] hover:underline"
