@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Syne, DM_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -44,28 +43,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
-      <head>
-        <meta
-          httpEquiv="Content-Security-Policy"
-          content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;"
-        />
-        {!isCustomerSite && (
-          <>
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=AW-17983960384"
-              strategy="afterInteractive"
-            />
-            <Script id="google-ads-tag" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'AW-17983960384');
-              `}
-            </Script>
-          </>
-        )}
-      </head>
+      <head />
       <body>
         {!isCustomerSite && <Navbar />}
         {children}
