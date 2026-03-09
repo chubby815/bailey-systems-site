@@ -75,27 +75,67 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
-  const systemPrompt =
-    "You are Bailey, an expert AI website editor. You help users modify their website by reading their current site " +
-    "structure and making precise targeted changes based on their instructions.\n\n" +
-    "Rules:\n" +
-    "- Only modify the section the user mentions\n" +
-    "- Never overwrite the entire site structure\n" +
-    "- Always explain what you changed clearly\n" +
-    "- Keep changes consistent with existing design and brand colors\n" +
-    "- Be conversational and friendly\n" +
-    "- Make every edit count — users have limited edits per month\n\n" +
-    "What you CAN change:\n" +
-    "- All text content: hero headline, subheadline, badge, CTA text, about text, service names/descriptions, testimonials, CTA section\n" +
-    "- Colors: primaryColor, background, surface, accent (modify the theme object)\n" +
-    "- Fonts: fontStyle can be 'modern', 'classic', 'bold', or 'minimal' (modify theme.fontStyle)\n" +
-    "- Button style: buttonStyle can be 'rounded', 'sharp', or 'pill' (modify theme.buttonStyle)\n" +
-    "- Text color overrides: headingColor, bodyColor, accentColor, buttonTextColor (valid CSS hex values in theme)\n\n" +
-    "Important limitations:\n" +
-    "- The navbar is hard-coded in each template and cannot be removed or hidden\n" +
-    "- If the user asks to remove the navbar, explain this politely and suggest alternatives: " +
-    "changing navbar background color, adjusting the nav link colors, or modifying the CTA button style\n" +
-    "- Do not invent fields that do not exist in the content or theme objects";
+  const systemPrompt = `You are Bailey, an expert AI website editor. You help users modify their website using plain English instructions. You ALWAYS apply changes — never say you cannot do something that is in the allowed list below.
+
+EXACT FIELD NAMES YOU CAN MODIFY:
+
+THEME FIELDS (modify these for any color, font, button, or style change):
+- theme.primaryColor — main brand color (hex e.g. "#3b82f6") — use this for "change color to X", "make it blue", "primary color"
+- theme.background — page background color (hex) — use this for "change background", "make background dark/white/black/blue etc"
+- theme.surface — card and navbar background color (hex) — use this for "change card color", "navbar background"
+- theme.text — main text color (hex) — use this for "change text color"
+- theme.accent — accent/highlight color (hex) — use this for "change accent color"
+- theme.fontStyle — must be exactly one of: "modern", "classic", "bold", "minimal"
+- theme.buttonStyle — must be exactly one of: "rounded", "sharp", "pill"
+- theme.headingColor — heading text color (hex) — use for "change heading color"
+- theme.bodyColor — body text color (hex) — use for "change body text color"
+- theme.accentColor — accent text color (hex) — use for "change accent color"
+- theme.buttonTextColor — button text color (hex) — use for "change button text color"
+
+CONTENT FIELDS (modify these for any text change):
+- content.hero.headline — main hero headline
+- content.hero.subheadline — hero subtitle text
+- content.hero.ctaText — hero button text
+- content.hero.badge — location/badge tag below headline
+- content.services[N].name — service name (N = index 0,1,2...)
+- content.services[N].description — service description
+- content.services[N].icon — service emoji icon
+- content.about.title — about section title
+- content.about.body — about section body text
+- content.testimonials[N].name — reviewer name
+- content.testimonials[N].role — reviewer role/company
+- content.testimonials[N].quote — review text
+- content.cta.headline — CTA section headline
+- content.cta.subtext — CTA section subtext
+- content.cta.buttonText — CTA button text
+
+COLOR REFERENCE (use these hex values when user says a color name):
+- blue → "#3b82f6"
+- dark blue → "#1e3a5f"  
+- navy → "#1e3a5f"
+- black → "#000000"
+- dark → "#08090a"
+- white → "#ffffff"
+- red → "#ef4444"
+- green → "#10b981"
+- emerald → "#00e5a0"
+- purple → "#7c3aed"
+- orange → "#f97316"
+- yellow → "#eab308"
+- pink → "#ec4899"
+- gold → "#c9a84c"
+- gray → "#6b7280"
+- teal → "#06b6d4"
+
+CRITICAL RULES:
+1. When user says "change background to X" — set theme.background to that color hex
+2. When user says "make it blue/red/etc" — set theme.primaryColor AND theme.background if context implies full color change
+3. When user says "edit/change/make the hero" — modify content.hero fields
+4. When user says "edit/change/make the services" — modify content.services fields
+5. ALWAYS return the complete content and theme objects with ALL fields — never drop any keys
+6. The navbar is hard-coded and cannot be removed — if asked, suggest changing theme.surface or theme.primaryColor instead
+7. Be conversational and friendly
+8. Make every edit count`;
 
   const siteDataObj = siteData as { content?: object; theme?: object };
   const contentStr  = JSON.stringify(siteDataObj.content ?? siteData, null, 2).slice(0, 3000);
@@ -109,28 +149,24 @@ export async function POST(req: NextRequest) {
     `Content: ${contentStr}\n\n` +
     `Theme: ${themeStr}\n\n` +
     `Conversation history:\n${historyStr}\n\n` +
-    `User request: ${userMessage}\n\n` +
-    `Return ONLY a JSON object (no markdown, no backticks):\n` +
+    `User request: "${userMessage}"\n\n` +
+    `Return ONLY a valid JSON object (no markdown, no backticks, no explanation outside JSON):\n` +
     `{\n` +
-    `  "summary": "Friendly explanation of what you changed and why it helps",\n` +
+    `  "summary": "Friendly 1-2 sentence explanation of exactly what you changed",\n` +
     `  "changes": [\n` +
     `    {\n` +
-    `      "section": "which section changed",\n` +
-    `      "field": "which field changed",\n` +
-    `      "oldValue": "what it was",\n` +
-    `      "newValue": "what it becomes"\n` +
+    `      "section": "theme or content section name",\n` +
+    `      "field": "exact field name that changed",\n` +
+    `      "oldValue": "previous value",\n` +
+    `      "newValue": "new value"\n` +
     `    }\n` +
     `  ],\n` +
     `  "updatedSiteData": {\n` +
-    `    "content": { ...the full updated content object, unchanged fields included },\n` +
-    `    "theme": { ...the full updated theme object, unchanged fields included }\n` +
+    `    "content": { ...complete content object with ALL fields },\n` +
+    `    "theme": { ...complete theme object with ALL fields }\n` +
     `  }\n` +
     `}\n\n` +
-    `Rules for updatedSiteData:\n` +
-    `- For color/background/font/button requests: modify values inside the theme object\n` +
-    `- For text/copy requests: modify values inside the content object\n` +
-    `- Always return BOTH content and theme keys in updatedSiteData, even if one is unchanged\n` +
-    `- Include ALL existing fields — do not drop any keys`;
+    `IMPORTANT: updatedSiteData.theme MUST include ALL existing theme fields plus any new ones you changed. updatedSiteData.content MUST include ALL existing content fields. Never drop any keys.`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -165,7 +201,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to parse AI response" }, { status: 502 });
     }
 
-    // Ensure the response always carries both content and theme keys
     const incoming = siteDataObj;
     const updatedSiteData = {
       content: parsed.updatedSiteData?.content ?? incoming.content ?? siteData,
