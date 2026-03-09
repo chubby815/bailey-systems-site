@@ -158,6 +158,40 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* ── Ask Bailey callout ── */}
+      <section className="px-4 pb-12 max-w-3xl mx-auto">
+        <div className="bg-[#111214] border border-[#00e5a0]/20 rounded-2xl p-8 text-center">
+          <p className="text-2xl mb-3">💬</p>
+          <h2
+            className="font-extrabold text-xl md:text-2xl tracking-tight mb-3 text-white"
+            style={{ fontFamily: "Syne, sans-serif" }}
+          >
+            Ask Bailey – Edit Your Website by Just Talking to It
+          </h2>
+          <p className="text-[#6b7280] text-sm leading-relaxed max-w-xl mx-auto mb-5">
+            Tell Bailey what to change in plain English and watch your website update instantly.
+            The only AI website builder where you can say &ldquo;make my hero more premium&rdquo; and it just happens.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <div className="flex flex-col items-center gap-1 px-5 py-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+              <span className="text-xs font-bold text-[#6b7280] uppercase tracking-widest">Starter</span>
+              <span className="font-bold text-white">3 edits/month</span>
+              <span className="text-[11px] text-[#4b5563]">Get a taste</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 px-5 py-3 rounded-xl bg-[#00e5a0]/[0.05] border border-[#00e5a0]/20">
+              <span className="text-xs font-bold text-[#00e5a0] uppercase tracking-widest">Growth</span>
+              <span className="font-bold text-white">15 edits/month</span>
+              <span className="text-[11px] text-[#6b7280]">Get more</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 px-5 py-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+              <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">Pro</span>
+              <span className="font-bold text-white">Unlimited</span>
+              <span className="text-[11px] text-[#4b5563]">Get everything</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Trust strip ── */}
       <section className="px-4 pb-20 max-w-4xl mx-auto">
         <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 pt-10 border-t border-white/[0.07]">

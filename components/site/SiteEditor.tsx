@@ -7,9 +7,10 @@ import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { PRESET_THEMES } from "@/lib/site-theme";
 import { LayoutRenderer }   from "./LayoutRenderer";
 import { TemplateRenderer } from "./TemplateRenderer";
+import { AskBailey }        from "@/components/editor/AskBailey";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type Panel = "themes" | "content" | null;
+type Panel = "themes" | "content" | "askbailey" | null;
 
 type ContentSection = "style" | "hero" | "services" | "about" | "testimonials" | "cta";
 
@@ -22,6 +23,8 @@ type Props = {
   editMode:            boolean;
   siteId:              string;
   initialHeroImageUrl?: string;
+  /** Plan passed from the server page for Ask Bailey limits */
+  plan?:               string;
 };
 
 // ── Shared input style ────────────────────────────────────────────────────────
@@ -764,9 +767,10 @@ function industryPhotoId(industry: string) {
 
 // ── Main SiteEditor component ─────────────────────────────────────────────────
 export function SiteEditor({
-  site, content, theme, isOwner, editMode, siteId, initialHeroImageUrl,
+  site, content, theme, isOwner, editMode, siteId, initialHeroImageUrl, plan = "starter",
 }: Props) {
   const [activePanel, setActivePanel]         = useState<Panel>(null);
+  const [askBaileyOpen, setAskBaileyOpen]     = useState(false);
   const [currentContent, setCurrentContent]   = useState<StructuredSiteContent>(content);
   const [currentTheme, setCurrentTheme]       = useState<ThemeConfig>(theme);
   const [currentThemeKey, setCurrentThemeKey] = useState<string>("");
@@ -887,7 +891,7 @@ export function SiteEditor({
             return (
               <button
                 key={tab}
-                onClick={() => setActivePanel(active ? null : tab)}
+                onClick={() => { setActivePanel(active ? null : tab); setAskBaileyOpen(false); }}
                 style={{
                   fontSize:     "0.75rem",
                   fontWeight:   active ? 700 : 500,
@@ -905,20 +909,38 @@ export function SiteEditor({
             );
           })}
           <button
-            onClick={() => setActivePanel(null)}
+            onClick={() => { setActivePanel(null); setAskBaileyOpen(false); }}
             style={{
               fontSize:     "0.75rem",
-              fontWeight:   activePanel === null ? 700 : 500,
+              fontWeight:   (activePanel === null && !askBaileyOpen) ? 700 : 500,
               padding:      "5px 14px",
               borderRadius: "9px",
               border:       "none",
               cursor:       "pointer",
-              background:   activePanel === null ? "rgba(255,255,255,0.08)" : "transparent",
-              color:        activePanel === null ? "#f0f0f0" : "#9ca3af",
+              background:   (activePanel === null && !askBaileyOpen) ? "rgba(255,255,255,0.08)" : "transparent",
+              color:        (activePanel === null && !askBaileyOpen) ? "#f0f0f0" : "#9ca3af",
               transition:   "all 0.15s",
             }}
           >
             👁 Preview
+          </button>
+          {/* ── Ask Bailey toggle ── */}
+          <button
+            onClick={() => { setAskBaileyOpen((o) => !o); setActivePanel(null); }}
+            style={{
+              fontSize:     "0.75rem",
+              fontWeight:   askBaileyOpen ? 700 : 500,
+              padding:      "5px 14px",
+              borderRadius: "9px",
+              border:       askBaileyOpen ? "none" : "1px solid rgba(0,229,160,0.3)",
+              cursor:       "pointer",
+              background:   askBaileyOpen ? "#00e5a0" : "rgba(0,229,160,0.06)",
+              color:        askBaileyOpen ? "#000"    : "#00e5a0",
+              transition:   "all 0.15s",
+              whiteSpace:   "nowrap",
+            }}
+          >
+            💬 Ask Bailey ✦
           </button>
         </div>
 
@@ -991,12 +1013,44 @@ export function SiteEditor({
         </div>
       </div>
 
+      {/* ── Ask Bailey side panel (right side) ────────────────────────────────── */}
+      <div
+        style={{
+          position:    "fixed",
+          top:         `${BAR_H}px`,
+          right:        0,
+          width:       `${PANEL_W}px`,
+          height:      `calc(100vh - ${BAR_H}px)`,
+          zIndex:       150,
+          background:   "#111214",
+          borderLeft:   "1px solid rgba(255,255,255,0.07)",
+          display:      "flex",
+          flexDirection: "column",
+          overflow:     "hidden",
+          transform:    askBaileyOpen ? "translateX(0)" : `translateX(${PANEL_W}px)`,
+          transition:   "transform 0.25s ease",
+        }}
+      >
+        <AskBailey
+          siteData={currentContent as unknown as object}
+          plan={plan}
+          onPreview={(updated) => {
+            setCurrentContent(updated as unknown as StructuredSiteContent);
+          }}
+          onApply={(updated) => {
+            hasChanges.current = true;
+            setCurrentContent(updated as unknown as StructuredSiteContent);
+          }}
+        />
+      </div>
+
       {/* ── Site preview (offset when panel open) ────────────────────────────── */}
       <div
         style={{
-          marginTop:   `${BAR_H}px`,
-          marginLeft:  panelOpen ? `${PANEL_W}px` : "0",
-          transition:  "margin-left 0.25s ease",
+          marginTop:    `${BAR_H}px`,
+          marginLeft:   panelOpen ? `${PANEL_W}px` : "0",
+          marginRight:  askBaileyOpen ? `${PANEL_W}px` : "0",
+          transition:   "margin 0.25s ease",
         }}
       >
         <TemplateRenderer
