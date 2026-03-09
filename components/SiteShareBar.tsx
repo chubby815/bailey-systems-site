@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Props = {
   siteId:         string;
@@ -14,15 +14,20 @@ type Props = {
 export function SiteShareBar({ siteId, subdomainSlug, offsetTop = 0 }: Props) {
   const [copied, setCopied] = useState(false);
 
-  // Prefer the custom subdomain URL; fall back to the /sites/ path URL
+  // Prefer the custom subdomain URL; fall back to the /sites/ path URL.
+  // Use useState + useEffect so server and client render the same initial HTML,
+  // avoiding a hydration mismatch from window.location at render time.
   const subdomainUrl = subdomainSlug
     ? `https://${subdomainSlug}.baileyagents.com`
     : null;
 
-  const fallbackUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/sites/${siteId}`
-      : `https://baileyagents.com/sites/${siteId}`;
+  const [fallbackUrl, setFallbackUrl] = useState(
+    `https://baileyagents.com/sites/${siteId}`
+  );
+
+  useEffect(() => {
+    setFallbackUrl(`${window.location.origin}/sites/${siteId}`);
+  }, [siteId]);
 
   const displayUrl = subdomainUrl ?? fallbackUrl;
 
