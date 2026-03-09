@@ -49,20 +49,21 @@ export function BaileyChat() {
   const bottomRef               = useRef<HTMLDivElement>(null);
   const inputRef                = useRef<HTMLInputElement>(null);
 
-  // Never show BaileyAgents support chat on customer site pages — those have
-  // their own SiteChat.  The root layout's server-side isCustomerSite check
-  // doesn't re-evaluate on client-side navigation, so we guard here too.
-  if (pathname?.startsWith("/sites/")) return null;
-
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change — must be declared before any early return
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open]);
 
-  // Focus input when opened
+  // Focus input when opened — must be declared before any early return
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 150);
   }, [open]);
+
+  // Never show BaileyAgents support chat on customer site pages — those have
+  // their own SiteChat. All hooks above must be declared before this return
+  // to satisfy React's Rules of Hooks (hooks must be called the same number
+  // of times on every render — a conditional return before a hook skips it).
+  if (pathname?.startsWith("/sites/")) return null;
 
   async function send() {
     const text = input.trim();

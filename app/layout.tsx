@@ -42,7 +42,7 @@ export default async function RootLayout({
   const isCustomerSite = pathname.startsWith("/sites/");
 
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head />
       <body>
         {!isCustomerSite && <Navbar />}
