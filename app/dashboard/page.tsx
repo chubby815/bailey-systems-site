@@ -190,6 +190,7 @@ export default async function DashboardPage() {
                   desc: "Find qualified leads with outreach copy.",
                   href: "/dashboard/leads",
                   available: plan === "growth" || plan === "pro",
+                  lockedBadge: "growth_plus" as const,
                   color: "blue",
                 },
                 {
@@ -197,7 +198,8 @@ export default async function DashboardPage() {
                   name: "Content Machine",
                   desc: "7 posts, hashtags, and a blog draft.",
                   href: "/dashboard/content",
-                  available: plan === "growth" || plan === "pro",
+                  available: plan === "pro",
+                  lockedBadge: "pro_only" as const,
                   color: "purple",
                 },
                 {
@@ -222,7 +224,8 @@ export default async function DashboardPage() {
                   name: "Email Marketer",
                   desc: "Generate cold emails, follow-ups and newsletters that get replies.",
                   href: "/dashboard/email",
-                  available: true,
+                  available: plan === "growth" || plan === "pro",
+                  lockedBadge: "growth_plus" as const,
                   comingSoon: false,
                   color: "emerald",
                 },
@@ -231,7 +234,8 @@ export default async function DashboardPage() {
                   name: "AI Copywriter",
                   desc: "Write blog posts, ads, and landing page copy that converts.",
                   href: "/dashboard/copywriter",
-                  available: true,
+                  available: plan === "pro",
+                  lockedBadge: "pro_only" as const,
                   comingSoon: false,
                   color: "purple",
                 },
@@ -240,7 +244,8 @@ export default async function DashboardPage() {
                   name: "Sales Manager",
                   desc: "Sales scripts, pitches and objection handlers that close deals.",
                   href: "/dashboard/sales",
-                  available: true,
+                  available: plan === "pro",
+                  lockedBadge: "pro_only" as const,
                   comingSoon: false,
                   color: "emerald",
                 },
@@ -249,55 +254,87 @@ export default async function DashboardPage() {
                   name: "Customer Support",
                   desc: "Reply templates, FAQs and brand voice guides that keep customers happy.",
                   href: "/dashboard/support",
-                  available: true,
+                  available: plan === "growth" || plan === "pro",
+                  lockedBadge: "growth_plus" as const,
                   comingSoon: false,
                   color: "purple",
                 },
-              ].map((agent) => (
-                <div
-                  key={agent.name}
-                  className={`bg-[#111214] border rounded-xl p-5 transition-all relative
-                    ${agent.comingSoon
-                      ? "border-white/[0.06] opacity-75 cursor-default"
-                      : agent.available
-                        ? "border-white/[0.07] hover:border-white/20 hover:-translate-y-0.5"
-                        : "border-white/[0.04] opacity-50"
-                    }`}
-                >
-                  {agent.comingSoon && (
-                    <span
-                      className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{
-                        background: "rgba(251,146,60,0.1)",
-                        border: "1px solid rgba(251,146,60,0.3)",
-                        color: "#fb923c",
-                      }}
-                    >
-                      Coming Soon
-                    </span>
-                  )}
-                  <div className="text-2xl mb-3">{agent.icon}</div>
-                  <h3 className="font-bold text-sm mb-1">{agent.name}</h3>
-                  <p className="text-gray-500 text-xs mb-4">{agent.desc}</p>
-                  {agent.comingSoon ? (
-                    <span className="text-xs text-[#4b5563]">Coming Soon</span>
-                  ) : agent.available ? (
-                    <Link
-                      href={agent.href}
-                      className="text-xs font-bold text-[#00e5a0] hover:underline"
-                    >
-                      Open Agent →
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/pricing"
-                      className="text-xs text-gray-600 hover:text-gray-400"
-                    >
-                      Upgrade to unlock →
-                    </Link>
-                  )}
-                </div>
-              ))}
+              ].map((agent) => {
+                const showGrowthBadge = !agent.available && agent.lockedBadge === "growth_plus" && plan === "starter";
+                const showProBadge = !agent.available && agent.lockedBadge === "pro_only";
+                return (
+                  <div
+                    key={agent.name}
+                    className={`bg-[#111214] border rounded-xl p-5 transition-all relative
+                      ${agent.comingSoon
+                        ? "border-white/[0.06] opacity-75 cursor-default"
+                        : agent.available
+                          ? "border-white/[0.07] hover:border-white/20 hover:-translate-y-0.5"
+                          : "border-white/[0.04] opacity-60"
+                      }`}
+                  >
+                    {agent.comingSoon && (
+                      <span
+                        className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(251,146,60,0.1)",
+                          border: "1px solid rgba(251,146,60,0.3)",
+                          color: "#fb923c",
+                        }}
+                      >
+                        Coming Soon
+                      </span>
+                    )}
+                    {!agent.available && !agent.comingSoon && showProBadge && (
+                      <span
+                        className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(251,146,60,0.1)",
+                          border: "1px solid rgba(251,146,60,0.3)",
+                          color: "#fb923c",
+                        }}
+                      >
+                        Pro only
+                      </span>
+                    )}
+                    {!agent.available && !agent.comingSoon && showGrowthBadge && (
+                      <span
+                        className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(251,146,60,0.1)",
+                          border: "1px solid rgba(251,146,60,0.3)",
+                          color: "#fb923c",
+                        }}
+                      >
+                        Growth+
+                      </span>
+                    )}
+                    <div className="text-2xl mb-3">{agent.icon}</div>
+                    <h3 className="font-bold text-sm mb-1 flex items-center gap-1.5">
+                      {!agent.available && !agent.comingSoon && <span>🔒</span>}
+                      {agent.name}
+                    </h3>
+                    <p className="text-gray-500 text-xs mb-4">{agent.desc}</p>
+                    {agent.comingSoon ? (
+                      <span className="text-xs text-[#4b5563]">Coming Soon</span>
+                    ) : agent.available ? (
+                      <Link
+                        href={agent.href}
+                        className="text-xs font-bold text-[#00e5a0] hover:underline"
+                      >
+                        Open Agent →
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/dashboard/billing"
+                        className="text-xs text-gray-600 hover:text-gray-400"
+                      >
+                        Upgrade to unlock →
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

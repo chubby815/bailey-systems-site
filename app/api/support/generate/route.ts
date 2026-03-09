@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getSession, getActivePlan } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 
 type TemplateItem   = { title: string; content: string };
@@ -17,6 +17,14 @@ export async function POST(req: NextRequest) {
   const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const plan = await getActivePlan(session.email);
+  if (plan === "starter") {
+    return NextResponse.json(
+      { error: "upgrade_required", message: "Customer Support requires Growth or Pro plan." },
+      { status: 403 }
+    );
   }
 
   const rl = await rateLimit(`support-gen:${session.email}`, 20, 3600);
