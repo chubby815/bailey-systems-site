@@ -70,6 +70,8 @@ export default async function DashboardPage() {
               { icon: "✍️", label: "Content Machine", href: "/dashboard/content" },
               { icon: "🔥", label: "Website Roast", href: "/dashboard/roast" },
               { icon: "📘", label: "Facebook", href: "/dashboard/facebook" },
+              { icon: "✉️", label: "Email Marketer", href: "/dashboard/email" },
+              { icon: "✍️", label: "Copywriter", href: "/dashboard/copywriter" },
               { icon: "📊", label: "Usage", href: "/dashboard/usage" },
               { icon: "💳", label: "Billing", href: "/dashboard/billing" },
             ].map((item, i) => (
@@ -211,6 +213,22 @@ export default async function DashboardPage() {
                   href: "/dashboard/facebook",
                   available: plan === "growth" || plan === "pro",
                   color: "blue",
+                },
+                {
+                  icon: "✉️",
+                  name: "Email Marketer",
+                  desc: "Generate cold emails, follow-ups and newsletters that get replies.",
+                  href: "/dashboard/email",
+                  available: true,
+                  color: "emerald",
+                },
+                {
+                  icon: "✍️",
+                  name: "AI Copywriter",
+                  desc: "Write blog posts, ads, and landing page copy that converts.",
+                  href: "/dashboard/copywriter",
+                  available: true,
+                  color: "purple",
                 },
               ].map((agent) => (
                 <div
