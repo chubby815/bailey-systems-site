@@ -63,9 +63,15 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/[0.07] flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#4b5563]">
-            © {new Date().getFullYear()} Bailey Agents. All rights reserved.
-          </p>
+          <div className="flex flex-wrap items-center gap-1 text-xs text-[#4b5563]">
+            <span>© {new Date().getFullYear()} Bailey Agents. All rights reserved.</span>
+            <span className="hidden md:inline">·</span>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span>·</span>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <span>·</span>
+            <Link href="/data-deletion" className="hover:text-white transition-colors">Data Deletion</Link>
+          </div>
           <p className="text-xs text-[#4b5563]">
             🇲🇽 Se habla español · Machesney Park, IL
           </p>
