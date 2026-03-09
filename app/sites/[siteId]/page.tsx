@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSite, getSiteBySlug, kv } from "@/lib/kv";
-import { getSessionFromCookies, getSubscriptionStatus } from "@/lib/auth";
+import { getSessionFromCookies, getSubscriptionStatus, getActivePlan } from "@/lib/auth";
 import { isStructuredContent, buildThemeConfig } from "@/lib/site-theme";
 import { SiteShareBar }     from "@/components/SiteShareBar";
 import { LayoutRenderer }   from "@/components/site/LayoutRenderer";
@@ -140,6 +140,11 @@ export default async function SitePage({
     ownerSub !== null &&
     (ownerSub.status === "canceled" || ownerSub.status === "past_due");
 
+  // Fetch the viewer's own plan for Ask Bailey edit limits
+  const viewerPlan = viewerSession?.email
+    ? ((await getActivePlan(viewerSession.email)) ?? "starter")
+    : "starter";
+
   const c = site.generatedContent;
 
   // ── New structured format ─────────────────────────────────────────────────
@@ -173,6 +178,7 @@ export default async function SitePage({
             editMode={true}
             siteId={siteId}
             initialHeroImageUrl={customHeroImgUrl}
+            plan={viewerPlan}
           />
         </>
       );

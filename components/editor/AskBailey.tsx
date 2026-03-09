@@ -219,15 +219,8 @@ export function AskBailey({ siteData, plan, onPreview, onApply }: AskBaileyProps
   const atLimit   = !unlimited && used >= limit;
   const appliedCount = messages.filter((m) => m.suggestion?.applied).length;
 
-  // Load current month usage on mount
+  // Mark usage as loaded — counter is tracked locally and synced from apply responses
   useEffect(() => {
-    fetch("/api/editor/ask-bailey/apply", { method: "POST" })
-      .then(() => { /* we don't actually apply here — just need to check */ })
-      .catch(() => { /* ignore */ });
-
-    // Instead, check via a GET on the generation route (just read, don't apply)
-    // Actually we fetch usage by reading a lightweight route:
-    // We'll track it in local state and sync from the apply response
     setUsageLoaded(true);
   }, []);
 

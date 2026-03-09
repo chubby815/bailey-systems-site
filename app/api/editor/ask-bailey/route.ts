@@ -84,20 +84,35 @@ export async function POST(req: NextRequest) {
     "- Always explain what you changed clearly\n" +
     "- Keep changes consistent with existing design and brand colors\n" +
     "- Be conversational and friendly\n" +
-    "- Make every edit count — users have limited edits per month";
+    "- Make every edit count — users have limited edits per month\n\n" +
+    "What you CAN change:\n" +
+    "- All text content: hero headline, subheadline, badge, CTA text, about text, service names/descriptions, testimonials, CTA section\n" +
+    "- Colors: primaryColor, background, surface, accent (modify the theme object)\n" +
+    "- Fonts: fontStyle can be 'modern', 'classic', 'bold', or 'minimal' (modify theme.fontStyle)\n" +
+    "- Button style: buttonStyle can be 'rounded', 'sharp', or 'pill' (modify theme.buttonStyle)\n" +
+    "- Text color overrides: headingColor, bodyColor, accentColor, buttonTextColor (valid CSS hex values in theme)\n\n" +
+    "Important limitations:\n" +
+    "- The navbar is hard-coded in each template and cannot be removed or hidden\n" +
+    "- If the user asks to remove the navbar, explain this politely and suggest alternatives: " +
+    "changing navbar background color, adjusting the nav link colors, or modifying the CTA button style\n" +
+    "- Do not invent fields that do not exist in the content or theme objects";
 
-  const siteDataStr = JSON.stringify(siteData, null, 2).slice(0, 4000);
+  const siteDataObj = siteData as { content?: object; theme?: object };
+  const contentStr  = JSON.stringify(siteDataObj.content ?? siteData, null, 2).slice(0, 3000);
+  const themeStr    = JSON.stringify(siteDataObj.theme   ?? {}, null, 2).slice(0, 1000);
   const historyStr  = conversationHistory.length
     ? conversationHistory.map((m) => `${m.role === "user" ? "User" : "Bailey"}: ${m.content}`).join("\n")
     : "None";
 
   const userPrompt =
-    `Current website data:\n${siteDataStr}\n\n` +
+    `Current website data:\n` +
+    `Content: ${contentStr}\n\n` +
+    `Theme: ${themeStr}\n\n` +
     `Conversation history:\n${historyStr}\n\n` +
     `User request: ${userMessage}\n\n` +
     `Return ONLY a JSON object (no markdown, no backticks):\n` +
     `{\n` +
-    `  "summary": "Brief friendly explanation of what you changed and why it helps",\n` +
+    `  "summary": "Friendly explanation of what you changed and why it helps",\n` +
     `  "changes": [\n` +
     `    {\n` +
     `      "section": "which section changed",\n` +
@@ -106,8 +121,16 @@ export async function POST(req: NextRequest) {
     `      "newValue": "what it becomes"\n` +
     `    }\n` +
     `  ],\n` +
-    `  "updatedSiteData": {the full updated site data object}\n` +
-    `}`;
+    `  "updatedSiteData": {\n` +
+    `    "content": { ...the full updated content object, unchanged fields included },\n` +
+    `    "theme": { ...the full updated theme object, unchanged fields included }\n` +
+    `  }\n` +
+    `}\n\n` +
+    `Rules for updatedSiteData:\n` +
+    `- For color/background/font/button requests: modify values inside the theme object\n` +
+    `- For text/copy requests: modify values inside the content object\n` +
+    `- Always return BOTH content and theme keys in updatedSiteData, even if one is unchanged\n` +
+    `- Include ALL existing fields — do not drop any keys`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -119,7 +142,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
-        max_tokens: 3000,
+        max_tokens: 6000,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       }),
@@ -133,19 +156,26 @@ export async function POST(req: NextRequest) {
     const data = await res.json() as { content?: Array<{ type: string; text: string }> };
     const raw  = data.content?.find((b) => b.type === "text")?.text?.trim() ?? "";
 
-    let parsed: { summary?: string; changes?: unknown[]; updatedSiteData?: object };
+    let parsed: { summary?: string; changes?: unknown[]; updatedSiteData?: { content?: object; theme?: object } };
     try {
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       parsed = JSON.parse(jsonMatch?.[0] ?? raw) as typeof parsed;
     } catch {
-      console.error("[ask-bailey] JSON parse error:", raw.slice(0, 200));
+      console.error("[ask-bailey] JSON parse error:", raw.slice(0, 300));
       return NextResponse.json({ error: "Failed to parse AI response" }, { status: 502 });
     }
 
+    // Ensure the response always carries both content and theme keys
+    const incoming = siteDataObj;
+    const updatedSiteData = {
+      content: parsed.updatedSiteData?.content ?? incoming.content ?? siteData,
+      theme:   parsed.updatedSiteData?.theme   ?? incoming.theme   ?? {},
+    };
+
     return NextResponse.json({
-      summary:         parsed.summary         ?? "Changes applied.",
+      summary:         parsed.summary ?? "Changes applied.",
       changes:         Array.isArray(parsed.changes) ? parsed.changes : [],
-      updatedSiteData: parsed.updatedSiteData  ?? siteData,
+      updatedSiteData,
     });
   } catch (err) {
     console.error("[ask-bailey] unexpected error:", err);

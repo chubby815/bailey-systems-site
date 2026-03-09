@@ -1032,14 +1032,18 @@ export function SiteEditor({
         }}
       >
         <AskBailey
-          siteData={currentContent as unknown as object}
+          siteData={{ content: currentContent, theme: currentTheme }}
           plan={plan}
           onPreview={(updated) => {
-            setCurrentContent(updated as unknown as StructuredSiteContent);
+            const u = updated as { content?: unknown; theme?: unknown };
+            if (u.content) setCurrentContent(u.content as StructuredSiteContent);
+            if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
           }}
           onApply={(updated) => {
+            const u = updated as { content?: unknown; theme?: unknown };
             hasChanges.current = true;
-            setCurrentContent(updated as unknown as StructuredSiteContent);
+            if (u.content) setCurrentContent(u.content as StructuredSiteContent);
+            if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
           }}
         />
       </div>
