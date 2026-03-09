@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefineChat } from "@/components/agents/RefineChat";
+
+const ROAST_SYSTEM_PROMPT =
+  "You are a world-class web design and conversion rate optimization expert. " +
+  "Analyze websites and provide brutally honest, actionable feedback.";
 
 type RoastResult = {
   report: string;
@@ -246,6 +251,16 @@ export default function RoastPage() {
                 </p>
               </div>
             )}
+
+            {/* Refine chat */}
+            <RefineChat
+              originalResult={result.report}
+              agentType="roast"
+              systemPrompt={ROAST_SYSTEM_PROMPT}
+              label="🔥 Want deeper analysis? Ask Bailey..."
+              quickActions={["Go deeper on SEO", "Focus on design", "More specific fixes", "Prioritize fixes", "Check mobile experience"]}
+              onRefined={(text) => setResult({ ...result, report: text })}
+            />
 
             {/* CTA */}
             <div className="bg-gradient-to-br from-[#00e5a0]/5 to-[#0066ff]/5 border border-[#00e5a0]/20 rounded-2xl p-8 text-center">

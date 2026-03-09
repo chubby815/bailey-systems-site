@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefineChat } from "@/components/agents/RefineChat";
+
+const SUPPORT_SYSTEM_PROMPT =
+  "You are an expert customer support specialist and brand consultant who has helped hundreds of businesses " +
+  "create support systems that turn unhappy customers into loyal fans. " +
+  "You write responses that are warm, professional, and on-brand.";
 
 // ── Result types ────────────────────────────────────────────────────────────
 type TemplateItem   = { title: string; content: string };
@@ -209,6 +215,27 @@ const SITUATION_PLACEHOLDERS: Record<string, string> = {
   "Review Responses":  "e.g. Mix of 5 star and 1 star reviews on Google",
 };
 
+// ── Serialize any result to a plain string for the refine prompt ─────────────
+function resultToText(r: Result): string {
+  switch (r.type) {
+    case "templates":
+      return r.items.map((i) => `${i.title}\n${i.content}`).join("\n\n");
+    case "faq":
+      return r.items.map((i) => `Q: ${i.question}\nA: ${i.answer}`).join("\n\n");
+    case "brand_voice":
+      return [
+        `Tone: ${r.toneDescription}`,
+        `Words to Use: ${r.wordsToUse.join(", ")}`,
+        `Words to Avoid: ${r.wordsToAvoid.join(", ")}`,
+        `Example Phrases:\n${r.examplePhrases.join("\n")}`,
+      ].join("\n\n");
+    case "complaints":
+      return r.levels.map((l) => `${l.level}\n${l.response}`).join("\n\n");
+    case "reviews":
+      return `5 Star:\n${r.fiveStar}\n\n3 Star:\n${r.threeStar}\n\n1 Star:\n${r.oneStar}`;
+  }
+}
+
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function CustomerSupportPage() {
   const [businessName, setBusinessName] = useState("");
@@ -218,9 +245,10 @@ export default function CustomerSupportPage() {
   const [situation, setSituation]       = useState("");
   const [context, setContext]           = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState<Result | null>(null);
-  const [error, setError]     = useState("");
+  const [loading, setLoading]         = useState(false);
+  const [result, setResult]           = useState<Result | null>(null);
+  const [refinedText, setRefinedText] = useState<string | null>(null);
+  const [error, setError]             = useState("");
 
   async function handleGenerate() {
     if (!businessName.trim() || !industry.trim() || !situation.trim()) return;
@@ -237,6 +265,7 @@ export default function CustomerSupportPage() {
       const data = await res.json() as Result & { error?: string };
       if (!res.ok) { setError((data as unknown as { error: string }).error ?? "Generation failed."); return; }
       setResult(data);
+      setRefinedText(null);
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -328,7 +357,28 @@ export default function CustomerSupportPage() {
         </div>
 
         {/* Results */}
-        {result && <ResultRenderer result={result} />}
+        {result && (
+          <div className="space-y-4">
+            <ResultRenderer result={result} />
+
+            {/* Refined output card */}
+            {refinedText && (
+              <div className="bg-[#111214] border border-[#00e5a0]/20 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-[#00e5a0] uppercase tracking-widest mb-3">✨ Refined Version</p>
+                <p className="text-sm text-[#d1d5db] leading-relaxed whitespace-pre-wrap">{refinedText}</p>
+              </div>
+            )}
+
+            {/* Refine chat */}
+            <RefineChat
+              originalResult={resultToText(result)}
+              agentType="support"
+              systemPrompt={SUPPORT_SYSTEM_PROMPT}
+              quickActions={["More empathetic", "More professional", "Make it shorter", "Add apology", "Escalate tone"]}
+              onRefined={(text) => setRefinedText(text)}
+            />
+          </div>
+        )}
       </div>
     </main>
   );

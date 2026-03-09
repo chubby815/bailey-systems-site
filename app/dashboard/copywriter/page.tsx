@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefineChat } from "@/components/agents/RefineChat";
+
+const COPY_SYSTEM_PROMPT =
+  "You are a world-class copywriter who has written copy for Fortune 500 companies and viral marketing campaigns. " +
+  "You write copy that converts readers into customers. " +
+  "You understand SEO, psychology, and what makes people take action.";
 
 type Result = { title: string; content: string; metaDescription: string };
 
@@ -211,6 +217,20 @@ export default function CopywriterPage() {
                 <Link href="/dashboard" className="text-[#00e5a0] hover:underline">Edit Site</Link>.
               </p>
             </div>
+
+            {/* Refine chat */}
+            <RefineChat
+              originalResult={`${result.title}\n\n${result.content}`}
+              agentType="copywriter"
+              systemPrompt={COPY_SYSTEM_PROMPT}
+              quickActions={["Make it shorter", "More persuasive", "Add statistics", "Change headline", "More casual tone"]}
+              onRefined={(text) => {
+                const lines     = text.split("\n");
+                const newTitle  = lines[0]?.trim() ?? result.title;
+                const newBody   = lines.slice(1).join("\n").trim();
+                setResult({ ...result, title: newTitle, content: newBody || text });
+              }}
+            />
           </div>
         )}
       </div>

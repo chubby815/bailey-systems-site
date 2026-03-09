@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefineChat } from "@/components/agents/RefineChat";
+
+const SALES_SYSTEM_PROMPT =
+  "You are a world-class sales trainer who has coached thousands of salespeople to close millions in deals. " +
+  "You write scripts that feel natural and human, never pushy or salesy.";
 
 type Objection = { objection: string; response: string };
 type Result    = { mainContent: string; objections: Objection[]; powerPhrases: string[] };
@@ -228,6 +233,15 @@ export default function SalesManagerPage() {
                 </div>
               </div>
             )}
+
+            {/* Refine chat */}
+            <RefineChat
+              originalResult={result.mainContent}
+              agentType="sales"
+              systemPrompt={SALES_SYSTEM_PROMPT}
+              quickActions={["More confident", "Add price justification", "Shorter pitch", "Add social proof", "Stronger close"]}
+              onRefined={(text) => setResult({ ...result, mainContent: text })}
+            />
           </div>
         )}
       </div>

@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { RefineChat } from "@/components/agents/RefineChat";
+
+const EMAIL_SYSTEM_PROMPT =
+  "You are an expert email copywriter who has written cold emails that generate millions in revenue. " +
+  "You write emails that feel personal, get opened, and get replies. " +
+  "You never write salesy or spammy emails. You always write like a human.";
 
 type Result = { subjectLine: string; emailBody: string; followUp: string };
 
@@ -205,6 +211,29 @@ export default function EmailMarketerPage() {
                 💡 <span className="font-semibold text-[#9ca3af]">Pro Tip:</span> Personalize the first line with the prospect&apos;s name for 3x more replies.
               </p>
             </div>
+
+            {/* Refine chat */}
+            <RefineChat
+              originalResult={`Subject: ${result.subjectLine}\n\n${result.emailBody}\n\n---Follow Up---\n${result.followUp}`}
+              agentType="email"
+              systemPrompt={EMAIL_SYSTEM_PROMPT}
+              quickActions={["Make it shorter", "More aggressive", "Add urgency", "Change subject line", "Make it friendlier"]}
+              onRefined={(text) => {
+                const subjectMatch = text.match(/Subject:\s*(.+)/i);
+                const newSubject   = subjectMatch?.[1]?.trim() ?? result.subjectLine;
+                const body         = text.replace(/Subject:\s*.+\n?/i, "").trim();
+                const followUpIdx  = body.indexOf("---Follow Up---");
+                if (followUpIdx !== -1) {
+                  setResult({
+                    subjectLine: newSubject,
+                    emailBody:   body.slice(0, followUpIdx).trim(),
+                    followUp:    body.slice(followUpIdx + 15).trim(),
+                  });
+                } else {
+                  setResult({ ...result, subjectLine: newSubject, emailBody: body });
+                }
+              }}
+            />
           </div>
         )}
       </div>
