@@ -6,6 +6,7 @@ import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
+import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -475,13 +476,34 @@ function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone }
         <p style={{ fontFamily: FF_SAN, fontSize: "1rem", color: "rgba(255,255,255,0.6)", marginBottom: "2.5rem", lineHeight: 1.75 }}>
           {content.subtext}
         </p>
-        <a href={href} style={{
-          background: "transparent", color: "#fff",
-          fontFamily: FF_SAN, fontWeight: 700, fontSize: "0.875rem",
-          padding: "14px 40px", border: "2px solid rgba(255,255,255,0.8)",
-          textDecoration: "none", display: "inline-block",
-          textTransform: "uppercase", letterSpacing: "0.1em",
-        }}>{content.buttonText}</a>
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <ContactFormBlock
+            contactEmail={contactEmail}
+            fontFamily={FF_SAN}
+            labelStyle={{ color: "rgba(255,255,255,0.7)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}
+            inputStyle={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1.5px solid rgba(255,255,255,0.3)",
+              padding: "12px 14px",
+              color: "#fff",
+              fontSize: "0.875rem",
+              outline: "none",
+            }}
+            btnStyle={{
+              background: "#fff",
+              color: "#111",
+              fontFamily: FF_SAN,
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              padding: "14px 28px",
+              border: "none",
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.08em",
+              width: "100%",
+            }}
+            successColor="#22c55e"
+          />
+        </div>
       </div>
     </section>
   );

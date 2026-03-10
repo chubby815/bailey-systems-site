@@ -5,6 +5,7 @@
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
+import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -232,14 +233,14 @@ function Hero({ content, heroImageUrl, location, bg }: {
         <div style={{
           border: `3px solid ${BLACK}`, boxShadow: `8px 8px 0 ${BLACK}`,
           overflow: "hidden", background: "#111",
-          aspectRatio: "4/3", position: "relative",
+          minHeight: "500px", width: "100%", position: "relative",
         }}>
-          {heroImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          ) : (
-            <div style={{ width: "100%", height: "100%", backgroundImage: `repeating-linear-gradient(45deg, #f0eedf 0, #f0eedf 10px, #e8e6d8 10px, #e8e6d8 20px)` }} />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroImageUrl ?? "https://picsum.photos/seed/neo-hero/800/500"}
+            alt=""
+            style={{ width: "100%", height: "100%", minHeight: "500px", objectFit: "cover", display: "block" }}
+          />
           <div style={{
             position: "absolute", bottom: "1rem", left: "1rem",
             background: YELLOW, border: `2px solid ${BLACK}`, boxShadow: `3px 3px 0 ${BLACK}`,
@@ -321,48 +322,66 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
           }}>Featured Work</h2>
         </div>
 
-        <div className="nb-work-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "1.25rem" }}>
+        <div className="nb-work-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
+          {/* Card 1 */}
           <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
-            <div style={{
-              height: "340px", backgroundImage: heroImageUrl
-                ? `url(${heroImageUrl}) center/cover`
-                : `repeating-linear-gradient(-45deg, #1a1a1a 0, #1a1a1a 10px, #222 10px, #222 20px)`,
-              position: "relative",
-            }}>
-              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} />
+            <div style={{ height: "220px", overflow: "hidden", position: "relative" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={heroImageUrl ?? "https://picsum.photos/seed/work1/600/400"}
+                alt="Featured work"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
               <div style={{
-                position: "absolute", bottom: "1.25rem", left: "1.25rem",
-                background: YELLOW, border: `2px solid ${YELLOW}`,
-                fontFamily: FF, fontWeight: 900, fontSize: "0.7rem",
-                textTransform: "uppercase", letterSpacing: "0.08em", color: BLACK, padding: "6px 14px",
+                position: "absolute", bottom: "0.75rem", left: "0.75rem",
+                background: YELLOW, border: `2px solid ${BLACK}`,
+                fontFamily: FF, fontWeight: 900, fontSize: "0.65rem",
+                textTransform: "uppercase", letterSpacing: "0.08em", color: BLACK, padding: "4px 10px",
               }}>Featured Project</div>
             </div>
-            <div style={{ background: "#111", padding: "1.5rem" }}>
-              <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.15rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.5rem" }}>
-                {businessName} — Our Best Work
+            <div style={{ background: "#111", padding: "1.25rem" }}>
+              <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
+                {businessName} — Best Work
               </h3>
-              <p style={{ fontFamily: FF, fontSize: "0.85rem", color: "#888", lineHeight: 1.6 }}>
-                Delivering results that speak for themselves. Quality craftsmanship every time.
+              <p style={{ fontFamily: FF, fontSize: "0.8rem", color: "#888", lineHeight: 1.6 }}>
+                Delivering results that speak for themselves. Quality every time.
               </p>
             </div>
           </div>
 
+          {/* Card 2 */}
           <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
-            <div style={{
-              height: "200px",
-              backgroundImage: `repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 10px, #222 10px, #222 20px)`,
-              position: "relative",
-            }}>
-              <div style={{
-                position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-                fontFamily: FF, fontWeight: 900, fontSize: "3rem", color: YELLOW, opacity: 0.2,
-              }}>★</div>
+            <div style={{ height: "220px", overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://picsum.photos/seed/work2/600/400"
+                alt="Work sample"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
             </div>
             <div style={{ background: "#111", padding: "1.25rem" }}>
-              <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
+              <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
                 5-Star Service
               </h3>
               <p style={{ fontFamily: FF, fontSize: "0.8rem", color: "#888", lineHeight: 1.6 }}>Trusted by hundreds of happy customers.</p>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
+            <div style={{ height: "220px", overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://picsum.photos/seed/work3/600/400"
+                alt="Work sample"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
+            <div style={{ background: "#111", padding: "1.25rem" }}>
+              <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
+                Expert Craftsmanship
+              </h3>
+              <p style={{ fontFamily: FF, fontSize: "0.8rem", color: "#888", lineHeight: 1.6 }}>Every project handled with precision and care.</p>
             </div>
           </div>
         </div>
@@ -398,14 +417,14 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
               {content.body}
             </p>
             {site.contactEmail && (
-              <p style={{ fontFamily: FF, fontSize: "0.875rem", color: C_ACCENT, fontWeight: 700, textTransform: "uppercase" }}>
+              <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF, fontSize: "0.875rem", color: C_ACCENT, fontWeight: 700, textTransform: "uppercase", textDecoration: "none", display: "block" }}>
                 ✉ {site.contactEmail}
-              </p>
+              </a>
             )}
             {site.contactPhone && (
-              <p style={{ fontFamily: FF, fontSize: "0.875rem", color: C_ACCENT, fontWeight: 700, textTransform: "uppercase", marginTop: "0.375rem" }}>
+              <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF, fontSize: "0.875rem", color: C_ACCENT, fontWeight: 700, textTransform: "uppercase", marginTop: "0.375rem", textDecoration: "none", display: "block" }}>
                 ✆ {site.contactPhone}
-              </p>
+              </a>
             )}
           </div>
           {/* Right: about image if uploaded, else stat cards */}
@@ -512,9 +531,36 @@ function CTA({ content, contactEmail, contactPhone }: {
         <p style={{ fontFamily: FF, fontSize: "1.05rem", color: C_BODY, marginBottom: "2.5rem", lineHeight: 1.7 }}>
           {content.subtext}
         </p>
-        <a href={href} className="nb-btn-primary" style={{ fontSize: "1rem", padding: "16px 40px" }}>
-          {content.buttonText}
-        </a>
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <ContactFormBlock
+            contactEmail={contactEmail}
+            fontFamily={FF}
+            labelStyle={{ color: BLACK, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}
+            inputStyle={{
+              background: "#fff",
+              border: `3px solid ${BLACK}`,
+              boxShadow: `3px 3px 0 ${BLACK}`,
+              padding: "12px 14px",
+              color: BLACK,
+              fontSize: "0.9rem",
+              outline: "none",
+            }}
+            btnStyle={{
+              background: BLACK,
+              color: C_BTN,
+              fontFamily: FF,
+              fontWeight: 900,
+              fontSize: "1rem",
+              padding: "14px 28px",
+              border: `3px solid ${BLACK}`,
+              boxShadow: `5px 5px 0 ${BLACK}`,
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.06em",
+              width: "100%",
+            }}
+            successColor="#000"
+          />
+        </div>
       </div>
     </section>
   );

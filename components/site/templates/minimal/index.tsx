@@ -5,6 +5,7 @@ import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
+import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -336,10 +337,10 @@ function About({ content, site, primaryColor, bg, aboutImageUrl }: {
             </div>
 
             {site.contactEmail && (
-              <p style={{ fontFamily: FF_MONO, fontSize: "0.82rem", color: TEXT }}>✉ {site.contactEmail}</p>
+              <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF_MONO, fontSize: "0.82rem", color: TEXT, textDecoration: "none", display: "block" }}>✉ {site.contactEmail}</a>
             )}
             {site.contactPhone && (
-              <p style={{ fontFamily: FF_MONO, fontSize: "0.82rem", color: TEXT, marginTop: "0.25rem" }}>✆ {site.contactPhone}</p>
+              <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF_MONO, fontSize: "0.82rem", color: TEXT, marginTop: "0.25rem", textDecoration: "none", display: "block" }}>✆ {site.contactPhone}</a>
             )}
           </div>
         </div>
@@ -420,9 +421,34 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, bg }: {
         <p style={{ fontFamily: FF, fontSize: "1rem", color: MUTED, marginBottom: "2.5rem", lineHeight: 1.75 }}>
           {content.subtext}
         </p>
-        <a href={href} className="mn-btn" style={{ fontSize: "1rem", padding: "15px 40px" }}>
-          {content.buttonText}
-        </a>
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <ContactFormBlock
+            contactEmail={contactEmail}
+            fontFamily={FF}
+            labelStyle={{ color: "#374151" }}
+            inputStyle={{
+              background: "#fff",
+              border: `1px solid ${LINE}`,
+              borderRadius: "8px",
+              padding: "12px 14px",
+              color: TEXT,
+              fontSize: "0.9rem",
+              outline: "none",
+            }}
+            btnStyle={{
+              background: `var(--accent-color, ${primaryColor})`,
+              color: C_BTN,
+              fontFamily: FF,
+              fontWeight: 500,
+              fontSize: "0.95rem",
+              padding: "13px 28px",
+              borderRadius: "10px",
+              border: "none",
+              width: "100%",
+            }}
+            successColor={primaryColor}
+          />
+        </div>
       </div>
     </section>
   );

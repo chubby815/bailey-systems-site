@@ -6,6 +6,7 @@ import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
+import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -530,13 +531,35 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card }: {
         <p style={{ fontFamily: FF, fontSize: "1.0625rem", color: C_BODY, lineHeight: 1.7, marginBottom: "3rem" }}>
           {content.subtext}
         </p>
-        <a href={href} style={{
-          backgroundImage: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
-          color: C_BTN, fontFamily: FF, fontWeight: 700, fontSize: "1rem",
-          padding: "16px 48px", borderRadius: "14px", textDecoration: "none",
-          display: "inline-block",
-          boxShadow: `0 8px 40px ${primaryColor}44, 0 0 0 1px ${primaryColor}33`,
-        }}>{content.buttonText}</a>
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <ContactFormBlock
+            contactEmail={contactEmail}
+            fontFamily={FF}
+            labelStyle={{ color: "#9ca3af" }}
+            inputStyle={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "8px",
+              padding: "12px 14px",
+              color: "#f0f0f0",
+              fontSize: "0.9rem",
+              outline: "none",
+            }}
+            btnStyle={{
+              backgroundImage: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+              color: C_BTN,
+              fontFamily: FF,
+              fontWeight: 700,
+              fontSize: "1rem",
+              padding: "14px 28px",
+              borderRadius: "12px",
+              border: "none",
+              width: "100%",
+              boxShadow: `0 4px 20px ${primaryColor}44`,
+            }}
+            successColor={primaryColor}
+          />
+        </div>
       </div>
     </section>
   );

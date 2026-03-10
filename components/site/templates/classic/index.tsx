@@ -6,6 +6,7 @@ import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
+import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -215,27 +216,35 @@ function Hero({ content, heroImageUrl, location }: {
             </p>
           </div>
 
-          {/* Right: circular image with gold ring */}
-          <div style={{ flex: "0 0 auto", display: "flex", justifyContent: "center" }}>
+          {/* Right: large prominent image */}
+          <div style={{ flex: "1 1 380px", minHeight: "400px" }}>
             <div style={{
-              width: "clamp(200px, 30vw, 380px)", height: "clamp(200px, 30vw, 380px)",
-              borderRadius: "50%",
-              padding: "6px",
-              backgroundImage: `linear-gradient(135deg, ${GOLD}, ${GOLD_L}, ${GOLD})`,
-              boxShadow: `0 0 0 1px rgba(201,168,76,0.3), 0 20px 60px rgba(0,0,0,0.4)`,
+              width: "100%", minHeight: "400px",
+              border: `3px solid rgba(201,168,76,0.45)`,
+              borderRadius: "8px",
+              boxShadow: `0 20px 60px rgba(0,0,0,0.4)`,
+              overflow: "hidden", position: "relative",
             }}>
-              <div style={{
-                width: "100%", height: "100%", borderRadius: "50%",
-                overflow: "hidden",
-                backgroundImage: heroImageUrl
-                  ? `url(${heroImageUrl}) center/cover`
-                  : `linear-gradient(160deg, ${NAVY} 0%, #2a4080 100%)`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {!heroImageUrl && (
+              {heroImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={heroImageUrl} alt=""
+                  style={{ width: "100%", height: "100%", minHeight: "400px", objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <div style={{
+                  width: "100%", minHeight: "400px",
+                  backgroundImage: `linear-gradient(160deg, ${NAVY} 0%, #2a4080 100%)`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
                   <span style={{ fontSize: "6rem", opacity: 0.15 }}>🏆</span>
-                )}
-              </div>
+                </div>
+              )}
+              {/* Gold accent bar at bottom */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "4px",
+                backgroundImage: `linear-gradient(90deg, ${GOLD}, ${GOLD_L})`,
+              }} />
             </div>
           </div>
         </div>
@@ -482,11 +491,36 @@ function CTA({ content, contactEmail, contactPhone }: {
             color: GOLD, marginBottom: "2rem", letterSpacing: "-0.02em",
           }}>✆ {contactPhone}</p>
         )}
-        <div style={{ display: "flex", gap: "0.875rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <a href={href} className="cb-btn-gold">{content.buttonText}</a>
-          {contactPhone && (
-            <a href={`tel:${contactPhone}`} className="cb-btn-outline">Call Now</a>
-          )}
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <ContactFormBlock
+            contactEmail={contactEmail}
+            fontFamily={FF_SAN}
+            labelStyle={{ color: "rgba(255,255,255,0.75)" }}
+            inputStyle={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: "6px",
+              padding: "12px 14px",
+              color: "#fff",
+              fontSize: "0.875rem",
+              outline: "none",
+            }}
+            btnStyle={{
+              backgroundImage: `linear-gradient(135deg, ${GOLD}, ${GOLD_L})`,
+              color: C_BTN,
+              fontFamily: FF_SAN,
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              padding: "14px 28px",
+              borderRadius: "6px",
+              border: "none",
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.06em",
+              boxShadow: "0 4px 20px rgba(201,168,76,0.35)",
+              width: "100%",
+            }}
+            successColor={GOLD}
+          />
         </div>
       </div>
     </section>
