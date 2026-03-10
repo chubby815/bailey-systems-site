@@ -5,7 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { BaileyChat } from "@/components/BaileyChat";
-import { getSessionFromCookies } from "@/lib/auth";
+import { verifySession } from "@/lib/auth";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -42,7 +42,11 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") ?? "";
   const isCustomerSite = pathname.startsWith("/sites/");
 
-  const session = await getSessionFromCookies();
+  // Parse auth-token directly from the raw cookie header — more reliable on Vercel
+  // than cookies() from next/headers, which can silently return null in root layouts.
+  const cookieHeader = headersList.get("cookie") ?? "";
+  const tokenMatch = cookieHeader.match(/(?:^|;\s*)auth-token=([^;]+)/);
+  const session = tokenMatch?.[1] ? await verifySession(tokenMatch[1]) : null;
   const isLoggedIn = !!session;
 
   return (

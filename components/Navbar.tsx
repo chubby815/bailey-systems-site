@@ -11,14 +11,14 @@ interface NavbarProps {
 export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-
-  // Never render the Bailey Agents navbar on customer-generated sites
-  if (pathname.startsWith("/sites/")) return null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(initialLoggedIn);
   const [authChecked, setAuthChecked] = useState(initialLoggedIn);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Never render the Bailey Agents navbar on customer-generated sites
+  if (pathname.startsWith("/sites/")) return null;
 
   useEffect(() => {
     fetch("/api/user")
