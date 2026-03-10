@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getSite, getSiteBySlug, kv } from "@/lib/kv";
+import { getSite, getSiteBySlug } from "@/lib/kv";
 import { getSessionFromCookies, getSubscriptionStatus, getActivePlan } from "@/lib/auth";
 import { isStructuredContent, buildThemeConfig } from "@/lib/site-theme";
 import { SiteShareBar }     from "@/components/SiteShareBar";
@@ -133,7 +133,8 @@ export default async function SitePage({
   const site = await resolveSite(siteId);
   if (!site) notFound();
 
-  const viewerSession  = await getSessionFromCookies();
+  let viewerSession = null;
+  try { viewerSession = await getSessionFromCookies(); } catch { viewerSession = null; }
   // Case-insensitive comparison: old sites may have mixed-case userId from before
   // email normalization was added. Current sessions always use lowercase email.
   const isOwner        = !!viewerSession?.email &&
@@ -155,9 +156,10 @@ export default async function SitePage({
     // Use the owner's saved editor theme if present, otherwise derive from record
     const theme = site.editorTheme ?? buildThemeConfig(site);
 
-    // Check if a custom hero image has been uploaded
-    const storedImage      = await kv.get<string>(`site:${siteId}:hero-image`);
-    const customHeroImgUrl = storedImage ? `/api/sites/${siteId}/image` : undefined;
+    // Read hero and about images directly from the site record (base64 data URLs
+    // saved by app/api/sites/[siteId]/image/route.ts).
+    const heroImageUrl  = site.heroImage  ?? undefined;
+    const aboutImageUrl = site.aboutImage ?? undefined;
 
     // Only mount the editor chrome when the owner explicitly visits with ?edit=true.
     // All other visits (visitors, or owner without ?edit=true) get the clean site.
@@ -180,7 +182,7 @@ export default async function SitePage({
             isOwner={true}
             editMode={true}
             siteId={siteId}
-            initialHeroImageUrl={customHeroImgUrl}
+            initialHeroImageUrl={heroImageUrl}
             plan={viewerPlan}
           />
         </>
@@ -201,7 +203,8 @@ export default async function SitePage({
           site={site}
           content={c}
           theme={theme}
-          heroImageUrl={customHeroImgUrl}
+          heroImageUrl={heroImageUrl}
+          aboutImageUrl={aboutImageUrl}
         />
         {site.enableChat && <SiteChat site={site} />}
       </>

@@ -1043,6 +1043,16 @@ export function SiteEditor({
               : `/sites/${siteId}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={async (e) => {
+              e.preventDefault();
+              const liveUrl = site.subdomainSlug
+                ? `https://${site.subdomainSlug}.baileyagents.com`
+                : `/sites/${siteId}`;
+              hasChanges.current = true;
+              await doSave(currentContent, currentTheme, currentTemplate);
+              await new Promise<void>((r) => setTimeout(r, 600));
+              window.open(liveUrl, "_blank");
+            }}
             style={{
               fontSize:        "0.7rem",
               fontWeight:       700,
@@ -1053,6 +1063,7 @@ export function SiteEditor({
               color:           "#f0f0f0",
               textDecoration:  "none",
               transition:      "all 0.15s",
+              cursor:          "pointer",
             }}
             className="hover:bg-white/10"
           >
