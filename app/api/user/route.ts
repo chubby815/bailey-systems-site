@@ -5,11 +5,25 @@ import { createSessionToken, getSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
-  // Use getSession(req) — reads directly from NextRequest cookies.
-  // getUserSession() uses next/headers cookies() which can silently return null
-  // in Route Handlers on Vercel, causing the navbar to show Login when logged in.
-  const session = await getSession(req);
-  return NextResponse.json({ session });
+  try {
+    // Primary: read from req.cookies (standard NextRequest cookie parsing)
+    let session = await getSession(req);
+
+    // Fallback: parse raw cookie header the same way app/layout.tsx does,
+    // in case Vercel's Edge infrastructure doesn't populate req.cookies.
+    if (!session) {
+      const cookieHeader = req.headers.get("cookie") ?? "";
+      const tokenMatch = cookieHeader.match(/(?:^|;\s*)auth-token=([^;]+)/);
+      if (tokenMatch?.[1]) {
+        const { verifySession } = await import("@/lib/auth");
+        session = await verifySession(tokenMatch[1]);
+      }
+    }
+
+    return NextResponse.json({ session });
+  } catch {
+    return NextResponse.json({ session: null });
+  }
 }
 
 export async function POST(request: NextRequest) {

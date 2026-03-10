@@ -17,18 +17,32 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Never render the Bailey Agents navbar on customer-generated sites
-  if (pathname.startsWith("/sites/")) return null;
-
+  // Must be above the early return to comply with React Rules of Hooks
   useEffect(() => {
     fetch("/api/user")
       .then((r) => r.json())
-      .then((data) => setIsLoggedIn(!!data.session))
-      .catch(() => setIsLoggedIn(false))
-      .finally(() => setAuthChecked(true));
-  }, []);
+      .then((data) => {
+        if (data.session) {
+          // Fetch confirms logged in — always trust this
+          setIsLoggedIn(true);
+          setAuthChecked(true);
+        } else if (!initialLoggedIn) {
+          // Server also said not logged in — confirmed logged out
+          setIsLoggedIn(false);
+          setAuthChecked(true);
+        } else {
+          // Server said logged in but fetch returned null —
+          // trust the server-confirmed value, don't downgrade
+          setAuthChecked(true);
+        }
+      })
+      .catch(() => {
+        // Fetch failed — trust whatever the server already told us
+        setAuthChecked(true);
+      });
+  }, [initialLoggedIn]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside — also above early return
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -38,6 +52,9 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Never render the Bailey Agents navbar on customer-generated sites
+  if (pathname.startsWith("/sites/")) return null;
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
