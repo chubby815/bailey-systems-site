@@ -30,7 +30,12 @@ function regenKey(email: string, siteId: string): string {
 // ── Monthly usage ─────────────────────────────────────────────────────────────
 /** Returns how many runs the user has used this calendar month. */
 export async function getMonthlyUsage(email: string): Promise<number> {
-  return (await kv.get<number>(monthlyKey(email))) ?? 0;
+  try {
+    return (await kv.get<number>(monthlyKey(email))) ?? 0;
+  } catch (err) {
+    console.error("[getMonthlyUsage] Redis error:", err);
+    return 0;
+  }
 }
 
 /**

@@ -6,10 +6,11 @@ import SupportClient from "./SupportClient";
 export const dynamic = "force-dynamic";
 
 export default async function CustomerSupportPage() {
-  const session = await getSessionFromCookies();
+  let session = null;
+  try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard/support");
 
-  const plan = await getActivePlan(session.email);
+  const plan = await getActivePlan(session.email).catch(() => null);
   if (!plan) redirect("/pricing?reason=subscription_required");
 
   if (plan === "starter") {

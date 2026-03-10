@@ -14,12 +14,13 @@ const PLAN_COLORS = {
 } as const;
 
 export default async function UsagePage() {
-  const session = await getSessionFromCookies();
+  let session = null;
+  try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard/usage");
 
   const [plan, subscription] = await Promise.all([
-    getActivePlan(session.email),
-    getSubscriptionStatus(session.email),
+    getActivePlan(session.email).catch(() => null),
+    getSubscriptionStatus(session.email).catch(() => null),
   ]);
   if (!plan) redirect("/pricing?reason=subscription_required");
 

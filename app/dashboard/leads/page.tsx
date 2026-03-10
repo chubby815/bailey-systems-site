@@ -7,10 +7,11 @@ import { LeadsAgent } from "@/components/LeadsAgent";
 export const dynamic = "force-dynamic";
 
 export default async function LeadsPage() {
-  const session = await getSessionFromCookies();
+  let session = null;
+  try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard/leads");
 
-  const plan = await getActivePlan(session.email);
+  const plan = await getActivePlan(session.email).catch(() => null);
   if (!plan) redirect("/pricing?reason=subscription_required");
 
   const locked = plan === "starter";

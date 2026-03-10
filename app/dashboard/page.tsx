@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionFromCookies, getActivePlan, getSubscriptionStatus } from "@/lib/auth";
-import { getUserSites } from "@/lib/kv";
+import { getUserSites, type SiteRecord } from "@/lib/kv";
 import { getMonthlyUsage, PLAN_LIMITS, type PlanKey } from "@/lib/usage";
 import { SiteCard } from "@/components/SiteCard";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -10,14 +10,15 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   // ── Auth guard ────────────────────────────────────────────────────────────
-  const session = await getSessionFromCookies();
+  let session = null;
+  try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard");
 
   const [plan, subscription, sites, monthlyUsage] = await Promise.all([
-    getActivePlan(session.email),
-    getSubscriptionStatus(session.email),
-    getUserSites(session.email),
-    getMonthlyUsage(session.email),
+    getActivePlan(session.email).catch(() => null),
+    getSubscriptionStatus(session.email).catch(() => null),
+    getUserSites(session.email).catch((): SiteRecord[] => []),
+    getMonthlyUsage(session.email).catch(() => 0),
   ]);
 
   // No active subscription → send to pricing

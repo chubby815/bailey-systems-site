@@ -31,7 +31,12 @@ export type SubscriptionRecord = {
 export async function getSubscriptionByEmail(
   email: string
 ): Promise<SubscriptionRecord | null> {
-  return kv.get<SubscriptionRecord>(`sub:${email}`);
+  try {
+    return await kv.get<SubscriptionRecord>(`sub:${email}`);
+  } catch (err) {
+    console.error("[getSubscriptionByEmail] Redis error:", err);
+    return null;
+  }
 }
 
 /** Check if a user has an active (or trialing) subscription */
@@ -104,17 +109,30 @@ export type SiteRecord = {
 
 /** Save a generated site to Redis */
 export async function saveSite(siteId: string, data: SiteRecord): Promise<void> {
-  await kv.set(`site:${siteId}`, data);
+  try {
+    await kv.set(`site:${siteId}`, data);
+  } catch (err) {
+    console.error("[saveSite] Redis error:", err);
+  }
 }
 
 /** Get a generated site from Redis */
 export async function getSite(siteId: string): Promise<SiteRecord | null> {
-  return kv.get<SiteRecord>(`site:${siteId}`);
+  try {
+    return await kv.get<SiteRecord>(`site:${siteId}`);
+  } catch (err) {
+    console.error("[getSite] Redis error:", err);
+    return null;
+  }
 }
 
 /** Delete a generated site from Redis */
 export async function deleteSite(siteId: string): Promise<void> {
-  await kv.del(`site:${siteId}`);
+  try {
+    await kv.del(`site:${siteId}`);
+  } catch (err) {
+    console.error("[deleteSite] Redis error:", err);
+  }
 }
 
 /**
@@ -122,9 +140,14 @@ export async function deleteSite(siteId: string): Promise<void> {
  * Looks up the reverse key:  slug:{slug}  →  siteId  →  SiteRecord
  */
 export async function getSiteBySlug(slug: string): Promise<SiteRecord | null> {
-  const siteId = await kv.get<string>(`slug:${slug}`);
-  if (!siteId) return null;
-  return getSite(siteId);
+  try {
+    const siteId = await kv.get<string>(`slug:${slug}`);
+    if (!siteId) return null;
+    return getSite(siteId);
+  } catch (err) {
+    console.error("[getSiteBySlug] Redis error:", err);
+    return null;
+  }
 }
 
 // ── Facebook page record shape ────────────────────────────────────────────────
@@ -140,26 +163,38 @@ export async function saveFacebookPage(
   email: string,
   data: FacebookPageRecord
 ): Promise<void> {
-  await kv.set(`facebook:${email}`, data);
+  try {
+    await kv.set(`facebook:${email}`, data);
+  } catch (err) {
+    console.error("[saveFacebookPage] Redis error:", err);
+  }
 }
 
 /** Get the connected Facebook page for a user */
 export async function getFacebookPage(
   email: string
 ): Promise<FacebookPageRecord | null> {
-  return kv.get<FacebookPageRecord>(`facebook:${email}`);
+  try {
+    return await kv.get<FacebookPageRecord>(`facebook:${email}`);
+  } catch (err) {
+    console.error("[getFacebookPage] Redis error:", err);
+    return null;
+  }
 }
 
 /** Get all sites belonging to a specific user, sorted newest first */
 export async function getUserSites(email: string): Promise<SiteRecord[]> {
-  const keys = await kv.keys("site:*");
-  if (!keys.length) return [];
-
-  const values = await kv.mget<(SiteRecord | null)[]>(...keys);
-
-  return values
-    .filter((s): s is SiteRecord => s !== null && s.userId === email)
-    .sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  try {
+    const keys = await kv.keys("site:*");
+    if (!keys.length) return [];
+    const values = await kv.mget<(SiteRecord | null)[]>(...keys);
+    return values
+      .filter((s): s is SiteRecord => s !== null && s.userId === email)
+      .sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  } catch (err) {
+    console.error("[getUserSites] Redis error:", err);
+    return [];
+  }
 }

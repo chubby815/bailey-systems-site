@@ -139,15 +139,19 @@ export default async function SitePage({
   // email normalization was added. Current sessions always use lowercase email.
   const isOwner        = !!viewerSession?.email &&
     viewerSession.email.toLowerCase() === (site.userId ?? "").toLowerCase();
-  const ownerSub       = await getSubscriptionStatus(site.userId);
+  let ownerSub = null;
+  try { ownerSub = await getSubscriptionStatus(site.userId); } catch { ownerSub = null; }
   const siteIsPaused   =
     ownerSub !== null &&
     (ownerSub.status === "canceled" || ownerSub.status === "past_due");
 
   // Fetch the viewer's own plan for Ask Bailey edit limits
-  const viewerPlan = viewerSession?.email
-    ? ((await getActivePlan(viewerSession.email)) ?? "starter")
-    : "starter";
+  let viewerPlan = "starter";
+  try {
+    viewerPlan = viewerSession?.email
+      ? ((await getActivePlan(viewerSession.email)) ?? "starter")
+      : "starter";
+  } catch { viewerPlan = "starter"; }
 
   const c = site.generatedContent;
 

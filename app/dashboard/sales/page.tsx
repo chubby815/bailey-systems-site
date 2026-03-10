@@ -6,10 +6,11 @@ import SalesClient from "./SalesClient";
 export const dynamic = "force-dynamic";
 
 export default async function SalesPage() {
-  const session = await getSessionFromCookies();
+  let session = null;
+  try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard/sales");
 
-  const plan = await getActivePlan(session.email);
+  const plan = await getActivePlan(session.email).catch(() => null);
   if (!plan) redirect("/pricing?reason=subscription_required");
 
   if (plan !== "pro") {
