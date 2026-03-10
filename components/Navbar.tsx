@@ -4,15 +4,19 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-export default function Navbar() {
+interface NavbarProps {
+  initialLoggedIn?: boolean;
+}
+
+export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   // Never render the Bailey Agents navbar on customer-generated sites
   if (pathname.startsWith("/sites/")) return null;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(initialLoggedIn);
+  const [authChecked, setAuthChecked] = useState(initialLoggedIn);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

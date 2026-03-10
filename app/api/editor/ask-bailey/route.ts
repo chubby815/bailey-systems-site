@@ -106,6 +106,7 @@ THEME FIELDS — use these for ALL color, font, and style changes:
 - theme.buttonTextColor — text color on buttons (hex) — "button text color"
 - theme.fontStyle — font style, must be exactly: "modern" | "classic" | "bold" | "minimal"
 - theme.buttonStyle — button shape, must be exactly: "rounded" | "sharp" | "pill"
+- theme.fontSize — text size scale, must be exactly: "small" | "medium" | "large" | "xlarge" — use for "make text bigger/smaller", "increase/decrease font size", "make headline bigger/smaller"
 
 CONTENT FIELDS — use these for ALL text changes:
 - content.hero.headline — main big headline
@@ -153,6 +154,12 @@ INTENT TO FIELD MAPPING — always follow exactly:
 "change card color/background to X" → theme.surface = hex
 "change font to X" → theme.fontStyle = modern|classic|bold|minimal
 "make buttons pill/rounded/sharp" → theme.buttonStyle = pill|rounded|sharp
+"make text/headline bigger" → theme.fontSize = "large"
+"make text/headline much bigger" → theme.fontSize = "xlarge"
+"make text/headline smaller" → theme.fontSize = "small"
+"increase font size" → theme.fontSize = "large"
+"decrease font size" → theme.fontSize = "small"
+"make font size X" → theme.fontSize = small|medium|large|xlarge
 
 CRITICAL RULES:
 1. ALWAYS convert color names to hex values in the JSON output
@@ -201,7 +208,8 @@ CRITICAL RULES:
     `- Include EVERY existing field in updatedSiteData — never omit keys\n` +
     `- theme.background controls the PAGE background color\n` +
     `- theme.surface controls NAVBAR and CARD background color\n` +
-    `- theme.headingColor controls HEADLINE text color`;
+    `- theme.headingColor controls HEADLINE text color\n` +
+    `- theme.fontSize must be "small" | "medium" | "large" | "xlarge" — include existing value if not changing it`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {

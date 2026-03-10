@@ -11,6 +11,8 @@ export type HeroStyleKey   = "photo" | "gradient" | "solid";
 export type LayoutStyleKey = "standard" | "centered" | "fullwidth";
 export type ButtonStyleKey = "rounded" | "sharp" | "pill";
 
+export type FontSizeKey = "small" | "medium" | "large" | "xlarge";
+
 export type ThemeConfig = {
   primaryColor: string;          // resolved hex value e.g. "#10b981"
   fontStyle:    FontStyleKey;
@@ -25,6 +27,8 @@ export type ThemeConfig = {
   // Background and surface — optional so existing sites are not broken
   background?:      string;      // page/section background
   surface?:         string;      // navbar, cards, elevated surfaces
+  // Font size scale — multiplies the typography clamp values
+  fontSize?:        FontSizeKey; // --font-scale CSS variable
 };
 
 export type ThemeTokens = {
@@ -211,6 +215,14 @@ export type PresetTheme = {
   preview: string;
   theme:   ThemeConfig;
   colors:  PresetThemeColors;
+};
+
+// ── Font size multipliers ─────────────────────────────────────────────────────
+export const FONT_SIZE_MULTIPLIERS: Record<FontSizeKey, string> = {
+  small:  "0.85",
+  medium: "1",
+  large:  "1.15",
+  xlarge: "1.3",
 };
 
 // ── Typography scales per font style ─────────────────────────────────────────

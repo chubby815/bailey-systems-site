@@ -8,11 +8,12 @@ import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
-  site:          SiteRecord;
-  content:       StructuredSiteContent;
-  primaryColor:  string;
-  heroImageUrl?: string;
-  theme?:        ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  primaryColor:   string;
+  heroImageUrl?:  string;
+  aboutImageUrl?: string;
+  theme?:         ThemeConfig;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -129,19 +130,30 @@ function Navbar({ businessName, ctaText, primaryColor, navBackground }: { busine
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, primaryColor, location, bg }: {
+function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
   content: StructuredSiteContent["hero"];
   primaryColor: string;
   location: string;
   bg: string;
+  heroImageUrl?: string;
 }) {
   return (
     <section id="home" style={{
       minHeight: "100vh", backgroundColor: bg,
       display: "flex", alignItems: "center", justifyContent: "center",
       position: "relative", overflow: "hidden", padding: "8rem clamp(1rem, 5vw, 3rem) 5rem",
-      backgroundImage: GRAIN, backgroundBlendMode: "overlay",
+      backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : GRAIN,
+      backgroundSize: heroImageUrl ? "cover" : undefined,
+      backgroundPosition: heroImageUrl ? "center" : undefined,
+      backgroundBlendMode: heroImageUrl ? undefined : "overlay",
     }}>
+      {/* Dark overlay when hero image is present */}
+      {heroImageUrl && (
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.55) 100%)",
+        }} />
+      )}
       {/* Animated radial glow */}
       <div className="dp-glow" style={{
         position: "absolute", inset: 0, pointerEvents: "none",
@@ -311,12 +323,55 @@ function Services({ content, primaryColor, location, bg }: {
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site, primaryColor, card }: {
+function About({ content, site, primaryColor, card, aboutImageUrl }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
   card: string;
+  aboutImageUrl?: string;
 }) {
+  const textBlock = (
+    <div style={{ flex: "1 1 360px" }}>
+      <p style={{
+        fontFamily: FF, fontSize: "0.72rem", fontWeight: 700,
+        textTransform: "uppercase", letterSpacing: "0.14em",
+        color: `var(--accent-color, ${primaryColor})`, marginBottom: "1.25rem",
+      }}>About Us</p>
+      <h2 style={{
+        fontFamily: FF, fontWeight: 700,
+        fontSize: "clamp(1.75rem, 4vw, 3rem)",
+        letterSpacing: "-0.04em", color: C_HEADING,
+        marginBottom: "1.5rem", lineHeight: 1.15,
+      }}>{content.title}</h2>
+      <p style={{ fontFamily: FF, fontSize: "1.0625rem", color: C_BODY, lineHeight: 1.85, marginBottom: "2rem" }}>
+        {content.body}
+      </p>
+      {/* Stats inline when image is shown */}
+      {aboutImageUrl && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1.5rem" }}>
+          {content.stats.slice(0, 4).map((st, i) => (
+            <div key={i} className="dp-stat-card">
+              <div style={{ fontFamily: FF, fontWeight: 800, fontSize: "clamp(1.5rem, 3vw, 2rem)", letterSpacing: "-0.04em", color: primaryColor, marginBottom: "0.25rem" }}>{st.value}</div>
+              <div style={{ fontFamily: FF, fontSize: "0.75rem", color: "#6b7280", fontWeight: 500 }}>{st.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+        {site.contactEmail && (
+          <a href={`mailto:${site.contactEmail}`} style={{ fontFamily: FF, fontSize: "0.9rem", color: "#9ca3af", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem" }}>
+            <span style={{ color: primaryColor }}>✉</span> {site.contactEmail}
+          </a>
+        )}
+        {site.contactPhone && (
+          <a href={`tel:${site.contactPhone}`} style={{ fontFamily: FF, fontSize: "0.9rem", color: "#9ca3af", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem" }}>
+            <span style={{ color: primaryColor }}>✆</span> {site.contactPhone}
+          </a>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <section id="about" style={{
       backgroundColor: card,
@@ -327,62 +382,26 @@ function About({ content, site, primaryColor, card }: {
         maxWidth: "1280px", margin: "0 auto",
         display: "flex", gap: "5rem", alignItems: "center", flexWrap: "wrap",
       }}>
-        {/* Left: text */}
-        <div style={{ flex: "1 1 360px" }}>
-          <p style={{
-            fontFamily: FF, fontSize: "0.72rem", fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: "0.14em",
-            color: `var(--accent-color, ${primaryColor})`, marginBottom: "1.25rem",
-          }}>About Us</p>
-          <h2 style={{
-            fontFamily: FF, fontWeight: 700,
-            fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            letterSpacing: "-0.04em", color: C_HEADING,
-            marginBottom: "1.5rem", lineHeight: 1.15,
-          }}>{content.title}</h2>
-          <p style={{ fontFamily: FF, fontSize: "1.0625rem", color: C_BODY, lineHeight: 1.85, marginBottom: "2rem" }}>
-            {content.body}
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-            {site.contactEmail && (
-              <a href={`mailto:${site.contactEmail}`} style={{
-                fontFamily: FF, fontSize: "0.9rem", color: "#9ca3af",
-                textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem",
-              }}>
-                <span style={{ color: primaryColor }}>✉</span> {site.contactEmail}
-              </a>
-            )}
-            {site.contactPhone && (
-              <a href={`tel:${site.contactPhone}`} style={{
-                fontFamily: FF, fontSize: "0.9rem", color: "#9ca3af",
-                textDecoration: "none", display: "flex", alignItems: "center", gap: "0.625rem",
-              }}>
-                <span style={{ color: primaryColor }}>✆</span> {site.contactPhone}
-              </a>
-            )}
-          </div>
-        </div>
+        {textBlock}
 
-        {/* Right: stats */}
-        <div style={{ flex: "1 1 320px" }}>
-          <div className="dp-stats-row" style={{
-            display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem",
-          }}>
-            {content.stats.slice(0, 4).map((st, i) => (
-              <div key={i} className="dp-stat-card">
-                <div style={{
-                  fontFamily: FF, fontWeight: 800,
-                  fontSize: "clamp(2rem, 4vw, 2.75rem)",
-                  letterSpacing: "-0.04em",
-                  color: primaryColor, marginBottom: "0.375rem",
-                }}>{st.value}</div>
-                <div style={{ fontFamily: FF, fontSize: "0.8rem", color: "#6b7280", fontWeight: 500 }}>
-                  {st.label}
-                </div>
-              </div>
-            ))}
+        {/* Right: image if uploaded, else stats grid */}
+        {aboutImageUrl ? (
+          <div style={{ flex: "1 1 320px" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={aboutImageUrl} alt="About" style={{ width: "100%", maxHeight: "400px", objectFit: "cover", borderRadius: "12px", display: "block" }} />
           </div>
-        </div>
+        ) : (
+          <div style={{ flex: "1 1 320px" }}>
+            <div className="dp-stats-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              {content.stats.slice(0, 4).map((st, i) => (
+                <div key={i} className="dp-stat-card">
+                  <div style={{ fontFamily: FF, fontWeight: 800, fontSize: "clamp(2rem, 4vw, 2.75rem)", letterSpacing: "-0.04em", color: primaryColor, marginBottom: "0.375rem" }}>{st.value}</div>
+                  <div style={{ fontFamily: FF, fontSize: "0.8rem", color: "#6b7280", fontWeight: 500 }}>{st.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -548,7 +567,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, theme }: TemplateProps) {
+export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG   = theme?.background ?? "#080808";
   const CARD = theme?.surface ?? "#0d0e10";
   const navBackground = hexToRgba(BG, 0.85);
@@ -557,10 +576,10 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, t
       <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={navBackground} />
-        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
-        <About content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
+        <About content={content.about} site={site} primaryColor={primaryColor} card={CARD} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
         <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} />
         <Footer site={site} primaryColor={primaryColor} />

@@ -7,11 +7,12 @@ import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
-  site:          SiteRecord;
-  content:       StructuredSiteContent;
-  primaryColor:  string;
-  heroImageUrl?: string;
-  theme?:        ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  primaryColor:   string;
+  heroImageUrl?:  string;
+  aboutImageUrl?: string;
+  theme?:         ThemeConfig;
 };
 
 const BLACK   = "#0a0a0a";
@@ -371,7 +372,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site, bg }: { content: StructuredSiteContent["about"]; site: SiteRecord; bg: string }) {
+function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteContent["about"]; site: SiteRecord; bg: string; aboutImageUrl?: string }) {
   return (
     <section id="about" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
@@ -386,7 +387,7 @@ function About({ content, site, bg }: { content: StructuredSiteContent["about"];
             textTransform: "uppercase", letterSpacing: "-0.03em", color: C_HEADING,
           }}>About</h2>
         </div>
-        <div className="nb-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
+        <div className="nb-about-grid" style={{ display: "grid", gridTemplateColumns: aboutImageUrl ? "1fr 1fr" : "1fr 1fr", gap: "4rem", alignItems: "start" }}>
           <div>
             <h3 style={{
               fontFamily: FF, fontWeight: 900,
@@ -407,27 +408,26 @@ function About({ content, site, bg }: { content: StructuredSiteContent["about"];
               </p>
             )}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {content.stats.map((st, i) => (
-              <div key={i} className="nb-card" style={{
-                background: i === 0 ? BLACK : i === 1 ? YELLOW : bg,
-                padding: "1.25rem 1.5rem",
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-              }}>
-                <span style={{
-                  fontFamily: FF, fontWeight: 900,
-                  fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
-                  letterSpacing: "-0.04em",
-                  color: i === 0 ? YELLOW : BLACK,
-                }}>{st.value}</span>
-                <span style={{
-                  fontFamily: FF, fontWeight: 700, fontSize: "0.75rem",
-                  textTransform: "uppercase", letterSpacing: "0.08em",
-                  color: i === 0 ? "#fff" : BLACK,
-                }}>{st.label}</span>
-              </div>
-            ))}
-          </div>
+          {/* Right: about image if uploaded, else stat cards */}
+          {aboutImageUrl ? (
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={aboutImageUrl} alt="About" style={{ width: "100%", maxHeight: "400px", objectFit: "cover", border: `3px solid ${BLACK}`, boxShadow: `5px 5px 0 ${BLACK}`, display: "block" }} />
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {content.stats.map((st, i) => (
+                <div key={i} className="nb-card" style={{
+                  background: i === 0 ? BLACK : i === 1 ? YELLOW : bg,
+                  padding: "1.25rem 1.5rem",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                }}>
+                  <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "clamp(1.5rem, 4vw, 2.5rem)", letterSpacing: "-0.04em", color: i === 0 ? YELLOW : BLACK }}>{st.value}</span>
+                  <span style={{ fontFamily: FF, fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: i === 0 ? "#fff" : BLACK }}>{st.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -541,7 +541,7 @@ function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function NeoBrutalismLayout({ site, content, heroImageUrl, theme }: TemplateProps) {
+export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#fffef7";
   const SURFACE = theme?.surface ?? "#0a0a0a";
   return (
@@ -553,7 +553,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, theme }: Templ
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} />
         <Services content={content.services} location={site.location} bg={BG} />
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />
-        <About content={content.about} site={site} bg={BG} />
+        <About content={content.about} site={site} bg={BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} surface={SURFACE} bg={BG} />
         <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
         <Footer site={site} surface={SURFACE} />

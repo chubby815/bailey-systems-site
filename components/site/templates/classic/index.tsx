@@ -8,11 +8,12 @@ import { RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
-  site:          SiteRecord;
-  content:       StructuredSiteContent;
-  primaryColor:  string;
-  heroImageUrl?: string;
-  theme?:        ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  primaryColor:   string;
+  heroImageUrl?:  string;
+  aboutImageUrl?: string;
+  theme?:         ThemeConfig;
 };
 
 const NAVY   = "#1a2744";
@@ -292,10 +293,17 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site }: { content: StructuredSiteContent["about"]; site: SiteRecord }) {
+function About({ content, site, aboutImageUrl }: { content: StructuredSiteContent["about"]; site: SiteRecord; aboutImageUrl?: string }) {
   return (
     <section id="about" style={{ background: WHITE, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        {/* About image — full width above the 2-panel layout */}
+        {aboutImageUrl && (
+          <div style={{ marginBottom: "3rem" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={aboutImageUrl} alt="About" style={{ width: "100%", maxHeight: "400px", objectFit: "cover", borderRadius: "12px", display: "block", borderBottom: `4px solid ${GOLD}` }} />
+          </div>
+        )}
         <div className="cb-about-grid" style={{ display: "flex", gap: "0", alignItems: "stretch", flexWrap: "wrap" }}>
           {/* Left: navy panel */}
           <div style={{
@@ -516,7 +524,7 @@ function Footer({ site }: { site: SiteRecord }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function ClassicLayout({ site, content, heroImageUrl, theme }: TemplateProps) {
+export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#f8f9fa";
   const SURFACE = theme?.surface ?? `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`;
   return (
@@ -526,7 +534,7 @@ export function ClassicLayout({ site, content, heroImageUrl, theme }: TemplatePr
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
         <Services content={content.services} location={site.location} bg={BG} />
-        <About content={content.about} site={site} />
+        <About content={content.about} site={site} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} bg={BG} />
         <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
         <Footer site={site} />

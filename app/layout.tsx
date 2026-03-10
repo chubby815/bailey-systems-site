@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { BaileyChat } from "@/components/BaileyChat";
+import { getSessionFromCookies } from "@/lib/auth";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -41,11 +42,14 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") ?? "";
   const isCustomerSite = pathname.startsWith("/sites/");
 
+  const session = await getSessionFromCookies();
+  const isLoggedIn = !!session;
+
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head />
       <body>
-        {!isCustomerSite && <Navbar />}
+        {!isCustomerSite && <Navbar initialLoggedIn={isLoggedIn} />}
         {children}
         {!isCustomerSite && <Footer />}
         {!isCustomerSite && <BaileyChat />}

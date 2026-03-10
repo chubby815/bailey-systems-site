@@ -7,11 +7,12 @@ import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
-  site:          SiteRecord;
-  content:       StructuredSiteContent;
-  primaryColor:  string;
-  heroImageUrl?: string;
-  theme?:        ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  primaryColor:   string;
+  heroImageUrl?:  string;
+  aboutImageUrl?: string;
+  theme?:         ThemeConfig;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -114,22 +115,32 @@ function Navbar({ businessName, primaryColor, surface }: { businessName: string;
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, primaryColor, location, bg }: {
+function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
   content: StructuredSiteContent["hero"];
   primaryColor: string;
   location: string;
   bg: string;
+  heroImageUrl?: string;
 }) {
   return (
     <section id="home" style={{
-      background: bg, padding: "9rem clamp(1rem, 5vw, 3rem) 7rem",
+      background: heroImageUrl ? "#111" : bg,
+      padding: "9rem clamp(1rem, 5vw, 3rem) 7rem",
       textAlign: "center", position: "relative",
+      ...(heroImageUrl ? { backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
     }}>
-      {/* Subtle radial */}
-      <div style={{
+      {/* Dark overlay when hero image present */}
+      {heroImageUrl && (
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.55) 100%)",
+        }} />
+      )}
+      {/* Subtle radial (only without image) */}
+      {!heroImageUrl && <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
         backgroundImage: `radial-gradient(ellipse 60% 50% at 50% 0%, ${primaryColor}08 0%, transparent 70%)`,
-      }} />
+      }} />}
 
       <div style={{ position: "relative", maxWidth: "760px", margin: "0 auto" }}>
         {/* Eyebrow label */}
@@ -260,31 +271,39 @@ function Services({ content, primaryColor, location, bg }: {
 }
 
 // ── About ──────────────────────────────────────────────────────────────────────
-function About({ content, site, primaryColor, bg }: {
+function About({ content, site, primaryColor, bg, aboutImageUrl }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
   bg: string;
+  aboutImageUrl?: string;
 }) {
   return (
     <section id="about" style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <div className="mn-about-grid" style={{ display: "flex", gap: "6rem", alignItems: "flex-start", flexWrap: "wrap" }}>
-          {/* Left: pull quote */}
+          {/* Left: pull quote OR about image */}
           <div style={{ flex: "1 1 300px" }}>
-            <span style={{
-              fontFamily: FF_MONO, fontSize: "0.65rem", fontWeight: 600,
-              textTransform: "uppercase", letterSpacing: "0.14em",
-              color: `var(--accent-color, ${primaryColor})`, display: "block", marginBottom: "1.5rem",
-            }}>About</span>
-            <p style={{
-              fontFamily: FF, fontWeight: 300,
-              fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
-              lineHeight: 1.3, letterSpacing: "-0.03em",
-              color: `var(--accent-color, ${primaryColor})`,
-            }}>
-              "{content.body.slice(0, 100)}{content.body.length > 100 ? "…" : ""}"
-            </p>
+            {aboutImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={aboutImageUrl} alt="About" style={{ width: "100%", maxHeight: "400px", objectFit: "cover", borderRadius: "12px", display: "block" }} />
+            ) : (
+              <>
+                <span style={{
+                  fontFamily: FF_MONO, fontSize: "0.65rem", fontWeight: 600,
+                  textTransform: "uppercase", letterSpacing: "0.14em",
+                  color: `var(--accent-color, ${primaryColor})`, display: "block", marginBottom: "1.5rem",
+                }}>About</span>
+                <p style={{
+                  fontFamily: FF, fontWeight: 300,
+                  fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
+                  lineHeight: 1.3, letterSpacing: "-0.03em",
+                  color: `var(--accent-color, ${primaryColor})`,
+                }}>
+                  &ldquo;{content.body.slice(0, 100)}{content.body.length > 100 ? "…" : ""}&rdquo;
+                </p>
+              </>
+            )}
           </div>
 
           {/* Right: text + stats */}
@@ -430,7 +449,7 @@ function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: st
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MinimalLayout({ site, content, primaryColor, theme }: TemplateProps) {
+export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#ffffff";
   const SURFACE = theme?.surface ?? "rgba(255,255,255,0.92)";
   return (
@@ -438,10 +457,10 @@ export function MinimalLayout({ site, content, primaryColor, theme }: TemplatePr
       <Styles p={primaryColor} offBg={OFF_BG} bg={BG} />
       <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
-        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
-        <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} />
+        <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
         <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} />
         <Footer site={site} primaryColor={primaryColor} bg={BG} />

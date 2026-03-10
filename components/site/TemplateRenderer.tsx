@@ -7,7 +7,7 @@
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
-import { getHeroImageUrl, COLOR_MAP, TYPOGRAPHY_SCALES } from "@/lib/site-theme";
+import { getHeroImageUrl, COLOR_MAP, TYPOGRAPHY_SCALES, FONT_SIZE_MULTIPLIERS } from "@/lib/site-theme";
 
 import { DarkPremiumLayout } from "./templates/darkpremium";
 import { NeoBrutalismLayout } from "./templates/neobrutalism";
@@ -16,20 +16,27 @@ import { MagazineLayout }     from "./templates/magazine";
 import { ClassicLayout }      from "./templates/classic";
 
 type Props = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  theme:          ThemeConfig;
-  themeOverride?: Partial<ThemeConfig>;
-  heroImageUrl?:  string;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  theme:           ThemeConfig;
+  themeOverride?:  Partial<ThemeConfig>;
+  heroImageUrl?:   string | null;
+  aboutImageUrl?:  string | null;
 };
 
-export function TemplateRenderer({ site, content, theme, themeOverride, heroImageUrl: heroImageUrlProp }: Props) {
+export function TemplateRenderer({ site, content, theme, themeOverride, heroImageUrl: heroImageUrlProp, aboutImageUrl: aboutImageUrlProp }: Props) {
   const resolvedTheme: ThemeConfig = themeOverride ? { ...theme, ...themeOverride } : theme;
-  const heroImageUrl = heroImageUrlProp ?? getHeroImageUrl(site.industry);
+  // heroImageUrl: explicit prop takes priority (null = cleared in editor), then site record, then industry stock
+  const heroImageUrl  = heroImageUrlProp !== undefined
+    ? (heroImageUrlProp ?? undefined)
+    : (site.heroImage ?? getHeroImageUrl(site.industry));
+  const aboutImageUrl = aboutImageUrlProp !== undefined
+    ? (aboutImageUrlProp ?? undefined)
+    : (site.aboutImage ?? undefined);
   const primaryColor = resolvedTheme.primaryColor ?? COLOR_MAP[site.primaryColor] ?? "#10b981";
   const template = site.template ?? "darkpremium";
 
-  const sharedProps = { site, content, primaryColor, heroImageUrl, theme: resolvedTheme };
+  const sharedProps = { site, content, primaryColor, heroImageUrl, aboutImageUrl, theme: resolvedTheme };
 
   // Build CSS variable object — text color overrides + typography scale.
   // These cascade to all template child elements via the wrapper div.
@@ -42,6 +49,7 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
   if (resolvedTheme.buttonTextColor) cssVars["--btn-text-color"]   = resolvedTheme.buttonTextColor;
   cssVars["--site-bg"]      = resolvedTheme.background ?? "";
   cssVars["--site-surface"] = resolvedTheme.surface ?? "";
+  cssVars["--font-scale"]   = FONT_SIZE_MULTIPLIERS[resolvedTheme.fontSize ?? "medium"] ?? "1";
 
   // Typography scale — derived from fontStyle, applied as CSS vars so templates can
   // consume them via var(--hero-size), var(--h2-size), etc. with their own fallbacks.

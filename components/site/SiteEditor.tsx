@@ -210,32 +210,42 @@ function ThemesPanel({
   onSelectTemplate,
   siteId,
   currentHeroImageUrl,
+  currentAboutImageUrl,
   industry,
   onHeroImageChange,
+  onAboutImageChange,
 }: {
-  currentThemeKey:     string;
-  onSelectTheme:       (key: string, theme: ThemeConfig) => void;
-  currentTemplate:     string;
-  onSelectTemplate:    (key: string) => void;
-  siteId:              string;
-  currentHeroImageUrl: string | null;
-  industry:            string;
-  onHeroImageChange:   (url: string | null) => void;
+  currentThemeKey:      string;
+  onSelectTheme:        (key: string, theme: ThemeConfig) => void;
+  currentTemplate:      string;
+  onSelectTemplate:     (key: string) => void;
+  siteId:               string;
+  currentHeroImageUrl:  string | null;
+  currentAboutImageUrl: string | null;
+  industry:             string;
+  onHeroImageChange:    (url: string | null) => void;
+  onAboutImageChange:   (url: string | null) => void;
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading]           = useState(false);
+  const [uploadError, setUploadError]       = useState<string | null>(null);
+  const [aboutUploading, setAboutUploading] = useState(false);
+  const [aboutError, setAboutError]         = useState<string | null>(null);
+  const [heroSuccess, setHeroSuccess]       = useState(false);
+  const [aboutSuccess, setAboutSuccess]     = useState(false);
+  const fileRef      = useRef<HTMLInputElement>(null);
+  const aboutFileRef = useRef<HTMLInputElement>(null);
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("Image must be under 5 MB");
-      return;
-    }
-    setUploadError(null);
-    setUploading(true);
-
+  async function uploadImage(
+    file: File,
+    section: "hero" | "about",
+    onSuccess: (url: string) => void,
+    setErr: (e: string | null) => void,
+    setLoading: (v: boolean) => void,
+    setOk: (v: boolean) => void,
+  ) {
+    if (file.size > 2 * 1024 * 1024) { setErr("Image must be under 2 MB"); return; }
+    setErr(null);
+    setLoading(true);
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
@@ -243,22 +253,44 @@ function ThemesPanel({
         const res = await fetch(`/api/sites/${siteId}/image`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: dataUrl }),
+          body: JSON.stringify({ section, image: dataUrl }),
         });
-        if (!res.ok) { setUploadError("Upload failed"); return; }
-        onHeroImageChange(`/api/sites/${siteId}/image?t=${Date.now()}`);
-      } catch {
-        setUploadError("Upload failed");
-      } finally {
-        setUploading(false);
-      }
+        if (!res.ok) { setErr("Upload failed"); return; }
+        onSuccess(dataUrl);
+        setOk(true);
+        setTimeout(() => setOk(false), 2500);
+      } catch { setErr("Upload failed"); }
+      finally { setLoading(false); }
     };
     reader.readAsDataURL(file);
   }
 
-  async function handleRemoveImage() {
-    await fetch(`/api/sites/${siteId}/image`, { method: "DELETE" });
+  function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    void uploadImage(file, "hero", onHeroImageChange, setUploadError, setUploading, setHeroSuccess);
+  }
+
+  function handleAboutFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    void uploadImage(file, "about", onAboutImageChange, setAboutError, setAboutUploading, setAboutSuccess);
+  }
+
+  async function handleRemoveHeroImage() {
+    await fetch(`/api/sites/${siteId}/image`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section: "hero", image: null }),
+    });
     onHeroImageChange(null);
+  }
+
+  async function handleRemoveAboutImage() {
+    await fetch(`/api/sites/${siteId}/image`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ section: "about", image: null }),
+    });
+    onAboutImageChange(null);
   }
 
   return (
@@ -366,7 +398,7 @@ function ThemesPanel({
       {/* Hero Image */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
-          Hero Image
+          🖼️ Hero Image
         </p>
         <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-3" style={{ aspectRatio: "16/7" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -386,19 +418,20 @@ function ThemesPanel({
           </button>
           {currentHeroImageUrl && (
             <button
-              onClick={handleRemoveImage}
+              onClick={handleRemoveHeroImage}
               className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
             >
               Remove
             </button>
           )}
         </div>
-        {!currentHeroImageUrl && (
+        {heroSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ Hero image updated!</p>}
+        {!currentHeroImageUrl && !heroSuccess && (
           <p className="text-[10px] text-[#4b5563] mt-1.5">Using industry photo. Upload to customise.</p>
         )}
-        {currentHeroImageUrl && (
+        {currentHeroImageUrl && !heroSuccess && (
           <button
-            onClick={handleRemoveImage}
+            onClick={handleRemoveHeroImage}
             className="text-[10px] text-[#4b5563] hover:text-[#9ca3af] mt-1.5 transition-colors"
           >
             ↩ Use industry photo
@@ -412,7 +445,56 @@ function ThemesPanel({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={handleFileUpload}
+          onChange={handleHeroFileChange}
+        />
+      </div>
+
+      {/* About Image */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
+          📷 About Image
+        </p>
+        {currentAboutImageUrl ? (
+          <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-3" style={{ aspectRatio: "4/3", maxHeight: 120 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={currentAboutImageUrl} alt="About" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div
+            className="rounded-xl border border-dashed border-white/[0.15] mb-3 flex items-center justify-center"
+            style={{ height: 80 }}
+          >
+            <span className="text-[11px] text-[#4b5563]">No about image</span>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => aboutFileRef.current?.click()}
+            disabled={aboutUploading}
+            className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50"
+          >
+            {aboutUploading ? "Uploading…" : "📷 Upload About Photo"}
+          </button>
+          {currentAboutImageUrl && (
+            <button
+              onClick={handleRemoveAboutImage}
+              className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+        {aboutSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ About image updated!</p>}
+        {!currentAboutImageUrl && !aboutSuccess && (
+          <p className="text-[10px] text-[#4b5563] mt-1.5">Shows beside your About section text.</p>
+        )}
+        {aboutError && <p className="text-[10px] text-red-400 mt-1.5">{aboutError}</p>}
+        <input
+          ref={aboutFileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleAboutFileChange}
         />
       </div>
     </div>
@@ -775,7 +857,8 @@ export function SiteEditor({
   const [currentTheme, setCurrentTheme]       = useState<ThemeConfig>(theme);
   const [currentThemeKey, setCurrentThemeKey] = useState<string>("");
   const [currentTemplate, setCurrentTemplate] = useState<string>(site.template ?? "darkpremium");
-  const [heroImageUrl, setHeroImageUrl]       = useState<string | null>(initialHeroImageUrl ?? null);
+  const [heroImageUrl, setHeroImageUrl]       = useState<string | null>(initialHeroImageUrl ?? site.heroImage ?? null);
+  const [aboutImageUrl, setAboutImageUrl]     = useState<string | null>(site.aboutImage ?? null);
   const [isSaving, setIsSaving]               = useState(false);
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
   const [saveError, setSaveError]             = useState(false);
@@ -819,7 +902,8 @@ export function SiteEditor({
         site={{ ...site, template: site.template ?? "darkpremium" }}
         content={content}
         theme={theme}
-        heroImageUrl={initialHeroImageUrl}
+        heroImageUrl={initialHeroImageUrl ?? site.heroImage}
+        aboutImageUrl={site.aboutImage}
       />
     );
   }
@@ -842,6 +926,10 @@ export function SiteEditor({
 
   function handleHeroImageChange(url: string | null) {
     setHeroImageUrl(url);
+  }
+
+  function handleAboutImageChange(url: string | null) {
+    setAboutImageUrl(url);
   }
 
   const panelOpen = activePanel !== null;
@@ -998,8 +1086,10 @@ export function SiteEditor({
               onSelectTemplate={handleSelectTemplate}
               siteId={siteId}
               currentHeroImageUrl={heroImageUrl}
+              currentAboutImageUrl={aboutImageUrl}
               industry={site.industry}
               onHeroImageChange={handleHeroImageChange}
+              onAboutImageChange={handleAboutImageChange}
             />
           )}
           {activePanel === "content" && (
@@ -1061,7 +1151,8 @@ export function SiteEditor({
           site={{ ...site, template: currentTemplate }}
           content={currentContent}
           theme={currentTheme}
-          heroImageUrl={heroImageUrl ?? undefined}
+          heroImageUrl={heroImageUrl}
+          aboutImageUrl={aboutImageUrl}
         />
       </div>
     </>

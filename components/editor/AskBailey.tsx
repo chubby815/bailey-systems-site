@@ -30,11 +30,26 @@ export interface AskBaileyProps {
 const LIMITS: Record<string, number> = { starter: 3, growth: 15, pro: Infinity };
 
 const QUICK_PROMPTS = [
-  "Make hero more premium",
+  "Change background to black",
+  "Make headline color yellow",
+  "Change navbar to dark",
+  "Change font to bold",
+  "Make buttons pill shaped",
+  "Change primary color to gold",
+  "Change cards to dark blue",
   "Rewrite my headline",
-  "Add testimonials section",
-  "Change button to gold",
-  "Make services look better",
+  "Make hero more premium",
+  "Rewrite service descriptions",
+  "Change button text to Get Started",
+  "Make about section more compelling",
+  "Change CTA headline to something powerful",
+  "Change font to modern",
+  "Change font to minimal",
+  "Make headline bigger",
+  "Make headline smaller",
+  "Change text color to white",
+  "Change button color to purple",
+  "Make background white",
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -326,19 +341,35 @@ export function AskBailey({ siteData, plan, onPreview, onApply }: AskBaileyProps
         <p className="text-[11px] text-[#6b7280]">Edit your site with plain English</p>
       </div>
 
-      {/* Quick prompts (show when no messages yet) */}
+      {/* Quick prompts (show when no messages yet) — 2-row horizontal scroll */}
       {messages.length === 0 && !atLimit && (
-        <div className="px-4 py-3 flex flex-wrap gap-1.5 border-b border-white/[0.05]">
-          {QUICK_PROMPTS.map((p) => (
-            <button
-              key={p}
-              onClick={() => void send(p)}
-              disabled={loading}
-              className="text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.10] text-[#9ca3af] hover:border-[#00e5a0]/40 hover:text-[#00e5a0] hover:bg-[#00e5a0]/[0.04] disabled:opacity-40 transition-all"
-            >
-              {p}
-            </button>
-          ))}
+        <div
+          className="border-b border-white/[0.05] py-2.5"
+          style={{ overflowX: "auto", overflowY: "hidden" }}
+        >
+          <div
+            style={{
+              display:             "grid",
+              gridTemplateRows:    "repeat(2, auto)",
+              gridAutoFlow:        "column",
+              gridAutoColumns:     "max-content",
+              gap:                 "6px",
+              paddingLeft:         "16px",
+              paddingRight:        "16px",
+              width:               "max-content",
+            }}
+          >
+            {QUICK_PROMPTS.map((p) => (
+              <button
+                key={p}
+                onClick={() => void send(p)}
+                disabled={loading}
+                className="text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.10] text-[#9ca3af] hover:border-[#00e5a0]/40 hover:text-[#00e5a0] hover:bg-[#00e5a0]/[0.04] disabled:opacity-40 transition-all whitespace-nowrap"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

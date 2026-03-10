@@ -8,11 +8,12 @@ import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 
 export type TemplateProps = {
-  site:          SiteRecord;
-  content:       StructuredSiteContent;
-  primaryColor:  string;
-  heroImageUrl?: string;
-  theme?:        ThemeConfig;
+  site:           SiteRecord;
+  content:        StructuredSiteContent;
+  primaryColor:   string;
+  heroImageUrl?:  string;
+  aboutImageUrl?: string;
+  theme?:         ThemeConfig;
 };
 
 const BLACK  = "#1a1a1a";
@@ -286,11 +287,12 @@ function Services({ content, primaryColor, location, bg }: {
 }
 
 // ── About (two-column editorial) ──────────────────────────────────────────────
-function About({ content, site, primaryColor, bg }: {
+function About({ content, site, primaryColor, bg, aboutImageUrl }: {
   content: StructuredSiteContent["about"];
   site: SiteRecord;
   primaryColor: string;
   bg: string;
+  aboutImageUrl?: string;
 }) {
   return (
     <section id="about" style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
@@ -302,26 +304,23 @@ function About({ content, site, primaryColor, bg }: {
 
       <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
         <div className="mg-about-grid" style={{ display: "flex", gap: "6rem", alignItems: "flex-start", flexWrap: "wrap" }}>
-          {/* Left: editorial image placeholder */}
+          {/* Left: about image (uploaded) or editorial gradient placeholder */}
           <div style={{ flex: "1 1 300px" }}>
-            <div style={{
-              aspectRatio: "3/4", backgroundImage: `linear-gradient(160deg, ${primaryColor}22, ${primaryColor}08)`,
-              borderBottom: `4px solid ${primaryColor}`, position: "relative",
-              overflow: "hidden", maxWidth: "360px",
-            }}>
+            {aboutImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={aboutImageUrl} alt="About" style={{ width: "100%", maxWidth: "360px", maxHeight: "400px", objectFit: "cover", borderBottom: `4px solid ${primaryColor}`, borderRadius: "4px", display: "block" }} />
+            ) : (
               <div style={{
-                position: "absolute", inset: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                aspectRatio: "3/4", backgroundImage: `linear-gradient(160deg, ${primaryColor}22, ${primaryColor}08)`,
+                borderBottom: `4px solid ${primaryColor}`, position: "relative",
+                overflow: "hidden", maxWidth: "360px",
               }}>
-                <span style={{ fontSize: "6rem", opacity: 0.12 }}>🏆</span>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "6rem", opacity: 0.12 }}>🏆</span>
+                </div>
+                <div style={{ position: "absolute", bottom: "1rem", left: "1rem", fontFamily: FF_SAN, fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: primaryColor }}>About Us</div>
               </div>
-              <div style={{
-                position: "absolute", bottom: "1rem", left: "1rem",
-                fontFamily: FF_SAN, fontSize: "0.68rem", fontWeight: 700,
-                textTransform: "uppercase", letterSpacing: "0.1em",
-                color: primaryColor,
-              }}>About Us</div>
-            </div>
+            )}
           </div>
 
           {/* Right: heading + body + pull quote + stats */}
@@ -509,7 +508,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MagazineLayout({ site, content, primaryColor, heroImageUrl, theme }: TemplateProps) {
+export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#fafaf8";
   const SURFACE = theme?.surface ?? "#fafaf8";
   return (
@@ -525,7 +524,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, them
           industry={site.industry}
         />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
-        <About content={content.about} site={site} primaryColor={primaryColor} bg="#fff" />
+        <About content={content.about} site={site} primaryColor={primaryColor} bg="#fff" aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} />
         <CTA
           content={content.cta}

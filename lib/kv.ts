@@ -96,6 +96,10 @@ export type SiteRecord = {
   subdomainSlug?: string;
   /** Whether the owner opted in to an AI chat assistant on their site */
   enableChat?: boolean;
+  /** User-uploaded hero section background image — stored as base64 data URL */
+  heroImage?: string;
+  /** User-uploaded about section side image — stored as base64 data URL */
+  aboutImage?: string;
 };
 
 /** Save a generated site to Redis */
