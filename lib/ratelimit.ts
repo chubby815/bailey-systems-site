@@ -8,6 +8,7 @@ export interface RateLimitResult {
 
 /**
  * Fixed-window rate limiter backed by Upstash Redis.
+ * Uses atomic INCR to eliminate the read-then-write race condition.
  * @param identifier  Unique key (e.g. user email or IP address)
  * @param limit       Max requests allowed in the window
  * @param windowSecs  Window duration in seconds
@@ -17,21 +18,29 @@ export async function rateLimit(
   limit: number,
   windowSecs: number
 ): Promise<RateLimitResult> {
-  const window = Math.floor(Date.now() / 1000 / windowSecs);
-  const key = `rl:${identifier}:${window}`;
+  try {
+    const window = Math.floor(Date.now() / 1000 / windowSecs);
+    const key = `rl:${identifier}:${window}`;
 
-  const current = (await kv.get<number>(key)) ?? 0;
+    // INCR is atomic — no race condition between read and write
+    const count = await kv.incr(key);
 
-  if (current >= limit) {
+    // Set expiry only on the first increment so the key auto-expires
+    if (count === 1) {
+      await kv.expire(key, windowSecs);
+    }
+
     const resetInSeconds = windowSecs - (Math.floor(Date.now() / 1000) % windowSecs);
-    return { allowed: false, remaining: 0, resetInSeconds };
+    const allowed = count <= limit;
+
+    return {
+      allowed,
+      remaining: Math.max(0, limit - count),
+      resetInSeconds,
+    };
+  } catch {
+    // If Redis is unavailable, fail open so requests aren't blocked
+    console.error("[rateLimit] Redis error — failing open");
+    return { allowed: true, remaining: 0, resetInSeconds: 0 };
   }
-
-  await kv.set(key, current + 1, { ex: windowSecs });
-
-  return {
-    allowed: true,
-    remaining: limit - current - 1,
-    resetInSeconds: windowSecs - (Math.floor(Date.now() / 1000) % windowSecs),
-  };
 }

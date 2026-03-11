@@ -250,6 +250,18 @@ CRITICAL RULES:
       theme:   parsed.updatedSiteData?.theme   ?? incoming.theme   ?? {},
     };
 
+    // Increment monthly usage counter after every successful AI generation.
+    // Pro users are unlimited (Infinity) so we skip the write for them.
+    if (limit !== Infinity) {
+      try {
+        const key     = usageKey(session.email);
+        const current = await getUsage(session.email);
+        await kv.set(key, current + 1, { ex: 60 * 60 * 24 * 35 }); // 35-day TTL covers full month
+      } catch (err) {
+        console.error("[ask-bailey] usage increment failed:", err);
+      }
+    }
+
     return NextResponse.json({
       summary:         parsed.summary ?? "Changes applied.",
       changes:         Array.isArray(parsed.changes) ? parsed.changes : [],
