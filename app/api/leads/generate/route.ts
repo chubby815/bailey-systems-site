@@ -218,9 +218,9 @@ export async function POST(req: NextRequest) {
   // Plan check — Growth or Pro only
   const plan = await getActivePlan(session.email);
   if (!plan) return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
-  if (plan === "starter") {
+  if (plan !== "pro") {
     return NextResponse.json(
-      { error: "plan_required", message: "Lead Hunter requires a Growth or Pro plan." },
+      { error: "plan_required", message: "Lead Hunter requires a Pro plan." },
       { status: 403 }
     );
   }

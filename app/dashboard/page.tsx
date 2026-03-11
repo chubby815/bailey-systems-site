@@ -195,8 +195,8 @@ export default async function DashboardPage() {
                   name: "Lead Hunter",
                   desc: "Find qualified leads with outreach copy.",
                   href: "/dashboard/leads",
-                  available: plan === "growth" || plan === "pro",
-                  lockedBadge: "growth_plus" as const,
+                  available: plan === "pro",
+                  lockedBadge: "pro_only" as const,
                   color: "blue",
                 },
                 {

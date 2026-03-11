@@ -14,7 +14,7 @@ export default async function LeadsPage() {
   const plan = await getActivePlan(session.email).catch(() => null);
   if (!plan) redirect("/pricing?reason=subscription_required");
 
-  const locked = plan === "starter";
+  const locked = plan !== "pro";
 
   return (
     <main className="min-h-screen bg-[#08090a] text-white">
