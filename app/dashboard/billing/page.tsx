@@ -13,7 +13,13 @@ const PLAN_COLORS = {
   pro:     "text-blue-400 bg-blue-400/10 border-blue-400/20",
 } as const;
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
+  const isPastDue = reason === "past_due";
   let session = null;
   try { session = await getSessionFromCookies(); } catch { session = null; }
   if (!session) redirect("/login?redirect=/dashboard/billing");
@@ -70,6 +76,21 @@ export default async function BillingPage() {
             </h1>
             <p className="text-gray-500 text-sm">Manage your subscription, payment method, and invoices.</p>
           </div>
+
+          {/* Past-due payment banner */}
+          {isPastDue && (
+            <div className="bg-red-500/10 border border-red-500/40 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-red-400 font-bold text-sm mb-1">
+                  ⚠️ Payment Failed
+                </div>
+                <p className="text-xs text-red-300/80 leading-relaxed">
+                  Your last payment failed. Please update your payment method to keep access to your account.
+                </p>
+              </div>
+              <BillingPortalButton />
+            </div>
+          )}
 
           {/* Current plan card */}
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl p-6 mb-5">

@@ -18,6 +18,11 @@ function planFromPriceId(priceId: string | undefined | null): "starter" | "growt
 }
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error("[webhook] STRIPE_WEBHOOK_SECRET is not set");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
   const rawBody = await req.text();
   const sig = req.headers.get("stripe-signature");
 

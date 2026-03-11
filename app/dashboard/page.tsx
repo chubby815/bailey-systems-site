@@ -21,6 +21,11 @@ export default async function DashboardPage() {
     getMonthlyUsage(session.email).catch(() => 0),
   ]);
 
+  // Past-due payments → send to billing to update payment method
+  if (subscription?.status === "past_due") {
+    redirect("/dashboard/billing?reason=past_due");
+  }
+
   // No active subscription → send to pricing
   if (!plan || subscription?.status === "canceled") {
     redirect("/pricing?reason=subscription_required");

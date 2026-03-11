@@ -51,7 +51,8 @@ export async function getUserPlan(
   email: string
 ): Promise<SubscriptionRecord["plan"]> {
   const record = await getSubscriptionByEmail(email);
-  if (!record || record.status === "canceled") return null;
+  if (!record) return null;
+  if (record.status === "canceled" || record.status === "past_due") return null;
   return record.plan;
 }
 
