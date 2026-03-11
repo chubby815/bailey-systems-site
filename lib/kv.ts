@@ -252,16 +252,48 @@ export async function deletePasswordResetToken(token: string): Promise<void> {
 
 // ── Sites ─────────────────────────────────────────────────────────────────────
 
-/** Get all sites belonging to a specific user, sorted newest first */
+/** Get all sites belonging to a specific user, sorted newest first.
+ *  Strips heroImage / aboutImage base64 data from the list view to avoid
+ *  hitting Upstash's 10 MB mget limit. Full images are still in Redis and
+ *  are loaded individually via getSite() when the editor opens. */
 export async function getUserSites(email: string): Promise<SiteRecord[]> {
   try {
     const keys = await kv.keys("site:*");
-    if (!keys.length) return [];
-    const values = await kv.mget<(SiteRecord | null)[]>(...keys);
-    return values
-      .filter((s): s is SiteRecord => s !== null && s.userId?.toLowerCase() === email.toLowerCase())
+    // Exclude legacy per-field image keys (site:{id}:hero-image, etc.)
+    const siteKeys = keys.filter(
+      (k) => !k.includes(":hero-image") && !k.includes(":about-image")
+    );
+    if (!siteKeys.length) return [];
+
+    // Fetch in batches of 10 to stay well under the 10 MB request limit
+    const BATCH = 10;
+    const allValues: (SiteRecord | null)[] = [];
+    for (let i = 0; i < siteKeys.length; i += BATCH) {
+      const batch = siteKeys.slice(i, i + BATCH);
+      try {
+        const chunk = await kv.mget<(SiteRecord | null)[]>(...batch);
+        allValues.push(...chunk);
+      } catch (batchErr) {
+        console.error("[getUserSites] batch mget failed:", batchErr);
+        // Skip this batch rather than returning nothing
+      }
+    }
+
+    return allValues
+      .filter(
+        (s): s is SiteRecord =>
+          s !== null && s.userId?.toLowerCase() === email.toLowerCase()
+      )
+      .map((s) => ({
+        ...s,
+        // Strip large base64 blobs from the list view
+        heroImage:  s.heroImage  ? "[uploaded]" : undefined,
+        aboutImage: s.aboutImage ? "[uploaded]" : undefined,
+      }))
       .sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() -
+          new Date(a.createdAt ?? 0).getTime()
       );
   } catch (err) {
     console.error("[getUserSites] Redis error:", err);
