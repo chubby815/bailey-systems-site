@@ -459,10 +459,12 @@ function Testimonials({ content, bg }: { content: StructuredSiteContent["testimo
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, contactEmail, contactPhone }: {
+function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
   content: StructuredSiteContent["cta"];
   contactEmail?: string;
   contactPhone?: string;
+  businessName?: string;
+  siteId?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -493,7 +495,9 @@ function CTA({ content, contactEmail, contactPhone }: {
         )}
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
           <ContactFormBlock
-            contactEmail={contactEmail}
+            businessEmail={contactEmail}
+            businessName={businessName}
+            siteId={siteId}
             fontFamily={FF_SAN}
             labelStyle={{ color: "rgba(255,255,255,0.75)" }}
             inputStyle={{
@@ -570,7 +574,7 @@ export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, them
         <Services content={content.services} location={site.location} bg={BG} />
         <About content={content.about} site={site} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} bg={BG} />
-        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
+        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} />
         <Footer site={site} />
       </div>
     </>

@@ -437,12 +437,14 @@ function Testimonials({ content, primaryColor }: {
 }
 
 // ── CTA (full bleed image background) ─────────────────────────────────────────
-function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone }: {
+function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone, businessName, siteId }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   heroImageUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
+  businessName?: string;
+  siteId?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -478,7 +480,9 @@ function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone }
         </p>
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
           <ContactFormBlock
-            contactEmail={contactEmail}
+            businessEmail={contactEmail}
+            businessName={businessName}
+            siteId={siteId}
             fontFamily={FF_SAN}
             labelStyle={{ color: "rgba(255,255,255,0.7)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}
             inputStyle={{
@@ -554,6 +558,8 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
           heroImageUrl={heroImageUrl}
           contactEmail={site.contactEmail}
           contactPhone={site.contactPhone}
+          businessName={site.businessName}
+          siteId={site.siteId}
         />
         <Footer site={site} primaryColor={primaryColor} />
       </div>

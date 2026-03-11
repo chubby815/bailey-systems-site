@@ -504,10 +504,12 @@ function Testimonials({ content, surface, bg }: { content: StructuredSiteContent
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, contactEmail, contactPhone }: {
+function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
   content: StructuredSiteContent["cta"];
   contactEmail?: string;
   contactPhone?: string;
+  businessName?: string;
+  siteId?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -533,7 +535,9 @@ function CTA({ content, contactEmail, contactPhone }: {
         </p>
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
           <ContactFormBlock
-            contactEmail={contactEmail}
+            businessEmail={contactEmail}
+            businessName={businessName}
+            siteId={siteId}
             fontFamily={FF}
             labelStyle={{ color: BLACK, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}
             inputStyle={{
@@ -601,7 +605,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />
         <About content={content.about} site={site} bg={BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} surface={SURFACE} bg={BG} />
-        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} />
+        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} />
         <Footer site={site} surface={SURFACE} />
       </div>
     </>

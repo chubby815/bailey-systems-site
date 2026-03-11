@@ -502,12 +502,14 @@ function StatsRow({ content, site, primaryColor, card }: {
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone, card }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, card, businessName, siteId }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
   contactPhone?: string;
   card: string;
+  businessName?: string;
+  siteId?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -533,7 +535,9 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card }: {
         </p>
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
           <ContactFormBlock
-            contactEmail={contactEmail}
+            businessEmail={contactEmail}
+            businessName={businessName}
+            siteId={siteId}
             fontFamily={FF}
             labelStyle={{ color: "#9ca3af" }}
             inputStyle={{
@@ -604,7 +608,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
         <About content={content.about} site={site} primaryColor={primaryColor} card={CARD} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} businessName={site.businessName} siteId={site.siteId} />
         <Footer site={site} primaryColor={primaryColor} />
       </div>
     </>

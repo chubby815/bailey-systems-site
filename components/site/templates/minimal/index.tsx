@@ -393,12 +393,14 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone, bg }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessName, siteId }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
   contactPhone?: string;
   bg: string;
+  businessName?: string;
+  siteId?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -423,7 +425,9 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, bg }: {
         </p>
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
           <ContactFormBlock
-            contactEmail={contactEmail}
+            businessEmail={contactEmail}
+            businessName={businessName}
+            siteId={siteId}
             fontFamily={FF}
             labelStyle={{ color: "#374151" }}
             inputStyle={{
@@ -488,7 +492,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
         <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} businessName={site.businessName} siteId={site.siteId} />
         <Footer site={site} primaryColor={primaryColor} bg={BG} />
       </div>
     </>
