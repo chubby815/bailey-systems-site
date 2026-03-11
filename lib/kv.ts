@@ -183,6 +183,75 @@ export async function getFacebookPage(
   }
 }
 
+// ── User record shape ─────────────────────────────────────────────────────────
+
+export interface UserRecord {
+  email: string;
+  passwordHash: string;
+  name: string;
+  emailVerified: boolean;
+  createdAt: string;
+  googleId?: string;
+}
+
+export async function getUser(email: string): Promise<UserRecord | null> {
+  try {
+    return await kv.get<UserRecord>(`user:${email.toLowerCase()}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveUser(user: UserRecord): Promise<void> {
+  try {
+    await kv.set(`user:${user.email.toLowerCase()}`, user);
+  } catch (err) {
+    console.error("[saveUser] Redis error:", err);
+  }
+}
+
+export async function setEmailVerificationToken(email: string, token: string): Promise<void> {
+  try {
+    await kv.set(`verify:${token}`, email.toLowerCase(), { ex: 60 * 60 * 24 });
+  } catch (err) {
+    console.error("[setEmailVerificationToken] Redis error:", err);
+  }
+}
+
+export async function getEmailVerificationToken(token: string): Promise<string | null> {
+  try {
+    return await kv.get<string>(`verify:${token}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteEmailVerificationToken(token: string): Promise<void> {
+  try { await kv.del(`verify:${token}`); } catch {}
+}
+
+export async function setPasswordResetToken(email: string, token: string): Promise<void> {
+  try {
+    await kv.set(`reset:${token}`, email.toLowerCase(), { ex: 60 * 60 });
+  } catch (err) {
+    console.error("[setPasswordResetToken] Redis error:", err);
+  }
+}
+
+export async function getPasswordResetToken(token: string): Promise<string | null> {
+  try {
+    return await kv.get<string>(`reset:${token}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function deletePasswordResetToken(token: string): Promise<void> {
+  try { await kv.del(`reset:${token}`); } catch {}
+}
+
+// ── Sites ─────────────────────────────────────────────────────────────────────
+
 /** Get all sites belonging to a specific user, sorted newest first */
 export async function getUserSites(email: string): Promise<SiteRecord[]> {
   try {
