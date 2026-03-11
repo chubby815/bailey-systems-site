@@ -18,8 +18,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const subscription = await getSubscriptionByEmail(session.email);
+  let subscription = await getSubscriptionByEmail(session.email);
+
+  // Fix 1 — If customerId is missing but subscriptionId exists, try to recover
+  // the customer ID directly from Stripe before giving up.
+  if (subscription && !subscription.customerId && subscription.subscriptionId) {
+    console.log("[stripe/portal] customerId missing, attempting recovery for:", session.email);
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(subscription.subscriptionId);
+      if (stripeSub?.customer) {
+        const recoveredCustomerId = stripeSub.customer as string;
+        const recovered = { ...subscription, customerId: recoveredCustomerId };
+        await kv.set(`sub:${session.email}`, recovered);
+        subscription = recovered;
+        console.log("[stripe/portal] recovered customerId for:", session.email, recoveredCustomerId);
+      }
+    } catch (recoverErr) {
+      console.error("[stripe/portal] could not recover customerId:", recoverErr);
+    }
+  }
+
+  // Fix 3 — Detailed logging before the 404 so we know exactly what's in Redis
   if (!subscription?.customerId) {
+    console.error("[stripe/portal] no customerId for:", session.email, subscription);
     return NextResponse.json(
       { error: "No active subscription found. Please subscribe first." },
       { status: 404 }
