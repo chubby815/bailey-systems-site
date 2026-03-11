@@ -3,6 +3,9 @@ import { stripe } from "@/lib/stripe";
 import { kv } from "@/lib/kv";
 import Stripe from "stripe";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
 // ── Price ID → plan name ───────────────────────────────────────────────────────

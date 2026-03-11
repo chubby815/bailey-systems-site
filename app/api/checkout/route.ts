@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { rateLimit } from "@/lib/ratelimit";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
+  apiVersion: "2026-02-25.clover",
 });
 
 // Product price mappings — replace with actual Stripe Price IDs before enabling
