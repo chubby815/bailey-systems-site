@@ -347,7 +347,7 @@ Required JSON structure:
 
   if (typeof editSiteId === "string" && editSiteId.trim()) {
     const existingSite = await import("@/lib/kv").then((m) => m.getSite(editSiteId));
-    if (existingSite && existingSite.userId !== session.email) {
+    if (existingSite && existingSite.userId?.toLowerCase() !== session.email.toLowerCase()) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     // Preserve the existing slug on regeneration, or derive from current name
@@ -370,7 +370,7 @@ Required JSON structure:
 
   const siteData: SiteRecord = {
     siteId,
-    userId:            session.email,
+    userId:            session.email.toLowerCase(),
     businessName:      cleanName,
     industry:          cleanInd,
     location:          cleanLoc,

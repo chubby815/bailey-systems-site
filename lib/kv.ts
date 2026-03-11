@@ -259,7 +259,7 @@ export async function getUserSites(email: string): Promise<SiteRecord[]> {
     if (!keys.length) return [];
     const values = await kv.mget<(SiteRecord | null)[]>(...keys);
     return values
-      .filter((s): s is SiteRecord => s !== null && s.userId === email)
+      .filter((s): s is SiteRecord => s !== null && s.userId?.toLowerCase() === email.toLowerCase())
       .sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );

@@ -20,7 +20,7 @@ export async function GET(
     return NextResponse.json({ error: "Site not found" }, { status: 404 });
   }
 
-  if (site.userId !== session.email) {
+  if (site.userId?.toLowerCase() !== session.email?.toLowerCase()) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -43,7 +43,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Site not found" }, { status: 404 });
   }
 
-  if (site.userId !== session.email) {
+  if (site.userId?.toLowerCase() !== session.email?.toLowerCase()) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -61,7 +61,7 @@ export async function PATCH(
   const { siteId } = await params;
   const site = await getSite(siteId);
   if (!site)                         return NextResponse.json({ error: "Site not found" }, { status: 404 });
-  if (site.userId !== session.email) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (site.userId?.toLowerCase() !== session.email?.toLowerCase()) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (!isStructuredContent(site.generatedContent)) {
     return NextResponse.json({ error: "Legacy sites cannot be edited in the visual editor" }, { status: 400 });
   }
