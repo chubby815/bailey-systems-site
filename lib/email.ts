@@ -22,7 +22,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   const resend = new Resend(process.env.RESEND_API_KEY);
   const url = `${BASE_URL}/api/auth/verify-email?token=${token}`;
   await resend.emails.send({
-    from: "Bailey Agents <onboarding@resend.dev>",
+    from: "Bailey Agents <noreply@baileyagents.com>",
     to: email,
     subject: "Verify your Bailey Agents account",
     html: emailWrap(`
@@ -44,7 +44,7 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   const resend = new Resend(process.env.RESEND_API_KEY);
   const url = `${BASE_URL}/reset-password?token=${token}`;
   await resend.emails.send({
-    from: "Bailey Agents <onboarding@resend.dev>",
+    from: "Bailey Agents <noreply@baileyagents.com>",
     to: email,
     subject: "Reset your Bailey Agents password",
     html: emailWrap(`

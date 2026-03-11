@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
-      from: "Bailey Agents <onboarding@resend.dev>",
+      from: "Bailey Agents <noreply@baileyagents.com>",
       to: businessEmail,
       subject: `New message from your website`,
       html: `
