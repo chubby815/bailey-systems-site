@@ -1,7 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileyagents.com";
 
 const emailWrap = (body: string) => `
@@ -21,6 +19,7 @@ const emailWrap = (body: string) => `
 `;
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const url = `${BASE_URL}/api/auth/verify-email?token=${token}`;
   await resend.emails.send({
     from: "Bailey Agents <onboarding@resend.dev>",
@@ -42,6 +41,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 }
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const url = `${BASE_URL}/reset-password?token=${token}`;
   await resend.emails.send({
     from: "Bailey Agents <onboarding@resend.dev>",
