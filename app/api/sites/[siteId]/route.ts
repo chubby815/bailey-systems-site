@@ -62,10 +62,6 @@ export async function PATCH(
   const site = await getSite(siteId);
   if (!site)                         return NextResponse.json({ error: "Site not found" }, { status: 404 });
   if (site.userId?.toLowerCase() !== session.email?.toLowerCase()) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  if (!isStructuredContent(site.generatedContent)) {
-    return NextResponse.json({ error: "Legacy sites cannot be edited in the visual editor" }, { status: 400 });
-  }
-
   let body: { content?: StructuredSiteContent; theme?: ThemeConfig; template?: string };
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

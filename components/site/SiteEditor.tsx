@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useTransition } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
@@ -868,7 +868,6 @@ export function SiteEditor({
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
   const [saveError, setSaveError]             = useState(false);
   const hasChanges                            = useRef(false);
-  const [, startTransition]                   = useTransition();
 
   // ── Save function (must be declared before any early return per React rules) ──
   const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig, tmpl: string) => {
@@ -893,10 +892,10 @@ export function SiteEditor({
   useEffect(() => {
     if (!hasChanges.current) return;
     const timer = setTimeout(() => {
-      startTransition(() => { doSave(currentContent, currentTheme, currentTemplate); });
+      doSave(currentContent, currentTheme, currentTemplate);
     }, 800);
     return () => clearTimeout(timer);
-  }, [currentContent, currentTheme, currentTemplate, doSave, startTransition]);
+  }, [currentContent, currentTheme, currentTemplate, doSave]);
 
   // ── Clean site mode: no editor chrome ───────────────────────────────────
   // SiteEditor is only mounted by page.tsx when isOwner && editMode, but this
@@ -1157,24 +1156,38 @@ export function SiteEditor({
       </div>
 
       {/* ── Site preview (scrollable, below toolbar) ────────────────────────── */}
+      {/*
+        Outer shell: full-screen fixed layer starting at top:0.
+        Handles left/right panel transitions only.
+        Does NOT scroll — separating positioning from scrolling is what
+        makes position:sticky work reliably inside the inner scroll container.
+      */}
       <div
         style={{
-          position:   "fixed",
-          top:        `${BAR_H}px`,
-          left:       panelOpen ? `${PANEL_W}px` : "0",
-          right:      askBaileyOpen ? `${PANEL_W}px` : "0",
-          bottom:      0,
-          overflowY:  "auto",
-          transition: "left 0.25s ease, right 0.25s ease",
+          position:      "fixed",
+          top:            0,
+          left:          panelOpen ? `${PANEL_W}px` : "0",
+          right:         askBaileyOpen ? `${PANEL_W}px` : "0",
+          bottom:         0,
+          display:       "flex",
+          flexDirection: "column",
+          transition:    "left 0.25s ease, right 0.25s ease",
         }}
       >
-        <TemplateRenderer
-          site={{ ...site, template: currentTemplate }}
-          content={currentContent}
-          theme={currentTheme}
-          heroImageUrl={heroImageUrl}
-          aboutImageUrl={aboutImageUrl}
-        />
+        {/* Spacer that matches the toolbar height — pushes all content below the toolbar */}
+        <div style={{ flexShrink: 0, height: `${BAR_H}px` }} />
+
+        {/* Inner scroll container — sticky navbars stick at top:0 of THIS div,
+            which is visually at y=BAR_H on screen, directly below the toolbar */}
+        <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+          <TemplateRenderer
+            site={{ ...site, template: currentTemplate }}
+            content={currentContent}
+            theme={currentTheme}
+            heroImageUrl={heroImageUrl}
+            aboutImageUrl={aboutImageUrl}
+          />
+        </div>
       </div>
     </>
   );
