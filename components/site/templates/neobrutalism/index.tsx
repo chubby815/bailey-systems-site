@@ -633,7 +633,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
       <Styles primary={PRIMARY} />
       <div
         style={{
-          fontFamily: FF, background: BG, overflowX: "hidden",
+          fontFamily: FF, background: BG, overflowX: "clip",
           ["--nb-primary"  as string]: PRIMARY,
           ["--nb-body-color" as string]: BODY_COLOR,
         }}

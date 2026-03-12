@@ -572,7 +572,7 @@ export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, them
   return (
     <>
       <Styles btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "hidden" }}>
+      <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
         <Services content={content.services} location={site.location} bg={BG} />

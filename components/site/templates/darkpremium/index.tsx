@@ -612,7 +612,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
   return (
     <>
       <Styles p={primaryColor} card={CARD} />
-      <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "hidden" }}>
+      <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={navBackground} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />

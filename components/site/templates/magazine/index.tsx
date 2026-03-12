@@ -547,7 +547,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
   return (
     <>
       <Styles p={primaryColor} btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "hidden" }}>
+      <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
         <Hero
           content={content.hero}

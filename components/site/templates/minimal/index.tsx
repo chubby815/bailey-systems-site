@@ -489,7 +489,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
   return (
     <>
       <Styles p={primaryColor} offBg={OFF_BG} bg={BG} btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "hidden" }}>
+      <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />
