@@ -942,15 +942,29 @@ export function SiteEditor({
 
   return (
     <>
-      {/* ── Editor top bar ─────────────────────────────────────────────────── */}
+      {/* ── Editor shell: toolbar + scroll container in ONE flex column ──────
+          The toolbar is a flex child (height: BAR_H, never scrolls).
+          The scroll container is the next flex child (flex: 1, scrollable).
+          No spacer needed — the toolbar physically pushes content below it.
+          Template navbars (position:sticky, top:0) stick at the top of the
+          scroll container, which is visually right below the toolbar. ────── */}
       <div
         style={{
-          position:    "fixed",
-          top:          0,
-          left:         0,
-          right:        0,
+          position:      "fixed",
+          top:            0,
+          left:          panelOpen ? `${PANEL_W}px` : "0",
+          right:         askBaileyOpen ? `${PANEL_W}px` : "0",
+          bottom:         0,
+          display:       "flex",
+          flexDirection: "column",
+          transition:    "left 0.25s ease, right 0.25s ease",
+        }}
+      >
+      {/* ── Editor top bar (flex child — height is fixed, never scrolls) ──── */}
+      <div
+        style={{
           height:       `${BAR_H}px`,
-          zIndex:       200,
+          flexShrink:    0,
           background:   "#0d0e10",
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           display:      "flex",
@@ -1076,16 +1090,29 @@ export function SiteEditor({
             {isSaving ? "Saving…" : "View Live ↗"}
           </a>
         </div>
+      </div>{/* end toolbar */}
+
+      {/* ── Scroll container — fills remaining height of the flex column ─── */}
+      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+        <TemplateRenderer
+          site={{ ...site, template: currentTemplate }}
+          content={currentContent}
+          theme={currentTheme}
+          heroImageUrl={heroImageUrl}
+          aboutImageUrl={aboutImageUrl}
+        />
       </div>
+
+      </div>{/* end editor shell */}
 
       {/* ── Side panel ──────────────────────────────────────────────────────── */}
       <div
         style={{
           position:   "fixed",
-          top:        `${BAR_H}px`,
+          top:         0,
           left:        0,
           width:      `${PANEL_W}px`,
-          height:     `calc(100vh - ${BAR_H}px)`,
+          height:      "100vh",
           zIndex:      150,
           background:  "#111214",
           borderRight: "1px solid rgba(255,255,255,0.07)",
@@ -1124,10 +1151,10 @@ export function SiteEditor({
       <div
         style={{
           position:    "fixed",
-          top:         `${BAR_H}px`,
+          top:          0,
           right:        0,
           width:       `${PANEL_W}px`,
-          height:      `calc(100vh - ${BAR_H}px)`,
+          height:       "100vh",
           zIndex:       150,
           background:   "#111214",
           borderLeft:   "1px solid rgba(255,255,255,0.07)",
@@ -1155,40 +1182,6 @@ export function SiteEditor({
         />
       </div>
 
-      {/* ── Site preview (scrollable, below toolbar) ────────────────────────── */}
-      {/*
-        Outer shell: full-screen fixed layer starting at top:0.
-        Handles left/right panel transitions only.
-        Does NOT scroll — separating positioning from scrolling is what
-        makes position:sticky work reliably inside the inner scroll container.
-      */}
-      <div
-        style={{
-          position:      "fixed",
-          top:            0,
-          left:          panelOpen ? `${PANEL_W}px` : "0",
-          right:         askBaileyOpen ? `${PANEL_W}px` : "0",
-          bottom:         0,
-          display:       "flex",
-          flexDirection: "column",
-          transition:    "left 0.25s ease, right 0.25s ease",
-        }}
-      >
-        {/* Spacer that matches the toolbar height — pushes all content below the toolbar */}
-        <div style={{ flexShrink: 0, height: `${BAR_H}px` }} />
-
-        {/* Inner scroll container — sticky navbars stick at top:0 of THIS div,
-            which is visually at y=BAR_H on screen, directly below the toolbar */}
-        <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
-          <TemplateRenderer
-            site={{ ...site, template: currentTemplate }}
-            content={currentContent}
-            theme={currentTheme}
-            heroImageUrl={heroImageUrl}
-            aboutImageUrl={aboutImageUrl}
-          />
-        </div>
-      </div>
     </>
   );
 }
