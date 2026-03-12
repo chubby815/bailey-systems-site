@@ -131,12 +131,14 @@ function Navbar({ businessName, ctaText, primaryColor, navBackground }: { busine
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
+function Hero({ content, primaryColor, location, bg, heroImageUrl, theme, btnRadius }: {
   content: StructuredSiteContent["hero"];
   primaryColor: string;
   location: string;
   bg: string;
   heroImageUrl?: string;
+  theme?: ThemeConfig;
+  btnRadius?: string;
 }) {
   return (
     <section id="home" style={{
@@ -189,12 +191,17 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
 
         <h1 style={{
           fontFamily: FF, fontWeight: 700,
-          fontSize: "clamp(3rem, 8vw, 7rem)",
+          fontSize: "calc(var(--hero-size, clamp(3rem, 8vw, 7rem)) * var(--font-scale, 1))",
           lineHeight: 1.0, letterSpacing: "-0.04em",
-          color: C_HEADING, marginBottom: "1.75rem",
-          backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
+          marginBottom: "1.75rem",
+          ...(theme?.headingColor
+            ? { color: theme.headingColor }
+            : {
+                backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                backgroundClip: "text", color: "transparent",
+              }
+          ),
         }}>
           {content.headline}
         </h1>
@@ -211,13 +218,13 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
           <a href="#contact" style={{
             background: primaryColor, color: C_BTN,
             fontFamily: FF, fontWeight: 700, fontSize: "1rem",
-            padding: "14px 36px", borderRadius: "12px", textDecoration: "none",
+            padding: "14px 36px", borderRadius: btnRadius ?? "12px", textDecoration: "none",
             boxShadow: `0 8px 40px ${primaryColor}44`,
           }}>{content.ctaText}</a>
           <a href="#services" style={{
             background: "rgba(255,255,255,0.04)", color: "#ffffff",
             fontFamily: FF, fontWeight: 600, fontSize: "1rem",
-            padding: "14px 36px", borderRadius: "12px", textDecoration: "none",
+            padding: "14px 36px", borderRadius: btnRadius ?? "12px", textDecoration: "none",
             border: "1px solid rgba(255,255,255,0.12)",
             backdropFilter: "blur(8px)",
           }}>Explore Services →</a>
@@ -502,7 +509,7 @@ function StatsRow({ content, site, primaryColor, card }: {
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone, card, businessName, siteId }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, card, businessName, siteId, btnRadius }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
@@ -510,6 +517,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card, business
   card: string;
   businessName?: string;
   siteId?: string;
+  btnRadius?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -556,7 +564,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card, business
               fontWeight: 700,
               fontSize: "1rem",
               padding: "14px 28px",
-              borderRadius: "12px",
+              borderRadius: btnRadius ?? "12px",
               border: "none",
               width: "100%",
               boxShadow: `0 4px 20px ${primaryColor}44`,
@@ -598,17 +606,20 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
   const BG   = theme?.background ?? "#080808";
   const CARD = theme?.surface ?? "#0d0e10";
   const navBackground = hexToRgba(BG, 0.85);
+  const btnRadius =
+    theme?.buttonStyle === "sharp" ? "0px" :
+    theme?.buttonStyle === "pill"  ? "999px" : "12px";
   return (
     <>
       <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={navBackground} />
-        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
+        <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
         <About content={content.about} site={site} primaryColor={primaryColor} card={CARD} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} businessName={site.businessName} siteId={site.siteId} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} card={CARD} businessName={site.businessName} siteId={site.siteId} btnRadius={btnRadius} />
         <Footer site={site} primaryColor={primaryColor} />
       </div>
     </>

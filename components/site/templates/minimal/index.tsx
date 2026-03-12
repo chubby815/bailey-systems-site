@@ -33,7 +33,7 @@ function Stars({ n, color }: { n: number; color: string }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles({ p, offBg, bg }: { p: string; offBg: string; bg: string }) {
+function Styles({ p, offBg, bg, btnRadius }: { p: string; offBg: string; bg: string; btnRadius: string }) {
   return (
     <style>{`
       .mn-service-row {
@@ -50,7 +50,7 @@ function Styles({ p, offBg, bg }: { p: string; offBg: string; bg: string }) {
       .mn-btn {
         background: ${p}; color: ${C_BTN};
         font-family: ${FF}; font-weight: 500; font-size: 0.95rem;
-        padding: 13px 32px; border-radius: 10px; text-decoration: none;
+        padding: 13px 32px; border-radius: ${btnRadius}; text-decoration: none;
         display: inline-block; transition: opacity 0.2s, transform 0.2s;
         border: 1px solid transparent;
       }
@@ -58,7 +58,7 @@ function Styles({ p, offBg, bg }: { p: string; offBg: string; bg: string }) {
       .mn-btn-outline {
         background: transparent; color: ${TEXT};
         font-family: ${FF}; font-weight: 500; font-size: 0.95rem;
-        padding: 13px 32px; border-radius: 10px; text-decoration: none;
+        padding: 13px 32px; border-radius: ${btnRadius}; text-decoration: none;
         display: inline-block; transition: background 0.2s;
         border: 1px solid ${LINE};
       }
@@ -158,7 +158,7 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
 
         <h1 style={{
           fontFamily: FF, fontWeight: 300,
-          fontSize: "clamp(2.75rem, 7vw, 6rem)",
+          fontSize: "calc(var(--hero-size, clamp(2.75rem, 7vw, 6rem)) * var(--font-scale, 1))",
           lineHeight: 1.05, letterSpacing: "-0.05em",
           color: C_HEADING, marginBottom: "1.75rem",
         }}>
@@ -393,7 +393,7 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessName, siteId }: {
+function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessName, siteId, btnRadius }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   contactEmail?: string;
@@ -401,6 +401,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessNa
   bg: string;
   businessName?: string;
   siteId?: string;
+  btnRadius?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -433,7 +434,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessNa
             inputStyle={{
               background: "#fff",
               border: `1px solid ${LINE}`,
-              borderRadius: "8px",
+              borderRadius: btnRadius ?? "8px",
               padding: "12px 14px",
               color: TEXT,
               fontSize: "0.9rem",
@@ -446,7 +447,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, bg, businessNa
               fontWeight: 500,
               fontSize: "0.95rem",
               padding: "13px 28px",
-              borderRadius: "10px",
+              borderRadius: btnRadius ?? "10px",
               border: "none",
               width: "100%",
             }}
@@ -469,7 +470,7 @@ function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: st
         <span style={{ fontFamily: FF, fontWeight: 600, fontSize: "0.9rem", color: TEXT }}>
           {site.businessName}
         </span>
-        <span style={{ fontFamily: FF, fontSize: "0.78rem", color: "#bbb" }}>
+        <span style={{ fontFamily: FF, fontSize: "0.78rem", color: "#666" }}>
           © {new Date().getFullYear()} · Built with{" "}
           <a href="https://baileyagents.com" style={{ color: primaryColor, textDecoration: "none" }}>BaileyAgents</a>
         </span>
@@ -482,9 +483,12 @@ function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: st
 export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#ffffff";
   const SURFACE = theme?.surface ?? "rgba(255,255,255,0.92)";
+  const btnRadius =
+    theme?.buttonStyle === "sharp" ? "0px" :
+    theme?.buttonStyle === "pill"  ? "999px" : "10px";
   return (
     <>
-      <Styles p={primaryColor} offBg={OFF_BG} bg={BG} />
+      <Styles p={primaryColor} offBg={OFF_BG} bg={BG} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
@@ -492,7 +496,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
         <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
-        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} businessName={site.businessName} siteId={site.siteId} />
+        <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} businessName={site.businessName} siteId={site.siteId} btnRadius={btnRadius} />
         <Footer site={site} primaryColor={primaryColor} bg={BG} />
       </div>
     </>

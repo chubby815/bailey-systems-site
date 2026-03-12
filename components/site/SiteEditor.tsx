@@ -857,8 +857,13 @@ export function SiteEditor({
   const [currentTheme, setCurrentTheme]       = useState<ThemeConfig>(theme);
   const [currentThemeKey, setCurrentThemeKey] = useState<string>("");
   const [currentTemplate, setCurrentTemplate] = useState<string>(site.template ?? "darkpremium");
-  const [heroImageUrl, setHeroImageUrl]       = useState<string | null>(initialHeroImageUrl ?? site.heroImage ?? null);
-  const [aboutImageUrl, setAboutImageUrl]     = useState<string | null>(site.aboutImage ?? null);
+  const [heroImageUrl, setHeroImageUrl]       = useState<string | null>(
+    (initialHeroImageUrl && initialHeroImageUrl !== "[uploaded]") ? initialHeroImageUrl :
+    (site.heroImage && site.heroImage !== "[uploaded]") ? site.heroImage : null
+  );
+  const [aboutImageUrl, setAboutImageUrl]     = useState<string | null>(
+    (site.aboutImage && site.aboutImage !== "[uploaded]") ? site.aboutImage : null
+  );
   const [isSaving, setIsSaving]               = useState(false);
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
   const [saveError, setSaveError]             = useState(false);

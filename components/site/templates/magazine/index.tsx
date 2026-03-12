@@ -33,7 +33,7 @@ function Stars({ n, color }: { n: number; color: string }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles({ p }: { p: string }) {
+function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
   return (
     <style>{`
       .mg-service-card {
@@ -57,6 +57,7 @@ function Styles({ p }: { p: string }) {
         background: ${p}; color: ${C_BTN};
         font-family: ${FF_SAN}; font-weight: 600; font-size: 0.875rem;
         padding: 12px 28px; text-decoration: none; display: inline-block;
+        border-radius: ${btnRadius};
         text-transform: uppercase; letter-spacing: 0.08em;
         transition: opacity 0.2s;
       }
@@ -65,6 +66,7 @@ function Styles({ p }: { p: string }) {
         background: transparent; color: #fff;
         font-family: ${FF_SAN}; font-weight: 600; font-size: 0.875rem;
         padding: 12px 28px; border: 1.5px solid rgba(255,255,255,0.5);
+        border-radius: ${btnRadius};
         text-decoration: none; display: inline-block;
         text-transform: uppercase; letter-spacing: 0.08em;
         transition: border-color 0.2s;
@@ -138,18 +140,18 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={heroImageUrl} alt="" style={{
           position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", opacity: 0.5,
+          objectFit: "cover", opacity: 0.85,
         }} />
       )}
       {/* Gradient overlay — dark bottom, light top */}
       <div style={{
         position: "absolute", inset: 0,
-        backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)",
+        backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.1) 100%)",
       }} />
       {/* Side gradient */}
       <div style={{
         position: "absolute", inset: 0,
-        backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 60%)",
+        backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 60%)",
       }} />
 
       <div style={{
@@ -168,7 +170,7 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
 
         <h1 style={{
           fontFamily: FF_SER, fontStyle: "italic", fontWeight: 700,
-          fontSize: "clamp(3rem, 8vw, 7rem)",
+          fontSize: "calc(var(--hero-size, clamp(3rem, 8vw, 7rem)) * var(--font-scale, 1))",
           lineHeight: 0.92, letterSpacing: "-0.03em",
           color: "#fff", marginBottom: "1.5rem",
           maxWidth: "800px",
@@ -437,7 +439,7 @@ function Testimonials({ content, primaryColor }: {
 }
 
 // ── CTA (full bleed image background) ─────────────────────────────────────────
-function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone, businessName, siteId }: {
+function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone, businessName, siteId, btnRadius }: {
   content: StructuredSiteContent["cta"];
   primaryColor: string;
   heroImageUrl?: string;
@@ -445,6 +447,7 @@ function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone, 
   contactPhone?: string;
   businessName?: string;
   siteId?: string;
+  btnRadius?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -501,6 +504,7 @@ function CTA({ content, primaryColor, heroImageUrl, contactEmail, contactPhone, 
               fontSize: "0.875rem",
               padding: "14px 28px",
               border: "none",
+              borderRadius: btnRadius ?? "0px",
               textTransform: "uppercase" as const,
               letterSpacing: "0.08em",
               width: "100%",
@@ -537,9 +541,12 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#fafaf8";
   const SURFACE = theme?.surface ?? "#fafaf8";
+  const btnRadius =
+    theme?.buttonStyle === "sharp" ? "0px" :
+    theme?.buttonStyle === "pill"  ? "999px" : "0px";
   return (
     <>
-      <Styles p={primaryColor} />
+      <Styles p={primaryColor} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
         <Hero
@@ -560,6 +567,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
           contactPhone={site.contactPhone}
           businessName={site.businessName}
           siteId={site.siteId}
+          btnRadius={btnRadius}
         />
         <Footer site={site} primaryColor={primaryColor} />
       </div>

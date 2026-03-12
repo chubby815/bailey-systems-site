@@ -40,7 +40,7 @@ function Stars({ n }: { n: number }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles() {
+function Styles({ btnRadius }: { btnRadius: string }) {
   return (
     <style>{`
       .cb-service-card {
@@ -76,7 +76,7 @@ function Styles() {
         color: ${C_BTN};
         font-family: ${FF_SAN}; font-weight: 700; font-size: 0.95rem;
         padding: 14px 32px; text-decoration: none; display: inline-block;
-        border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+        border-radius: ${btnRadius}; text-transform: uppercase; letter-spacing: 0.06em;
         box-shadow: 0 4px 20px rgba(201,168,76,0.35);
         transition: opacity 0.2s, transform 0.15s;
       }
@@ -86,13 +86,13 @@ function Styles() {
         font-family: ${FF_SAN}; font-weight: 600; font-size: 0.95rem;
         padding: 14px 32px; border: 1.5px solid rgba(255,255,255,0.45);
         text-decoration: none; display: inline-block;
-        border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+        border-radius: ${btnRadius}; text-transform: uppercase; letter-spacing: 0.06em;
         transition: border-color 0.2s, background 0.2s;
       }
       .cb-btn-outline:hover { border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
       @media (max-width: 768px) {
         .cb-hero-grid { flex-direction: column !important; }
-        .cb-hero-grid > div:last-child { display: none !important; }
+        .cb-hero-grid > div:last-child { min-height: 280px !important; width: 100% !important; }
         .cb-services-grid { grid-template-columns: 1fr 1fr !important; }
         .cb-about-grid { flex-direction: column !important; }
         .cb-hero-btns { flex-direction: column !important; }
@@ -190,7 +190,7 @@ function Hero({ content, heroImageUrl, location }: {
 
             <h1 style={{
               fontFamily: FF, fontWeight: 700,
-              fontSize: "clamp(2.5rem, 7vw, 5rem)",
+              fontSize: "calc(var(--hero-size, clamp(2.5rem, 7vw, 5rem)) * var(--font-scale, 1))",
               lineHeight: 1.05, letterSpacing: "-0.03em",
               color: WHITE, marginBottom: "1.25rem",
             }}>
@@ -459,12 +459,13 @@ function Testimonials({ content, bg }: { content: StructuredSiteContent["testimo
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
+function CTA({ content, contactEmail, contactPhone, businessName, siteId, btnRadius }: {
   content: StructuredSiteContent["cta"];
   contactEmail?: string;
   contactPhone?: string;
   businessName?: string;
   siteId?: string;
+  btnRadius?: string;
 }) {
   const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
@@ -503,7 +504,7 @@ function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
             inputStyle={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: "6px",
+              borderRadius: btnRadius ?? "6px",
               padding: "12px 14px",
               color: "#fff",
               fontSize: "0.875rem",
@@ -516,7 +517,7 @@ function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
               fontWeight: 700,
               fontSize: "0.95rem",
               padding: "14px 28px",
-              borderRadius: "6px",
+              borderRadius: btnRadius ?? "6px",
               border: "none",
               textTransform: "uppercase" as const,
               letterSpacing: "0.06em",
@@ -565,16 +566,19 @@ function Footer({ site }: { site: SiteRecord }) {
 export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#f8f9fa";
   const SURFACE = theme?.surface ?? `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`;
+  const btnRadius =
+    theme?.buttonStyle === "sharp" ? "0px" :
+    theme?.buttonStyle === "pill"  ? "999px" : "6px";
   return (
     <>
-      <Styles />
+      <Styles btnRadius={btnRadius} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "hidden" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
         <Services content={content.services} location={site.location} bg={BG} />
         <About content={content.about} site={site} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} bg={BG} />
-        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} />
+        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} btnRadius={btnRadius} />
         <Footer site={site} />
       </div>
     </>

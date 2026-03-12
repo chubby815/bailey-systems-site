@@ -1,6 +1,6 @@
 /**
  * Neo Brutalism — Raw power. Poster aesthetic, maximum impact.
- * Cream background, thick black borders, yellow accents, marquee ticker.
+ * Cream background, thick black borders, accent color, marquee ticker.
  */
 import type { SiteRecord } from "@/lib/kv";
 import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
@@ -17,25 +17,27 @@ export type TemplateProps = {
 };
 
 const BLACK   = "#0a0a0a";
-const YELLOW  = "#FFE500";
 const FF      = "'Helvetica Neue', 'Arial Black', Arial, sans-serif";
 
 const C_HEADING = "var(--heading-color, #0a0a0a)";
 const C_BODY    = "var(--body-color, #1a1a1a)";
 const C_ACCENT  = "var(--accent-color, #0a0a0a)";
-const C_BTN     = "var(--btn-text-color, #FFE500)";
+
+// CSS variable references — actual value injected on wrapper div
+const P  = "var(--nb-primary, #FFE500)";
+const BC = "var(--nb-body-color, rgba(255,255,255,0.7))";
 
 function Stars({ n }: { n: number }) {
   const c = Math.min(5, Math.max(1, Math.round(n)));
   return (
-    <span style={{ color: YELLOW, fontSize: "1.1rem", WebkitTextStroke: `1px ${BLACK}` }}>
+    <span style={{ color: P, fontSize: "1.1rem", WebkitTextStroke: `1px ${BLACK}` }}>
       {"★".repeat(c)}{"☆".repeat(5 - c)}
     </span>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-function Styles() {
+function Styles({ primary }: { primary: string }) {
   return (
     <style>{`
       @keyframes nb-marquee {
@@ -55,7 +57,7 @@ function Styles() {
         box-shadow: 8px 8px 0 ${BLACK};
       }
       .nb-btn-primary {
-        background: ${BLACK}; color: ${C_BTN};
+        background: ${BLACK}; color: ${primary};
         border: 3px solid ${BLACK}; box-shadow: 5px 5px 0 ${BLACK};
         display: inline-block; text-decoration: none;
         font-family: ${FF}; font-weight: 900; font-size: 1rem;
@@ -79,7 +81,8 @@ function Styles() {
       }
       .nb-work-card:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 ${BLACK}; }
       @media (max-width: 768px) {
-        .nb-hero-grid { grid-template-columns: 1fr !important; }
+        .nb-hero-flex { flex-direction: column !important; }
+        .nb-hero-flex > div:last-child { height: 300px !important; flex: none !important; width: 100% !important; }
         .nb-services-grid { grid-template-columns: 1fr !important; }
         .nb-work-grid { grid-template-columns: 1fr !important; }
         .nb-about-grid { grid-template-columns: 1fr !important; }
@@ -98,7 +101,7 @@ function Ticker() {
   const repeated = [...items, ...items];
   return (
     <div style={{
-      background: YELLOW, borderBottom: `3px solid ${BLACK}`,
+      background: P, borderBottom: `3px solid ${BLACK}`,
       overflow: "hidden", padding: "10px 0",
     }}>
       <div className="nb-ticker-track">
@@ -125,14 +128,14 @@ function Navbar({ businessName, ctaText, surface }: { businessName: string; ctaT
         maxWidth: "1280px", margin: "0 auto",
         display: "flex", alignItems: "center", justifyContent: "space-between", height: "68px",
       }}>
-        <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.2rem", color: YELLOW, textTransform: "uppercase", letterSpacing: "-0.01em" }}>
+        <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.2rem", color: P, textTransform: "uppercase", letterSpacing: "-0.01em" }}>
           {businessName}
         </span>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <div className="nb-nav-links" style={{ display: "flex", gap: "2rem", marginRight: "1rem" }}>
             {["Services", "Work", "About"].map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} style={{
-                fontFamily: FF, fontWeight: 700, fontSize: "0.8rem", color: "rgba(255,255,255,0.7)",
+                fontFamily: FF, fontWeight: 700, fontSize: "0.8rem", color: BC,
                 textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.04em",
               }}>{l}</a>
             ))}
@@ -147,34 +150,47 @@ function Navbar({ businessName, ctaText, surface }: { businessName: string; ctaT
 }
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero({ content, heroImageUrl, location, bg }: {
+function Hero({ content, heroImageUrl, location, bg, btnRadius }: {
   content: StructuredSiteContent["hero"];
   heroImageUrl?: string;
   location: string;
   bg: string;
+  btnRadius?: string;
 }) {
   return (
-    <section id="home" style={{ background: bg, padding: "5rem clamp(1rem, 5vw, 3rem) 4rem", borderBottom: `3px solid ${BLACK}` }}>
-      <div className="nb-hero-grid" style={{
-        maxWidth: "1280px", margin: "0 auto",
-        display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "3rem", alignItems: "center",
-      }}>
-        {/* Left: text */}
-        <div>
+    <section id="home" style={{ background: bg, borderBottom: `3px solid ${BLACK}` }}>
+      {/* Flex split layout: 55% text / 45% image */}
+      <div
+        className="nb-hero-flex"
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          minHeight: "90vh",
+        }}
+      >
+        {/* Left side — text */}
+        <div style={{
+          flex: "0 0 55%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "80px clamp(1.5rem, 5vw, 60px)",
+        }}>
           {/* Badge */}
           <div style={{
-            display: "inline-block", background: YELLOW,
+            display: "inline-block", background: P,
             border: `3px solid ${BLACK}`, boxShadow: `4px 4px 0 ${BLACK}`,
             padding: "6px 16px", marginBottom: "2rem",
             fontFamily: FF, fontWeight: 900, fontSize: "0.72rem",
             textTransform: "uppercase", letterSpacing: "0.12em", color: BLACK,
+            alignSelf: "flex-start",
           }}>
             ● {content.badge || location}
           </div>
 
           <h1 style={{
             fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(3.5rem, 10vw, 9rem)",
+            fontSize: `calc(var(--hero-size, clamp(3.5rem, 8vw, 7rem)) * var(--font-scale, 1))`,
             lineHeight: 0.92, letterSpacing: "-0.04em",
             color: C_HEADING, marginBottom: "0.5rem",
             textTransform: "uppercase",
@@ -183,7 +199,7 @@ function Hero({ content, heroImageUrl, location, bg }: {
             <br />
             <span style={{
               display: "inline-block",
-              borderBottom: `10px solid ${YELLOW}`,
+              borderBottom: `10px solid ${P}`,
               paddingBottom: "4px",
             }}>
               {content.headline.split(" ").slice(2).join(" ") || content.headline.split(" ").slice(-1)[0]}
@@ -199,15 +215,15 @@ function Hero({ content, heroImageUrl, location, bg }: {
           </p>
 
           <div className="nb-hero-btns" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-            <a href="#contact" className="nb-btn-primary">{content.ctaText}</a>
-            <a href="#services" className="nb-btn-outline">Our Work →</a>
+            <a href="#contact" className="nb-btn-primary" style={{ borderRadius: btnRadius ?? "0px" }}>{content.ctaText}</a>
+            <a href="#services" className="nb-btn-outline" style={{ borderRadius: btnRadius ?? "0px" }}>Our Work →</a>
           </div>
-          {/* Brutalist trust badges */}
+          {/* Trust badges */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "1.75rem" }}>
             {["✓ No Fluff", "✓ Real Results", "✓ Locally Owned", "✓ 5-Star Service"].map((b, i) => (
               <span key={i} style={{
                 display: "inline-block",
-                background: i % 2 === 0 ? YELLOW : bg,
+                background: i % 2 === 0 ? P : bg,
                 border: `2px solid ${BLACK}`,
                 boxShadow: `2px 2px 0 ${BLACK}`,
                 padding: "3px 12px",
@@ -221,29 +237,35 @@ function Hero({ content, heroImageUrl, location, bg }: {
             display: "inline-flex", alignItems: "center", gap: "6px",
             marginTop: "1rem",
             background: BLACK,
-            border: `2px solid ${YELLOW}`,
+            border: `2px solid ${P}`,
             padding: "5px 14px",
-            fontFamily: FF, fontWeight: 700, fontSize: "0.75rem", color: YELLOW,
+            fontFamily: FF, fontWeight: 700, fontSize: "0.75rem", color: P,
+            alignSelf: "flex-start",
           }}>
             ⭐ 5.0 · 200+ Reviews · Google
           </div>
         </div>
 
-        {/* Right: image box */}
+        {/* Right side — hero image */}
         <div style={{
-          border: `3px solid ${BLACK}`, boxShadow: `8px 8px 0 ${BLACK}`,
-          overflow: "hidden", background: "#111",
-          minHeight: "500px", width: "100%", position: "relative",
+          flex: "0 0 45%",
+          position: "relative",
+          overflow: "hidden",
+          background: "#111",
+          minHeight: "500px",
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImageUrl ?? "https://picsum.photos/seed/neo-hero/800/500"}
-            alt=""
-            style={{ width: "100%", height: "100%", minHeight: "500px", objectFit: "cover", display: "block" }}
+            alt="Hero"
+            style={{
+              width: "100%", height: "100%", minHeight: "500px",
+              objectFit: "cover", objectPosition: "center", display: "block",
+            }}
           />
           <div style={{
             position: "absolute", bottom: "1rem", left: "1rem",
-            background: YELLOW, border: `2px solid ${BLACK}`, boxShadow: `3px 3px 0 ${BLACK}`,
+            background: P, border: `2px solid ${BLACK}`, boxShadow: `3px 3px 0 ${BLACK}`,
             fontFamily: FF, fontWeight: 900, fontSize: "0.7rem", textTransform: "uppercase",
             letterSpacing: "0.08em", color: BLACK, padding: "6px 14px",
           }}>
@@ -263,11 +285,11 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
-            color: YELLOW, lineHeight: 1, WebkitTextStroke: `3px ${BLACK}`,
+            color: P, lineHeight: 1, WebkitTextStroke: `3px ${BLACK}`,
           }}>01</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(2rem, 5vw, 4rem)",
+            fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: C_HEADING,
           }}>Services</h2>
         </div>
@@ -278,7 +300,7 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
         }}>
           {content.map((s, i) => (
             <div key={i} className="nb-card" style={{
-              background: i % 3 === 1 ? YELLOW : i % 3 === 0 ? bg : "#fff",
+              background: i % 3 === 1 ? P : i % 3 === 0 ? bg : "#fff",
               padding: "2rem",
             }}>
               <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{s.icon || "◆"}</div>
@@ -308,23 +330,23 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
 // ── Featured Work ──────────────────────────────────────────────────────────────
 function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: string; businessName: string; surface: string }) {
   return (
-    <section id="work" style={{ background: surface, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${YELLOW}` }}>
+    <section id="work" style={{ background: surface, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${P}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
-            color: "transparent", lineHeight: 1, WebkitTextStroke: `3px ${YELLOW}`,
+            color: "transparent", lineHeight: 1, WebkitTextStroke: `3px ${P}`,
           }}>02</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(2rem, 5vw, 4rem)",
+            fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: "#fff",
           }}>Featured Work</h2>
         </div>
 
         <div className="nb-work-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
           {/* Card 1 */}
-          <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
+          <div className="nb-work-card" style={{ border: `3px solid ${P}`, boxShadow: `5px 5px 0 ${P}` }}>
             <div style={{ height: "220px", overflow: "hidden", position: "relative" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -334,12 +356,12 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
               />
               <div style={{
                 position: "absolute", bottom: "0.75rem", left: "0.75rem",
-                background: YELLOW, border: `2px solid ${BLACK}`,
+                background: P, border: `2px solid ${BLACK}`,
                 fontFamily: FF, fontWeight: 900, fontSize: "0.65rem",
                 textTransform: "uppercase", letterSpacing: "0.08em", color: BLACK, padding: "4px 10px",
               }}>Featured Project</div>
             </div>
-            <div style={{ background: "#111", padding: "1.25rem" }}>
+            <div style={{ background: surface, padding: "1.25rem" }}>
               <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
                 {businessName} — Best Work
               </h3>
@@ -350,7 +372,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
           </div>
 
           {/* Card 2 */}
-          <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
+          <div className="nb-work-card" style={{ border: `3px solid ${P}`, boxShadow: `5px 5px 0 ${P}` }}>
             <div style={{ height: "220px", overflow: "hidden" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -359,7 +381,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
             </div>
-            <div style={{ background: "#111", padding: "1.25rem" }}>
+            <div style={{ background: surface, padding: "1.25rem" }}>
               <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
                 5-Star Service
               </h3>
@@ -368,7 +390,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
           </div>
 
           {/* Card 3 */}
-          <div className="nb-work-card" style={{ border: `3px solid ${YELLOW}`, boxShadow: `5px 5px 0 ${YELLOW}` }}>
+          <div className="nb-work-card" style={{ border: `3px solid ${P}`, boxShadow: `5px 5px 0 ${P}` }}>
             <div style={{ height: "220px", overflow: "hidden" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -377,7 +399,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
             </div>
-            <div style={{ background: "#111", padding: "1.25rem" }}>
+            <div style={{ background: surface, padding: "1.25rem" }}>
               <h3 style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.05rem", textTransform: "uppercase", color: "#fff", marginBottom: "0.375rem" }}>
                 Expert Craftsmanship
               </h3>
@@ -402,18 +424,18 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
           }}>03</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(2rem, 5vw, 4rem)",
+            fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: C_HEADING,
           }}>About</h2>
         </div>
-        <div className="nb-about-grid" style={{ display: "grid", gridTemplateColumns: aboutImageUrl ? "1fr 1fr" : "1fr 1fr", gap: "4rem", alignItems: "start" }}>
+        <div className="nb-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
           <div>
             <h3 style={{
               fontFamily: FF, fontWeight: 900,
               fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)",
               textTransform: "uppercase", color: C_HEADING, marginBottom: "1.25rem", lineHeight: 1.05,
             }}>{content.title}</h3>
-            <p style={{ fontFamily: FF, fontSize: "1rem", color: C_BODY, lineHeight: 1.85, marginBottom: "1.5rem" }}>
+            <p style={{ fontFamily: FF, fontSize: `calc(var(--body-size, 1rem) * var(--font-scale, 1))`, color: C_BODY, lineHeight: 1.85, marginBottom: "1.5rem" }}>
               {content.body}
             </p>
             {site.contactEmail && (
@@ -437,11 +459,11 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {content.stats.map((st, i) => (
                 <div key={i} className="nb-card" style={{
-                  background: i === 0 ? BLACK : i === 1 ? YELLOW : bg,
+                  background: i === 0 ? BLACK : i === 1 ? P : bg,
                   padding: "1.25rem 1.5rem",
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
-                  <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "clamp(1.5rem, 4vw, 2.5rem)", letterSpacing: "-0.04em", color: i === 0 ? YELLOW : BLACK }}>{st.value}</span>
+                  <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "clamp(1.5rem, 4vw, 2.5rem)", letterSpacing: "-0.04em", color: i === 0 ? P : BLACK }}>{st.value}</span>
                   <span style={{ fontFamily: FF, fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: i === 0 ? "#fff" : BLACK }}>{st.label}</span>
                 </div>
               ))}
@@ -457,16 +479,16 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
 function Testimonials({ content, surface, bg }: { content: StructuredSiteContent["testimonials"]; surface: string; bg: string }) {
   if (!content?.length) return null;
   return (
-    <section style={{ background: surface, borderBottom: `3px solid ${YELLOW}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
+    <section style={{ background: surface, borderBottom: `3px solid ${P}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
-            color: YELLOW, lineHeight: 1,
+            color: P, lineHeight: 1,
           }}>04</span>
           <h2 style={{
             fontFamily: FF, fontWeight: 900,
-            fontSize: "clamp(2rem, 5vw, 4rem)",
+            fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: "#fff",
           }}>What They Say</h2>
         </div>
@@ -475,19 +497,19 @@ function Testimonials({ content, surface, bg }: { content: StructuredSiteContent
             {content.map((t, i) => (
             <div key={i} style={{
               flex: "0 0 clamp(280px, 35vw, 360px)",
-              background: i % 2 === 0 ? bg : YELLOW,
-              border: `3px solid ${i % 2 === 0 ? YELLOW : BLACK}`,
-              boxShadow: `5px 5px 0 ${i % 2 === 0 ? YELLOW : BLACK}`,
+              background: i % 2 === 0 ? bg : P,
+              border: `3px solid ${i % 2 === 0 ? P : BLACK}`,
+              boxShadow: `5px 5px 0 ${i % 2 === 0 ? P : BLACK}`,
               padding: "2rem",
             }}>
-              <div style={{ fontFamily: "Georgia, serif", fontSize: "5rem", color: i % 2 === 0 ? YELLOW : BLACK, lineHeight: 0.8, marginBottom: "0.5rem", opacity: 0.6 }}>
-                "
+              <div style={{ fontFamily: "Georgia, serif", fontSize: "5rem", color: i % 2 === 0 ? P : BLACK, lineHeight: 0.8, marginBottom: "0.5rem", opacity: 0.6 }}>
+                &ldquo;
               </div>
               <Stars n={t.rating} />
               <p style={{
                 fontFamily: FF, fontSize: "0.9375rem", color: BLACK,
                 lineHeight: 1.7, margin: "1rem 0 1.5rem", fontWeight: 600,
-              }}>"{t.quote}"</p>
+              }}>&ldquo;{t.quote}&rdquo;</p>
               <div style={{ fontFamily: FF, fontWeight: 900, fontSize: "0.875rem", color: BLACK, textTransform: "uppercase" }}>
                 — {t.name}
               </div>
@@ -504,17 +526,18 @@ function Testimonials({ content, surface, bg }: { content: StructuredSiteContent
 }
 
 // ── CTA ────────────────────────────────────────────────────────────────────────
-function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
+function CTA({ content, contactEmail, contactPhone, businessName, siteId, primary, btnRadius }: {
   content: StructuredSiteContent["cta"];
   contactEmail?: string;
   contactPhone?: string;
   businessName?: string;
   siteId?: string;
+  primary: string;
+  btnRadius?: string;
 }) {
-  const href = contactPhone ? `tel:${contactPhone}` : contactEmail ? `mailto:${contactEmail}` : "#contact";
   return (
     <section id="contact" style={{
-      background: YELLOW, borderBottom: `3px solid ${BLACK}`,
+      background: P, borderBottom: `3px solid ${BLACK}`,
       padding: "6rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
     }}>
       <div style={{ maxWidth: "780px", margin: "0 auto" }}>
@@ -526,11 +549,11 @@ function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
         }}>05</span>
         <h2 style={{
           fontFamily: FF, fontWeight: 900,
-          fontSize: "clamp(2rem, 6vw, 5rem)",
+          fontSize: `calc(var(--h2-size, clamp(2rem, 6vw, 5rem)) * var(--font-scale, 1))`,
           textTransform: "uppercase", letterSpacing: "-0.04em",
           color: C_HEADING, marginBottom: "1rem", lineHeight: 0.95,
         }}>{content.headline}</h2>
-        <p style={{ fontFamily: FF, fontSize: "1.05rem", color: C_BODY, marginBottom: "2.5rem", lineHeight: 1.7 }}>
+        <p style={{ fontFamily: FF, fontSize: `calc(var(--body-size, 1rem) * var(--font-scale, 1))`, color: C_BODY, marginBottom: "2.5rem", lineHeight: 1.7 }}>
           {content.subtext}
         </p>
         <div style={{ maxWidth: "480px", margin: "0 auto" }}>
@@ -544,6 +567,7 @@ function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
               background: "#fff",
               border: `3px solid ${BLACK}`,
               boxShadow: `3px 3px 0 ${BLACK}`,
+              borderRadius: btnRadius ?? "0px",
               padding: "12px 14px",
               color: BLACK,
               fontSize: "0.9rem",
@@ -551,13 +575,14 @@ function CTA({ content, contactEmail, contactPhone, businessName, siteId }: {
             }}
             btnStyle={{
               background: BLACK,
-              color: C_BTN,
+              color: primary,
               fontFamily: FF,
               fontWeight: 900,
               fontSize: "1rem",
               padding: "14px 28px",
               border: `3px solid ${BLACK}`,
               boxShadow: `5px 5px 0 ${BLACK}`,
+              borderRadius: btnRadius ?? "0px",
               textTransform: "uppercase" as const,
               letterSpacing: "0.06em",
               width: "100%",
@@ -578,12 +603,12 @@ function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
         maxWidth: "1280px", margin: "0 auto",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem",
       }}>
-        <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.1rem", color: YELLOW, textTransform: "uppercase" }}>
+        <span style={{ fontFamily: FF, fontWeight: 900, fontSize: "1.1rem", color: P, textTransform: "uppercase" }}>
           {site.businessName}
         </span>
         <span style={{ fontFamily: FF, fontSize: "0.75rem", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           © {new Date().getFullYear()} · Built with{" "}
-          <a href="https://baileyagents.com" style={{ color: YELLOW, textDecoration: "none" }}>BaileyAgents</a>
+          <a href="https://baileyagents.com" style={{ color: P, textDecoration: "none" }}>BaileyAgents</a>
         </span>
       </div>
     </footer>
@@ -594,18 +619,30 @@ function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
 export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG      = theme?.background ?? "#fffef7";
   const SURFACE = theme?.surface ?? "#0a0a0a";
+  const PRIMARY = theme?.primaryColor ?? "#FFE500";
+  const BODY_COLOR = theme?.bodyColor ?? "rgba(255,255,255,0.7)";
+  const btnRadius =
+    theme?.buttonStyle === "sharp" ? "0px" :
+    theme?.buttonStyle === "pill"  ? "999px" : "0px";
+
   return (
     <>
-      <Styles />
-      <div style={{ fontFamily: FF, background: BG, overflowX: "hidden" }}>
+      <Styles primary={PRIMARY} />
+      <div
+        style={{
+          fontFamily: FF, background: BG, overflowX: "hidden",
+          ["--nb-primary"  as string]: PRIMARY,
+          ["--nb-body-color" as string]: BODY_COLOR,
+        }}
+      >
         <Ticker />
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} />
-        <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} />
+        <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} btnRadius={btnRadius} />
         <Services content={content.services} location={site.location} bg={BG} />
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />
         <About content={content.about} site={site} bg={BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} surface={SURFACE} bg={BG} />
-        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} />
+        <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} primary={PRIMARY} btnRadius={btnRadius} />
         <Footer site={site} surface={SURFACE} />
       </div>
     </>
