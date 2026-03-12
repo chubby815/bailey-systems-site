@@ -249,6 +249,7 @@ function Hero({ content, heroImageUrl, location, bg, btnRadius }: {
         {/* Right side — hero image */}
         <div style={{
           flex: "0 0 45%",
+          minWidth: "0",
           position: "relative",
           overflow: "hidden",
           background: "#111",
@@ -259,8 +260,10 @@ function Hero({ content, heroImageUrl, location, bg, btnRadius }: {
             src={heroImageUrl ?? "https://picsum.photos/seed/neo-hero/800/500"}
             alt="Hero"
             style={{
-              width: "100%", height: "100%", minHeight: "500px",
-              objectFit: "cover", objectPosition: "center", display: "block",
+              position: "absolute",
+              top: 0, left: 0,
+              width: "100%", height: "100%",
+              objectFit: "cover", objectPosition: "center",
             }}
           />
           <div style={{

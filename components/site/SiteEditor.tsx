@@ -1156,13 +1156,16 @@ export function SiteEditor({
         />
       </div>
 
-      {/* ── Site preview (offset when panel open) ────────────────────────────── */}
+      {/* ── Site preview (scrollable, below toolbar) ────────────────────────── */}
       <div
         style={{
-          marginTop:    `${BAR_H}px`,
-          marginLeft:   panelOpen ? `${PANEL_W}px` : "0",
-          marginRight:  askBaileyOpen ? `${PANEL_W}px` : "0",
-          transition:   "margin 0.25s ease",
+          position:   "fixed",
+          top:        `${BAR_H}px`,
+          left:       panelOpen ? `${PANEL_W}px` : "0",
+          right:      askBaileyOpen ? `${PANEL_W}px` : "0",
+          bottom:      0,
+          overflowY:  "auto",
+          transition: "left 0.25s ease, right 0.25s ease",
         }}
       >
         <TemplateRenderer

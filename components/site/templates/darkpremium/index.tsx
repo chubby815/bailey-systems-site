@@ -97,7 +97,7 @@ function Styles({ p, card }: { p: string; card: string }) {
 function Navbar({ businessName, ctaText, primaryColor, navBackground }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string }) {
   return (
     <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+      position: "sticky", top: 0, zIndex: 100,
       background: navBackground, backdropFilter: "blur(20px) saturate(180%)",
       borderBottom: `1px solid ${BORDER}`,
       padding: "0 clamp(1rem, 5vw, 3rem)",
