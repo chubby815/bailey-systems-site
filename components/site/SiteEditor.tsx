@@ -1045,12 +1045,13 @@ export function SiteEditor({
             rel="noopener noreferrer"
             onClick={async (e) => {
               e.preventDefault();
+              if (isSaving) return;
               const liveUrl = site.subdomainSlug
                 ? `https://${site.subdomainSlug}.baileyagents.com`
                 : `/sites/${siteId}`;
               hasChanges.current = true;
               await doSave(currentContent, currentTheme, currentTemplate);
-              await new Promise<void>((r) => setTimeout(r, 600));
+              await new Promise<void>((r) => setTimeout(r, 1500));
               window.open(liveUrl, "_blank");
             }}
             style={{
@@ -1058,16 +1059,17 @@ export function SiteEditor({
               fontWeight:       700,
               padding:         "5px 12px",
               borderRadius:    "8px",
-              background:      "rgba(255,255,255,0.06)",
-              border:          "1px solid rgba(255,255,255,0.10)",
-              color:           "#f0f0f0",
+              background:      isSaving ? "rgba(0,229,160,0.12)" : "rgba(255,255,255,0.06)",
+              border:          isSaving ? "1px solid rgba(0,229,160,0.3)" : "1px solid rgba(255,255,255,0.10)",
+              color:           isSaving ? "#00e5a0" : "#f0f0f0",
               textDecoration:  "none",
               transition:      "all 0.15s",
-              cursor:          "pointer",
+              cursor:          isSaving ? "not-allowed" : "pointer",
+              opacity:         isSaving ? 0.75 : 1,
             }}
             className="hover:bg-white/10"
           >
-            View Live ↗
+            {isSaving ? "Saving…" : "View Live ↗"}
           </a>
         </div>
       </div>
