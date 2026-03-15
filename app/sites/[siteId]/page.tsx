@@ -168,17 +168,13 @@ export default async function SitePage({
     // Only mount the editor chrome when the owner explicitly visits with ?edit=true.
     // All other visits (visitors, or owner without ?edit=true) get the clean site.
     if (isOwner && editMode) {
-      // SiteEditor's own bar is fixed at top:0, height 52px, zIndex 200.
-      // SiteShareBar uses offsetTop=52 so it sits just below the editor bar
-      // instead of covering it (zIndex 9999 would win otherwise).
+      // SiteShareBar is intentionally omitted here — the editor toolbar already
+      // has a "View Live ↗" button. Showing SiteShareBar in edit mode would
+      // place it at position:fixed / top:52px / z-index:9999, covering the
+      // template's site navbar in the preview canvas.
       return (
         <>
           {siteIsPaused && <PausedOverlay />}
-          <SiteShareBar
-            siteId={site.siteId}
-            subdomainSlug={site.subdomainSlug}
-            offsetTop={52}
-          />
           <SiteEditor
             site={site}
             content={c}
