@@ -81,6 +81,36 @@ function Styles({ primary }: { primary: string }) {
         overflow: hidden; transition: transform 0.15s, box-shadow 0.15s;
       }
       .nb-work-card:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 ${BLACK}; }
+      /* Image zoom on Featured Work hover */
+      .nb-work-card .nb-work-img { transition: transform 0.45s ease; }
+      .nb-work-card:hover .nb-work-img { transform: scale(1.06); }
+      /* Active/click 3D push feedback */
+      .nb-card:active { transform: translate(2px, 2px) !important; box-shadow: 2px 2px 0 ${BLACK} !important; }
+      /* Page fade-in */
+      @keyframes nb-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      .nb-root { animation: nb-page-in 0.35s ease-out forwards; }
+      /* Diagonal grain on hero */
+      @keyframes nb-diag-move {
+        0%   { background-position: 0 0; }
+        100% { background-position: 60px 60px; }
+      }
+      .nb-hero-grain {
+        position: absolute; inset: 0; pointer-events: none; opacity: 0.035;
+        background-image: repeating-linear-gradient(
+          45deg,
+          #000 0px, #000 1px,
+          transparent 1px, transparent 12px
+        );
+        animation: nb-diag-move 4s linear infinite;
+      }
+      /* Reduced-motion */
+      @media (prefers-reduced-motion: reduce) {
+        .nb-root, .nb-hero-grain { animation: none !important; }
+        .nb-work-card .nb-work-img { transition: none !important; }
+      }
       @media (max-width: 768px) {
         .nb-hero-flex { flex-direction: column !important; }
         .nb-hero-flex > div:last-child { height: 300px !important; flex: none !important; width: 100% !important; }
@@ -162,7 +192,9 @@ function Hero({ content, heroImageUrl, location, bg, btnRadius }: {
   btnRadius?: string;
 }) {
   return (
-    <section id="home" style={{ background: bg, borderBottom: `3px solid ${BLACK}` }}>
+    <section id="home" style={{ background: bg, borderBottom: `3px solid ${BLACK}`, position: "relative", overflow: "hidden" }}>
+      {/* Animated diagonal grain overlay */}
+      <div className="nb-hero-grain" />
       {/* Flex split layout: 55% text / 45% image */}
       <div
         className="nb-hero-flex"
@@ -289,7 +321,7 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
+        <ScrollAnimator style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
             color: P, lineHeight: 1, WebkitTextStroke: `3px ${BLACK}`,
@@ -299,7 +331,7 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
             fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: C_HEADING,
           }}>Services</h2>
-        </div>
+        </ScrollAnimator>
 
         <ScrollAnimator>
         <div className="nb-services-grid" style={{
@@ -339,7 +371,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
   return (
     <section id="work" style={{ background: surface, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${P}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
+        <ScrollAnimator style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
             color: "transparent", lineHeight: 1, WebkitTextStroke: `3px ${P}`,
@@ -349,7 +381,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
             fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: "#fff",
           }}>Featured Work</h2>
-        </div>
+        </ScrollAnimator>
 
         <div className="nb-work-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
           {/* Card 1 */}
@@ -359,6 +391,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
               <img
                 src={heroImageUrl ?? "https://picsum.photos/seed/work1/600/400"}
                 alt="Featured work"
+                className="nb-work-img"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
               <div style={{
@@ -385,6 +418,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
               <img
                 src="https://picsum.photos/seed/work2/600/400"
                 alt="Work sample"
+                className="nb-work-img"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
             </div>
@@ -403,6 +437,7 @@ function FeaturedWork({ heroImageUrl, businessName, surface }: { heroImageUrl?: 
               <img
                 src="https://picsum.photos/seed/work3/600/400"
                 alt="Work sample"
+                className="nb-work-img"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
             </div>
@@ -424,7 +459,7 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
   return (
     <section id="about" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
+        <ScrollAnimator style={{ display: "flex", alignItems: "baseline", gap: "1.5rem", marginBottom: "3rem" }}>
           <span style={{
             fontFamily: FF, fontWeight: 900, fontSize: "clamp(4rem, 8vw, 7rem)",
             color: "transparent", lineHeight: 1, WebkitTextStroke: `3px ${BLACK}`,
@@ -434,7 +469,7 @@ function About({ content, site, bg, aboutImageUrl }: { content: StructuredSiteCo
             fontSize: `calc(var(--h2-size, clamp(2rem, 5vw, 4rem)) * var(--font-scale, 1))`,
             textTransform: "uppercase", letterSpacing: "-0.03em", color: C_HEADING,
           }}>About</h2>
-        </div>
+        </ScrollAnimator>
         <div className="nb-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "start" }}>
           <div>
             <h3 style={{
@@ -636,6 +671,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
     <>
       <Styles primary={PRIMARY} />
       <div
+        className="nb-root"
         style={{
           fontFamily: FF, background: BG, overflowX: "clip",
           ["--nb-primary"  as string]: PRIMARY,

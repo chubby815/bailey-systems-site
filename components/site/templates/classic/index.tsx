@@ -7,6 +7,7 @@ import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
+import { StatCounter } from "@/components/site/StatCounter";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -91,6 +92,46 @@ function Styles({ btnRadius }: { btnRadius: string }) {
         transition: border-color 0.2s, background 0.2s;
       }
       .cb-btn-outline:hover { border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+      /* ── Cinematic animations ─────────────────────────────────────────── */
+      @keyframes cb-gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50%       { background-position: 100% 50%; }
+      }
+      @keyframes cb-gold-underline {
+        from { width: 0px; }
+        to   { width: 60px; }
+      }
+      @keyframes cb-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      .cb-root { animation: cb-page-in 0.35s ease-out forwards; }
+      /* Animated gradient on hero section */
+      .cb-hero-animated {
+        background: linear-gradient(135deg, ${NAVY} 0%, #1a2f5a 30%, ${NAVY2} 60%, #0a1020 100%) !important;
+        background-size: 300% 300% !important;
+        animation: cb-gradient-shift 20s ease infinite;
+      }
+      /* Gold accent underline that draws in */
+      .cb-gold-underline {
+        display: block; height: 3px; width: 0px;
+        background: linear-gradient(90deg, ${GOLD}, ${GOLD_L});
+        animation: cb-gold-underline 1.5s 0.4s cubic-bezier(0.77,0,0.18,1) forwards;
+        margin-top: 1rem;
+      }
+      /* Service card gold hover */
+      .cb-service-card:hover {
+        transform: translateY(-6px) !important;
+        box-shadow: 0 20px 40px rgba(201,168,76,0.20) !important;
+        border-bottom-color: ${GOLD} !important;
+      }
+      /* Reduced-motion */
+      @media (prefers-reduced-motion: reduce) {
+        .cb-root { animation: none !important; }
+        .cb-hero-animated { animation: none !important; }
+        .cb-gold-underline { animation: none !important; width: 60px; }
+        .cb-service-card:hover { transform: none !important; }
+      }
       @media (max-width: 768px) {
         .cb-hero-grid { flex-direction: column !important; }
         .cb-hero-grid > div:last-child { min-height: 280px !important; width: 100% !important; }
@@ -166,7 +207,7 @@ function Hero({ content, heroImageUrl, location }: {
   ];
 
   return (
-    <section id="home" style={{
+    <section id="home" className="cb-hero-animated" style={{
       backgroundImage: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 60%, #0a1020 100%)`,
       padding: "2rem clamp(1rem, 5vw, 3rem) 5rem",
       position: "relative", overflow: "hidden",
@@ -195,10 +236,12 @@ function Hero({ content, heroImageUrl, location }: {
               fontFamily: FF, fontWeight: 700,
               fontSize: "calc(var(--hero-size, clamp(2.5rem, 7vw, 5rem)) * var(--font-scale, 1))",
               lineHeight: 1.05, letterSpacing: "-0.03em",
-              color: WHITE, marginBottom: "1.25rem",
+              color: WHITE, marginBottom: "0.75rem",
             }}>
               {content.headline}
             </h1>
+            {/* Gold accent underline draws in on load */}
+            <span className="cb-gold-underline" />
 
             <p style={{
               fontFamily: FF_SAN, fontSize: "clamp(1rem, 2vw, 1.125rem)",
@@ -261,7 +304,7 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+        <ScrollAnimator style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{
             fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em", color: `var(--accent-color, ${GOLD})`,
@@ -273,7 +316,7 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
             letterSpacing: "-0.03em", color: C_HEADING,
           }}>Our Services</h2>
           <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
-        </div>
+        </ScrollAnimator>
 
         <ScrollAnimator>
         <div className="cb-services-grid" style={{
@@ -334,14 +377,17 @@ function About({ content, site, aboutImageUrl }: { content: StructuredSiteConten
               color: WHITE, marginBottom: "1.25rem", letterSpacing: "-0.03em", lineHeight: 1.15,
             }}>{content.title}</h2>
 
-            {/* Stats */}
+            {/* Stats with count-up animation */}
             <div className="cb-stats-panel" style={{ display: "flex", flexDirection: "column", gap: "1.5rem", marginTop: "2.5rem" }}>
               {content.stats.map((st, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "baseline", gap: "1rem" }}>
-                  <span style={{
-                    fontFamily: FF, fontWeight: 700, fontSize: "2.25rem",
-                    color: GOLD, letterSpacing: "-0.04em", lineHeight: 1,
-                  }}>{st.value}</span>
+                  <StatCounter
+                    value={st.value}
+                    style={{
+                      fontFamily: FF, fontWeight: 700, fontSize: "2.25rem",
+                      color: GOLD, letterSpacing: "-0.04em", lineHeight: 1,
+                    }}
+                  />
                   <span style={{ fontFamily: FF_SAN, fontSize: "0.82rem", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                     {st.label}
                   </span>
@@ -413,7 +459,7 @@ function Testimonials({ content, bg }: { content: StructuredSiteContent["testimo
   return (
     <section style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+        <ScrollAnimator style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <span style={{
             fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em", color: `var(--accent-color, ${GOLD})`,
@@ -424,7 +470,7 @@ function Testimonials({ content, bg }: { content: StructuredSiteContent["testimo
             letterSpacing: "-0.03em", color: C_HEADING,
           }}>What Our Clients Say</h2>
           <div style={{ width: "60px", height: "3px", background: GOLD, margin: "1.25rem auto 0" }} />
-        </div>
+        </ScrollAnimator>
         <ScrollAnimator>
         <div className="cb-testimonials" style={{
           display: "flex", gap: "1.25rem", overflowX: "auto",
@@ -575,7 +621,7 @@ export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, them
   return (
     <>
       <Styles btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "clip" }}>
+      <div className="cb-root" style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
         <Services content={content.services} location={site.location} bg={BG} />

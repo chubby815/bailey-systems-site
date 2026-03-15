@@ -6,6 +6,7 @@ import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
+import { HeroReveal } from "@/components/site/HeroReveal";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -70,6 +71,37 @@ function Styles({ p, offBg, bg, btnRadius }: { p: string; offBg: string; bg: str
         flex: 0 0 300px;
       }
       .mn-testimonial:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+      /* ── Cinematic animations ─────────────────────────────────────────── */
+      @keyframes mn-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes mn-line-draw {
+        from { width: 0%; }
+        to   { width: 100%; }
+      }
+      .mn-root { animation: mn-page-in 0.35s ease-out forwards; }
+      /* Animated underline for hero headline */
+      .mn-hero-underline {
+        display: block; height: 2px; width: 0%;
+        background: ${p}; margin: 0.5rem auto 0;
+        animation: mn-line-draw 1.2s 0.8s cubic-bezier(0.77,0,0.18,1) forwards;
+      }
+      /* Card hover lift */
+      .mn-service-card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-top 0.3s ease;
+      }
+      .mn-service-card-hover:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+        border-top: 2px solid ${p};
+      }
+      /* Reduced-motion */
+      @media (prefers-reduced-motion: reduce) {
+        .mn-root { animation: none !important; }
+        .mn-hero-underline { animation: none !important; width: 100%; }
+        .mn-service-card-hover:hover { transform: none !important; }
+      }
       @media (max-width: 768px) {
         .mn-hero-actions { flex-direction: column !important; }
         .mn-hero-actions a { width: 100%; text-align: center; }
@@ -160,14 +192,20 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
           }}>Professional Services · {content.badge || location}</span>
         </div>
 
-        <h1 style={{
-          fontFamily: FF, fontWeight: 300,
-          fontSize: "calc(var(--hero-size, clamp(2.75rem, 7vw, 6rem)) * var(--font-scale, 1))",
-          lineHeight: 1.05, letterSpacing: "-0.05em",
-          color: C_HEADING, marginBottom: "1.75rem",
-        }}>
+        <HeroReveal
+          style={{
+            fontFamily: FF, fontWeight: 300,
+            fontSize: "calc(var(--hero-size, clamp(2.75rem, 7vw, 6rem)) * var(--font-scale, 1))",
+            lineHeight: 1.05, letterSpacing: "-0.05em",
+            color: C_HEADING, marginBottom: "0.5rem",
+          }}
+          stagger={0.1}
+          yOffset={20}
+        >
           {content.headline}
-        </h1>
+        </HeroReveal>
+        {/* Animated underline draws in after headline */}
+        <span className="mn-hero-underline" style={{ maxWidth: "320px" }} />
 
         <p style={{
           fontFamily: FF, fontSize: "clamp(1rem, 2.5vw, 1.1875rem)", fontWeight: 400,
@@ -233,7 +271,7 @@ function Services({ content, primaryColor, location, bg }: {
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <div style={{ marginBottom: "3.5rem" }}>
+        <ScrollAnimator style={{ marginBottom: "3.5rem" }}>
           <span style={{
             fontFamily: FF_MONO, fontSize: "0.65rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -244,7 +282,7 @@ function Services({ content, primaryColor, location, bg }: {
             fontSize: "clamp(2rem, 5vw, 3.5rem)",
             letterSpacing: "-0.04em", color: C_HEADING, marginTop: "0.75rem",
           }}>What we offer</h2>
-        </div>
+        </ScrollAnimator>
 
         <ScrollAnimator>
         <div style={{ borderTop: `1px solid ${LINE}` }}>
@@ -359,7 +397,7 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
   return (
     <section style={{ background: bg, borderTop: `1px solid ${LINE}`, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <div style={{ marginBottom: "3.5rem" }}>
+        <ScrollAnimator style={{ marginBottom: "3.5rem" }}>
           <span style={{
             fontFamily: FF_MONO, fontSize: "0.65rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -370,7 +408,7 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
             fontSize: "clamp(2rem, 4vw, 3rem)",
             letterSpacing: "-0.04em", color: C_HEADING, marginTop: "0.75rem",
           }}>What clients say</h2>
-        </div>
+        </ScrollAnimator>
         <ScrollAnimator>
         <div className="mn-testimonials-track" style={{
           display: "flex", gap: "1.25rem", overflowX: "auto",
@@ -493,7 +531,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
   return (
     <>
       <Styles p={primaryColor} offBg={OFF_BG} bg={BG} btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "clip" }}>
+      <div className="mn-root" style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />

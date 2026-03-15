@@ -73,6 +73,58 @@ function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
         transition: border-color 0.2s;
       }
       .mg-btn-outline:hover { border-color: #fff; }
+      /* ── Cinematic animations ─────────────────────────────────────────── */
+      @keyframes mg-ken-burns {
+        0%   { transform: scale(1.0) translate(0%, 0%);  }
+        50%  { transform: scale(1.08) translate(-1%, -1%); }
+        100% { transform: scale(1.0) translate(0%, 0%);  }
+      }
+      @keyframes mg-slide-left {
+        from { opacity: 0; transform: translateX(-40px); }
+        to   { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes mg-overlay-fade {
+        from { opacity: 0.9; }
+        to   { opacity: 0.72; }
+      }
+      @keyframes mg-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      .mg-root { animation: mg-page-in 0.35s ease-out forwards; }
+      /* Ken Burns on hero image */
+      .mg-hero-img {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        object-fit: cover; opacity: 0.85;
+        animation: mg-ken-burns 10s ease-in-out infinite alternate;
+        will-change: transform;
+      }
+      /* Hero overlay fade from more to less opaque */
+      .mg-hero-overlay-anim {
+        animation: mg-overlay-fade 10s ease-in-out infinite alternate;
+      }
+      /* Hero text slide-in from left */
+      .mg-hero-text {
+        opacity: 0;
+        animation: mg-slide-left 0.8s 0.3s ease-out forwards;
+      }
+      /* Editorial card reveal */
+      .mg-service-card {
+        overflow: hidden; background: #fff; border: 1px solid ${LINE};
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        cursor: default;
+      }
+      .mg-service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+      }
+      /* Reduced-motion */
+      @media (prefers-reduced-motion: reduce) {
+        .mg-root { animation: none !important; }
+        .mg-hero-img { animation: none !important; }
+        .mg-hero-overlay-anim { animation: none !important; }
+        .mg-hero-text { animation: none !important; opacity: 1 !important; }
+      }
       @media (max-width: 768px) {
         .mg-services-grid { grid-template-columns: 1fr !important; }
         .mg-about-grid { flex-direction: column !important; }
@@ -139,26 +191,30 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
       display: "flex", alignItems: "flex-end",
       background: "#111",
     }}>
-      {/* Background image */}
+      {/* Background image with Ken Burns effect */}
       {heroImageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={heroImageUrl} alt="" style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", opacity: 0.85,
+        <img src={heroImageUrl} alt="" className="mg-hero-img" />
+      )}
+      {/* Background fallback (no image) */}
+      {!heroImageUrl && (
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)",
         }} />
       )}
-      {/* Gradient overlay — dark bottom, light top */}
-      <div style={{
+      {/* Gradient overlay — dark bottom, light top (animates opacity) */}
+      <div className="mg-hero-overlay-anim" style={{
         position: "absolute", inset: 0,
-        backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.1) 100%)",
+        backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.28) 50%, rgba(0,0,0,0.12) 100%)",
       }} />
       {/* Side gradient */}
       <div style={{
         position: "absolute", inset: 0,
-        backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 60%)",
+        backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 60%)",
       }} />
 
-      <div style={{
+      <div className="mg-hero-text" style={{
         position: "relative", maxWidth: "1280px", margin: "0 auto", width: "100%",
         padding: "0 clamp(1.5rem, 5vw, 4rem) clamp(4rem, 8vh, 6rem)",
       }}>
@@ -228,7 +284,7 @@ function Services({ content, primaryColor, location, bg }: {
       }}>01</div>
 
       <div style={{ maxWidth: "1280px", margin: "0 auto", position: "relative" }}>
-        <div style={{ marginBottom: "4rem" }}>
+        <ScrollAnimator style={{ marginBottom: "4rem" }}>
           <span style={{
             fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -239,7 +295,7 @@ function Services({ content, primaryColor, location, bg }: {
             fontSize: "clamp(2rem, 5vw, 3.75rem)", letterSpacing: "-0.03em",
             color: C_HEADING, marginTop: "0.75rem",
           }}>What we offer</h2>
-        </div>
+        </ScrollAnimator>
 
         <ScrollAnimator>
         <div className="mg-services-grid" style={{
@@ -394,7 +450,7 @@ function Testimonials({ content, primaryColor }: {
   return (
     <section style={{ background: BLACK, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ marginBottom: "4rem" }}>
+        <ScrollAnimator style={{ marginBottom: "4rem" }}>
           <span style={{
             fontFamily: FF_SAN, fontSize: "0.7rem", fontWeight: 600,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -405,7 +461,7 @@ function Testimonials({ content, primaryColor }: {
             fontSize: "clamp(2rem, 5vw, 3.5rem)", letterSpacing: "-0.03em",
             color: "#fff", marginTop: "0.75rem",
           }}>What our clients say</h2>
-        </div>
+        </ScrollAnimator>
         <ScrollAnimator>
         <div className="mg-testimonials" style={{
           display: "flex", gap: "1.5rem", overflowX: "auto",
@@ -551,7 +607,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
   return (
     <>
       <Styles p={primaryColor} btnRadius={btnRadius} />
-      <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "clip" }}>
+      <div className="mg-root" style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero
           content={content.hero}

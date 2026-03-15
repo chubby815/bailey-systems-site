@@ -7,6 +7,7 @@ import type { StructuredSiteContent, ThemeConfig } from "@/lib/site-theme";
 import { TrustBadges, RatingBadge } from "@/components/site/TrustBadges";
 import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
+import { HeroReveal } from "@/components/site/HeroReveal";
 
 export type TemplateProps = {
   site:           SiteRecord;
@@ -32,6 +33,22 @@ const C_BODY    = "var(--body-color, #9ca3af)";
 const C_BTN     = "var(--btn-text-color, #000000)";
 
 const GRAIN = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
+
+// Predefined particle positions (static to avoid SSR hydration mismatch)
+const PARTICLES = [
+  { left: "5%",  bottom: 0,  size: 2, dur: 8,  delay: 0   },
+  { left: "13%", bottom: 20, size: 3, dur: 12, delay: 3   },
+  { left: "22%", bottom: 10, size: 2, dur: 9,  delay: 6   },
+  { left: "34%", bottom: 5,  size: 4, dur: 14, delay: 1   },
+  { left: "45%", bottom: 15, size: 2, dur: 10, delay: 4   },
+  { left: "55%", bottom: 0,  size: 3, dur: 11, delay: 7   },
+  { left: "64%", bottom: 25, size: 2, dur: 13, delay: 2   },
+  { left: "73%", bottom: 5,  size: 4, dur: 8,  delay: 5   },
+  { left: "81%", bottom: 10, size: 2, dur: 15, delay: 0.5 },
+  { left: "88%", bottom: 20, size: 3, dur: 9,  delay: 8   },
+  { left: "94%", bottom: 0,  size: 2, dur: 12, delay: 3.5 },
+  { left: "98%", bottom: 15, size: 3, dur: 10, delay: 6.5 },
+];
 
 function Stars({ n, color }: { n: number; color: string }) {
   const c = Math.min(5, Math.max(1, Math.round(n)));
@@ -79,6 +96,56 @@ function Styles({ p, card }: { p: string; card: string }) {
       }
       .dp-testimonial-inner {
         background: ${card}; border-radius: 19px; padding: 1.75rem; height: 100%;
+      }
+      /* ── Cinematic animations ─────────────────────────────────────────── */
+      @keyframes dp-gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50%       { background-position: 100% 50%; }
+      }
+      @keyframes dp-particle-rise {
+        0%   { transform: translateY(0)     scale(1);   opacity: 0.6; }
+        100% { transform: translateY(-95vh) scale(0.2); opacity: 0;   }
+      }
+      @keyframes dp-page-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      /* Animated gradient overlay on hero (no image) */
+      .dp-hero-grad-layer {
+        background: linear-gradient(135deg, #080808 0%, #0a0d1a 30%, #08101f 60%, #050508 100%);
+        background-size: 400% 400%;
+        animation: dp-gradient-shift 18s ease infinite;
+      }
+      /* Floating particles */
+      .dp-particle {
+        position: absolute; border-radius: 50%;
+        pointer-events: none; will-change: transform, opacity;
+        animation: dp-particle-rise linear infinite;
+      }
+      /* Page mount fade-in */
+      .dp-root { animation: dp-page-in 0.4s ease-out forwards; }
+      /* Enhanced card hover */
+      .dp-card:hover {
+        transform: translateY(-8px) scale(1.015);
+        box-shadow: 0 0 36px ${p}44, 0 20px 60px rgba(0,0,0,0.4);
+        border-color: ${p}80 !important;
+      }
+      .dp-card:hover .dp-card-icon { transform: rotate(360deg); }
+      .dp-card-icon { transition: transform 0.65s ease; }
+      /* Testimonial shine sweep */
+      .dp-testimonial-inner { position: relative; overflow: hidden; }
+      .dp-testimonial-inner::before {
+        content: ''; position: absolute; top: 0; left: -120%;
+        width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+        transition: left 0.55s ease; pointer-events: none;
+      }
+      .dp-testimonial:hover .dp-testimonial-inner::before { left: 160%; }
+      /* Reduced-motion: disable all animations */
+      @media (prefers-reduced-motion: reduce) {
+        .dp-hero-grad-layer, .dp-particle, .dp-root { animation: none !important; }
+        .dp-card:hover { transform: none !important; }
+        .dp-testimonial-inner::before { display: none; }
       }
       @media (max-width: 768px) {
         .dp-hero-btns { flex-direction: column !important; }
@@ -160,6 +227,26 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl, theme, btnRad
           backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.55) 100%)",
         }} />
       )}
+      {/* Animated gradient layer (no hero image) */}
+      {!heroImageUrl && (
+        <div className="dp-hero-grad-layer" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+      )}
+      {/* Floating particles */}
+      {!heroImageUrl && PARTICLES.map((pt, i) => (
+        <div
+          key={i}
+          className="dp-particle"
+          style={{
+            left:              pt.left,
+            bottom:            `${pt.bottom}%`,
+            width:             `${pt.size}px`,
+            height:            `${pt.size}px`,
+            background:        `rgba(255,255,255,${0.25 + (i % 4) * 0.1})`,
+            animationDuration: `${pt.dur}s`,
+            animationDelay:    `${pt.delay}s`,
+          }}
+        />
+      ))}
       {/* Animated radial glow */}
       <div className="dp-glow" style={{
         position: "absolute", inset: 0, pointerEvents: "none",
@@ -192,22 +279,24 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl, theme, btnRad
           </span>
         </div>
 
-        <h1 style={{
-          fontFamily: FF, fontWeight: 700,
-          fontSize: "calc(var(--hero-size, clamp(3rem, 8vw, 7rem)) * var(--font-scale, 1))",
-          lineHeight: 1.0, letterSpacing: "-0.04em",
-          marginBottom: "1.75rem",
-          ...(theme?.headingColor
-            ? { color: theme.headingColor }
-            : {
-                backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                backgroundClip: "text", color: "transparent",
-              }
-          ),
-        }}>
+        <HeroReveal
+          style={{
+            fontFamily: FF, fontWeight: 700,
+            fontSize: "calc(var(--hero-size, clamp(3rem, 8vw, 7rem)) * var(--font-scale, 1))",
+            lineHeight: 1.0, letterSpacing: "-0.04em",
+            marginBottom: "1.75rem",
+            ...(theme?.headingColor
+              ? { color: theme.headingColor }
+              : {
+                  backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${primaryColor}cc 100%)`,
+                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  backgroundClip: "text", color: "transparent",
+                }
+            ),
+          }}
+        >
           {content.headline}
-        </h1>
+        </HeroReveal>
 
         <p style={{
           fontFamily: FF, fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
@@ -251,7 +340,7 @@ function Services({ content, primaryColor, location, bg }: {
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ marginBottom: "3.5rem" }}>
+        <ScrollAnimator style={{ marginBottom: "3.5rem" }}>
           <p style={{
             fontFamily: FF, fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -262,7 +351,7 @@ function Services({ content, primaryColor, location, bg }: {
             fontSize: "clamp(2rem, 5vw, 3.5rem)",
             letterSpacing: "-0.04em", color: C_HEADING,
           }}>Services built for results</h2>
-        </div>
+        </ScrollAnimator>
 
         <ScrollAnimator>
         <div className="dp-bento" style={{
@@ -424,7 +513,7 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
   return (
     <section style={{ background: bg, padding: "7rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        <div style={{ marginBottom: "3.5rem" }}>
+        <ScrollAnimator style={{ marginBottom: "3.5rem" }}>
           <p style={{
             fontFamily: FF, fontSize: "0.72rem", fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.14em",
@@ -435,7 +524,7 @@ function Testimonials({ content, primaryColor, bg }: { content: StructuredSiteCo
             fontSize: "clamp(2rem, 4vw, 3rem)",
             letterSpacing: "-0.04em", color: C_HEADING,
           }}>Trusted by hundreds</h2>
-        </div>
+        </ScrollAnimator>
         <ScrollAnimator>
         <div className="dp-testimonials-track" style={{
           display: "flex", gap: "1rem", overflowX: "auto",
@@ -529,7 +618,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card, business
       padding: "8rem clamp(1rem, 5vw, 3rem)", textAlign: "center",
       backgroundImage: `radial-gradient(ellipse 80% 80% at 50% 100%, ${primaryColor}14 0%, transparent 60%)`,
     }}>
-      <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+      <ScrollAnimator style={{ maxWidth: "720px", margin: "0 auto" }}>
         <p style={{
           fontFamily: FF, fontSize: "0.72rem", fontWeight: 700,
           textTransform: "uppercase", letterSpacing: "0.14em",
@@ -575,7 +664,7 @@ function CTA({ content, primaryColor, contactEmail, contactPhone, card, business
             successColor={primaryColor}
           />
         </div>
-      </div>
+      </ScrollAnimator>
     </section>
   );
 }
@@ -614,7 +703,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
   return (
     <>
       <Styles p={primaryColor} card={CARD} />
-      <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
+      <div className="dp-root" style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={CARD} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
