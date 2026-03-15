@@ -14,6 +14,7 @@ export type TemplateProps = {
   heroImageUrl?:  string;
   aboutImageUrl?: string;
   theme?:         ThemeConfig;
+  isEditing?:     boolean;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -83,12 +84,15 @@ function Styles({ p, offBg, bg, btnRadius }: { p: string; offBg: string; bg: str
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor, surface, navLinks }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string] }) {
+function Navbar({ businessName, primaryColor, surface, navLinks, isEditing }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string]; isEditing?: boolean }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
-      background: surface, backdropFilter: "blur(20px) saturate(180%)",
-      borderBottom: `1px solid ${LINE}`, padding: "0 clamp(1rem, 5vw, 3rem)",
+      background: surface,
+      borderBottom: isEditing ? `3px solid ${primaryColor}` : `1px solid ${LINE}`,
+      boxShadow: isEditing ? "0 2px 8px rgba(0,0,0,0.4)" : undefined,
+      outline: isEditing ? "2px dashed rgba(255,255,255,0.3)" : undefined,
+      padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
         maxWidth: "1100px", margin: "0 auto",
@@ -480,9 +484,9 @@ function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: st
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
+export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#ffffff";
-  const SURFACE = theme?.surface ?? "rgba(255,255,255,0.92)";
+  const SURFACE = theme?.surface ?? "#ffffff";
   const btnRadius =
     theme?.buttonStyle === "sharp" ? "0px" :
     theme?.buttonStyle === "pill"  ? "999px" : "10px";
@@ -490,7 +494,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
     <>
       <Styles p={primaryColor} offBg={OFF_BG} bg={BG} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} />
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />

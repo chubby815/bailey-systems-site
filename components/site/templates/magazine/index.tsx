@@ -15,6 +15,7 @@ export type TemplateProps = {
   heroImageUrl?:  string;
   aboutImageUrl?: string;
   theme?:         ThemeConfig;
+  isEditing?:     boolean;
 };
 
 const BLACK  = "#1a1a1a";
@@ -84,11 +85,14 @@ function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor, surface, navLinks }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string] }) {
+function Navbar({ businessName, primaryColor, surface, navLinks, isEditing }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string]; isEditing?: boolean }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
-      background: surface, borderBottom: `1px solid ${LINE}`,
+      background: surface,
+      borderBottom: isEditing ? `3px solid ${primaryColor}` : `1px solid ${LINE}`,
+      boxShadow: isEditing ? "0 2px 8px rgba(0,0,0,0.4)" : undefined,
+      outline: isEditing ? "2px dashed rgba(255,255,255,0.3)" : undefined,
       padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
@@ -538,7 +542,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
+export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#fafaf8";
   const SURFACE = theme?.surface ?? "#fafaf8";
   const btnRadius =
@@ -548,7 +552,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
     <>
       <Styles p={primaryColor} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} />
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero
           content={content.hero}
           heroImageUrl={heroImageUrl}

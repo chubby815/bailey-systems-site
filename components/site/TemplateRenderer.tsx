@@ -22,9 +22,10 @@ type Props = {
   themeOverride?:  Partial<ThemeConfig>;
   heroImageUrl?:   string | null;
   aboutImageUrl?:  string | null;
+  isEditing?:      boolean;
 };
 
-export function TemplateRenderer({ site, content, theme, themeOverride, heroImageUrl: heroImageUrlProp, aboutImageUrl: aboutImageUrlProp }: Props) {
+export function TemplateRenderer({ site, content, theme, themeOverride, heroImageUrl: heroImageUrlProp, aboutImageUrl: aboutImageUrlProp, isEditing }: Props) {
   const resolvedTheme: ThemeConfig = themeOverride ? { ...theme, ...themeOverride } : theme;
   // heroImageUrl: explicit prop takes priority (null = cleared in editor), then site record, then industry stock
   const heroImageUrl  = heroImageUrlProp !== undefined
@@ -36,7 +37,7 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
   const primaryColor = resolvedTheme.primaryColor ?? COLOR_MAP[site.primaryColor] ?? "#10b981";
   const template = site.template ?? "darkpremium";
 
-  const sharedProps = { site, content, primaryColor, heroImageUrl, aboutImageUrl, theme: resolvedTheme };
+  const sharedProps = { site, content, primaryColor, heroImageUrl, aboutImageUrl, theme: resolvedTheme, isEditing };
 
   // Build CSS variable object — text color overrides + typography scale.
   // These cascade to all template child elements via the wrapper div.

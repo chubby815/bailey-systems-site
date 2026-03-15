@@ -14,6 +14,7 @@ export type TemplateProps = {
   heroImageUrl?:  string;
   aboutImageUrl?: string;
   theme?:         ThemeConfig;
+  isEditing?:     boolean;
 };
 
 const BLACK   = "#0a0a0a";
@@ -118,10 +119,13 @@ function Ticker() {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, surface, navLinks }: { businessName: string; ctaText: string; surface: string; navLinks?: [string, string, string] }) {
+function Navbar({ businessName, ctaText, surface, navLinks, isEditing }: { businessName: string; ctaText: string; surface: string; navLinks?: [string, string, string]; isEditing?: boolean }) {
   return (
     <nav style={{
-      background: surface, borderBottom: `3px solid ${BLACK}`,
+      background: surface,
+      borderBottom: `3px solid ${BLACK}`,
+      boxShadow: isEditing ? "0 2px 8px rgba(0,0,0,0.4)" : undefined,
+      outline: isEditing ? "2px dashed rgba(255,255,255,0.3)" : undefined,
       padding: "0 clamp(1rem, 5vw, 3rem)", position: "sticky", top: 0, zIndex: 50,
     }}>
       <div style={{
@@ -619,7 +623,7 @@ function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
+export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#fffef7";
   const SURFACE = theme?.surface ?? "#0a0a0a";
   const PRIMARY = theme?.primaryColor ?? "#FFE500";
@@ -639,7 +643,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
         }}
       >
         <Ticker />
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} navLinks={content.nav?.links} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} btnRadius={btnRadius} />
         <Services content={content.services} location={site.location} bg={BG} />
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />

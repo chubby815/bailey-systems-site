@@ -15,6 +15,7 @@ export type TemplateProps = {
   heroImageUrl?:  string;
   aboutImageUrl?: string;
   theme?:         ThemeConfig;
+  isEditing?:     boolean;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -94,12 +95,14 @@ function Styles({ p, card }: { p: string; card: string }) {
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, primaryColor, navBackground, navLinks }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string; navLinks?: [string, string, string] }) {
+function Navbar({ businessName, ctaText, primaryColor, navBackground, navLinks, isEditing }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string; navLinks?: [string, string, string]; isEditing?: boolean }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 100,
       background: navBackground,
-      borderBottom: "1px solid rgba(255,255,255,0.15)",
+      borderBottom: isEditing ? `3px solid ${primaryColor}` : "1px solid rgba(255,255,255,0.15)",
+      boxShadow: isEditing ? "0 2px 8px rgba(0,0,0,0.4)" : undefined,
+      outline: isEditing ? "2px dashed rgba(255,255,255,0.3)" : undefined,
       padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
@@ -113,7 +116,7 @@ function Navbar({ businessName, ctaText, primaryColor, navBackground, navLinks }
           <div className="dp-nav-links" style={{ display: "flex", gap: "2rem" }}>
             {(navLinks ?? ["Services", "About", "Contact"]).map((l, i) => (
               <a key={i} href={["#services", "#about", "#contact"][i]} style={{
-                fontFamily: FF, fontSize: "0.875rem", color: "#6b7280", textDecoration: "none",
+                fontFamily: FF, fontSize: "0.875rem", color: isEditing ? "#d1d5db" : "#6b7280", textDecoration: "none",
                 transition: "color 0.2s",
               }}>{l}</a>
             ))}
@@ -602,7 +605,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
+export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
   const BG   = theme?.background ?? "#080808";
   const CARD = theme?.surface ?? "#0d0e10";
   const btnRadius =
@@ -612,7 +615,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
     <>
       <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={CARD} navLinks={content.nav?.links} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={CARD} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />

@@ -1137,6 +1137,7 @@ export function SiteEditor({
           theme={currentTheme}
           heroImageUrl={heroImageUrl}
           aboutImageUrl={aboutImageUrl}
+          isEditing={true}
         />
       </div>
 
@@ -1146,10 +1147,10 @@ export function SiteEditor({
       <div
         style={{
           position:    "fixed",
-          top:          0,
+          top:         `${BAR_H}px`,
           left:         0,
           width:       `${PANEL_W}px`,
-          height:       "100vh",
+          height:      `calc(100vh - ${BAR_H}px)`,
           zIndex:       150,
           background:   "#111214",
           borderRight:  "1px solid rgba(255,255,255,0.07)",
