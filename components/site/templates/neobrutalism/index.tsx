@@ -118,7 +118,7 @@ function Ticker() {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, surface }: { businessName: string; ctaText: string; surface: string }) {
+function Navbar({ businessName, ctaText, surface, navLinks }: { businessName: string; ctaText: string; surface: string; navLinks?: [string, string, string] }) {
   return (
     <nav style={{
       background: surface, borderBottom: `3px solid ${BLACK}`,
@@ -133,8 +133,8 @@ function Navbar({ businessName, ctaText, surface }: { businessName: string; ctaT
         </span>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <div className="nb-nav-links" style={{ display: "flex", gap: "2rem", marginRight: "1rem" }}>
-            {["Services", "Work", "About"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{
+            {(navLinks ?? ["Services", "Work", "About"]).map((l, i) => (
+              <a key={i} href={["#services", "#about", "#contact"][i]} style={{
                 fontFamily: FF, fontWeight: 700, fontSize: "0.8rem", color: BC,
                 textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.04em",
               }}>{l}</a>
@@ -639,7 +639,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
         }}
       >
         <Ticker />
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} navLinks={content.nav?.links} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} btnRadius={btnRadius} />
         <Services content={content.services} location={site.location} bg={BG} />
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />

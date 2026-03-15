@@ -94,7 +94,7 @@ function Styles({ p, card }: { p: string; card: string }) {
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, primaryColor, navBackground }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string }) {
+function Navbar({ businessName, ctaText, primaryColor, navBackground, navLinks }: { businessName: string; ctaText: string; primaryColor: string; navBackground: string; navLinks?: [string, string, string] }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 100,
@@ -111,8 +111,8 @@ function Navbar({ businessName, ctaText, primaryColor, navBackground }: { busine
         </span>
         <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
           <div className="dp-nav-links" style={{ display: "flex", gap: "2rem" }}>
-            {["Services", "About", "Contact"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{
+            {(navLinks ?? ["Services", "About", "Contact"]).map((l, i) => (
+              <a key={i} href={["#services", "#about", "#contact"][i]} style={{
                 fontFamily: FF, fontSize: "0.875rem", color: "#6b7280", textDecoration: "none",
                 transition: "color 0.2s",
               }}>{l}</a>
@@ -612,7 +612,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
     <>
       <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={CARD} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={CARD} navLinks={content.nav?.links} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />

@@ -107,7 +107,7 @@ function Styles({ btnRadius }: { btnRadius: string }) {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, ctaText, contactPhone, surface }: { businessName: string; ctaText: string; contactPhone?: string; surface: string }) {
+function Navbar({ businessName, ctaText, contactPhone, surface, navLinks }: { businessName: string; ctaText: string; contactPhone?: string; surface: string; navLinks?: [string, string, string] }) {
   return (
     <nav style={{
       background: surface,
@@ -132,8 +132,8 @@ function Navbar({ businessName, ctaText, contactPhone, surface }: { businessName
             </a>
           )}
           <div className="cb-nav-links" style={{ display: "flex", gap: "1.75rem" }}>
-            {["Services", "About", "Contact"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{
+            {(navLinks ?? ["Services", "About", "Contact"]).map((l, i) => (
+              <a key={i} href={["#services", "#about", "#contact"][i]} style={{
                 fontFamily: FF_SAN, fontSize: "0.82rem", fontWeight: 400,
                 color: "rgba(255,255,255,0.7)", textDecoration: "none",
                 textTransform: "uppercase", letterSpacing: "0.06em",
@@ -573,7 +573,7 @@ export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, them
     <>
       <Styles btnRadius={btnRadius} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} navLinks={content.nav?.links} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
         <Services content={content.services} location={site.location} bg={BG} />
         <About content={content.about} site={site} aboutImageUrl={aboutImageUrl} />

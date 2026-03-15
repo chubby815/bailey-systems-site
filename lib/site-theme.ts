@@ -75,6 +75,10 @@ export type StructuredSiteContent = {
     title:       string;
     description: string;
   };
+  /** Optional nav link labels — templates fall back to their own defaults if absent */
+  nav?: {
+    links?: [string, string, string];
+  };
 };
 
 // ── Legacy content type (v1 format — existing sites) ─────────────────────────

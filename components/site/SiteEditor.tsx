@@ -12,7 +12,7 @@ import { AskBailey }        from "@/components/editor/AskBailey";
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Panel = "themes" | "content" | "askbailey" | null;
 
-type ContentSection = "navbar" | "style" | "hero" | "services" | "about" | "testimonials" | "cta";
+type ContentSection = "navbar" | "design" | "hero" | "services" | "about" | "testimonials" | "cta";
 
 type Props = {
   site:                SiteRecord;
@@ -208,91 +208,12 @@ function ThemesPanel({
   onSelectTheme,
   currentTemplate,
   onSelectTemplate,
-  siteId,
-  currentHeroImageUrl,
-  currentAboutImageUrl,
-  industry,
-  onHeroImageChange,
-  onAboutImageChange,
 }: {
-  currentThemeKey:      string;
-  onSelectTheme:        (key: string, theme: ThemeConfig) => void;
-  currentTemplate:      string;
-  onSelectTemplate:     (key: string) => void;
-  siteId:               string;
-  currentHeroImageUrl:  string | null;
-  currentAboutImageUrl: string | null;
-  industry:             string;
-  onHeroImageChange:    (url: string | null) => void;
-  onAboutImageChange:   (url: string | null) => void;
+  currentThemeKey:  string;
+  onSelectTheme:    (key: string, theme: ThemeConfig) => void;
+  currentTemplate:  string;
+  onSelectTemplate: (key: string) => void;
 }) {
-  const [uploading, setUploading]           = useState(false);
-  const [uploadError, setUploadError]       = useState<string | null>(null);
-  const [aboutUploading, setAboutUploading] = useState(false);
-  const [aboutError, setAboutError]         = useState<string | null>(null);
-  const [heroSuccess, setHeroSuccess]       = useState(false);
-  const [aboutSuccess, setAboutSuccess]     = useState(false);
-  const fileRef      = useRef<HTMLInputElement>(null);
-  const aboutFileRef = useRef<HTMLInputElement>(null);
-
-  async function uploadImage(
-    file: File,
-    section: "hero" | "about",
-    onSuccess: (url: string) => void,
-    setErr: (e: string | null) => void,
-    setLoading: (v: boolean) => void,
-    setOk: (v: boolean) => void,
-  ) {
-    if (file.size > 2 * 1024 * 1024) { setErr("Image must be under 2 MB"); return; }
-    setErr(null);
-    setLoading(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      try {
-        const res = await fetch(`/api/sites/${siteId}/image`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ section, image: dataUrl }),
-        });
-        if (!res.ok) { setErr("Upload failed"); return; }
-        onSuccess(dataUrl);
-        setOk(true);
-        setTimeout(() => setOk(false), 2500);
-      } catch { setErr("Upload failed"); }
-      finally { setLoading(false); }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    void uploadImage(file, "hero", onHeroImageChange, setUploadError, setUploading, setHeroSuccess);
-  }
-
-  function handleAboutFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    void uploadImage(file, "about", onAboutImageChange, setAboutError, setAboutUploading, setAboutSuccess);
-  }
-
-  async function handleRemoveHeroImage() {
-    await fetch(`/api/sites/${siteId}/image`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section: "hero", image: null }),
-    });
-    onHeroImageChange(null);
-  }
-
-  async function handleRemoveAboutImage() {
-    await fetch(`/api/sites/${siteId}/image`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section: "about", image: null }),
-    });
-    onAboutImageChange(null);
-  }
-
   return (
     <div className="p-4 space-y-6">
       {/* ── Layout Template picker ──────────────────────────────────────────── */}
@@ -395,108 +316,6 @@ function ThemesPanel({
         </div>
       </div>
 
-      {/* Hero Image */}
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
-          🖼️ Hero Image
-        </p>
-        <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-3" style={{ aspectRatio: "16/7" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentHeroImageUrl ?? `https://picsum.photos/id/${industryPhotoId(industry)}/400/175`}
-            alt="Hero"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50"
-          >
-            {uploading ? "Uploading…" : "📷 Upload Photo"}
-          </button>
-          {currentHeroImageUrl && (
-            <button
-              onClick={handleRemoveHeroImage}
-              className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-        {heroSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ Hero image updated!</p>}
-        {!currentHeroImageUrl && !heroSuccess && (
-          <p className="text-[10px] text-[#4b5563] mt-1.5">Using industry photo. Upload to customise.</p>
-        )}
-        {currentHeroImageUrl && !heroSuccess && (
-          <button
-            onClick={handleRemoveHeroImage}
-            className="text-[10px] text-[#4b5563] hover:text-[#9ca3af] mt-1.5 transition-colors"
-          >
-            ↩ Use industry photo
-          </button>
-        )}
-        {uploadError && (
-          <p className="text-[10px] text-red-400 mt-1.5">{uploadError}</p>
-        )}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          onChange={handleHeroFileChange}
-        />
-      </div>
-
-      {/* About Image */}
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280] mb-3">
-          📷 About Image
-        </p>
-        {currentAboutImageUrl ? (
-          <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-3" style={{ aspectRatio: "4/3", maxHeight: 120 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentAboutImageUrl} alt="About" className="w-full h-full object-cover" />
-          </div>
-        ) : (
-          <div
-            className="rounded-xl border border-dashed border-white/[0.15] mb-3 flex items-center justify-center"
-            style={{ height: 80 }}
-          >
-            <span className="text-[11px] text-[#4b5563]">No about image</span>
-          </div>
-        )}
-        <div className="flex gap-2">
-          <button
-            onClick={() => aboutFileRef.current?.click()}
-            disabled={aboutUploading}
-            className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50"
-          >
-            {aboutUploading ? "Uploading…" : "📷 Upload About Photo"}
-          </button>
-          {currentAboutImageUrl && (
-            <button
-              onClick={handleRemoveAboutImage}
-              className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-        {aboutSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ About image updated!</p>}
-        {!currentAboutImageUrl && !aboutSuccess && (
-          <p className="text-[10px] text-[#4b5563] mt-1.5">Shows beside your About section text.</p>
-        )}
-        {aboutError && <p className="text-[10px] text-red-400 mt-1.5">{aboutError}</p>}
-        <input
-          ref={aboutFileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          onChange={handleAboutFileChange}
-        />
-      </div>
     </div>
   );
 }
@@ -515,131 +334,473 @@ const BUTTON_OPTIONS: { value: import("@/lib/site-theme").ButtonStyleKey; label:
   { value: "pill",    label: "Pill",    radius: "9999px" },
 ];
 
+// ── Section tab definitions ───────────────────────────────────────────────────
+const SECTION_TABS: { key: ContentSection; icon: string; label: string; anchor: string }[] = [
+  { key: "navbar",       icon: "🧭", label: "Navbar",   anchor: "" },
+  { key: "hero",         icon: "🦸", label: "Hero",     anchor: "#home" },
+  { key: "services",     icon: "⚙️", label: "Services", anchor: "#services" },
+  { key: "about",        icon: "👤", label: "About",    anchor: "#about" },
+  { key: "testimonials", icon: "💬", label: "Reviews",  anchor: "#testimonials" },
+  { key: "cta",          icon: "📣", label: "CTA",      anchor: "#contact" },
+  { key: "design",       icon: "🎨", label: "Design",   anchor: "" },
+];
+
+// ── Inline color picker row ───────────────────────────────────────────────────
+function ColorPicker({ label, value, fallback, onChange }: {
+  label:    string;
+  value:    string | undefined;
+  fallback: string;
+  onChange: (v: string) => void;
+}) {
+  const resolved = value ?? fallback;
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[11px] text-[#9ca3af] flex-1">{label}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-[#4b5563] font-mono">{resolved}</span>
+        <label className="relative cursor-pointer">
+          <span className="block w-7 h-7 rounded border border-white/20 cursor-pointer" style={{ background: resolved }} />
+          <input type="color" value={resolved} onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 // ── Content Panel ─────────────────────────────────────────────────────────────
 function ContentPanel({
-  content,
-  onChange,
-  theme,
-  onThemeChange,
+  content, onChange,
+  theme, onThemeChange,
   businessName,
+  siteId,
+  heroImageUrl, aboutImageUrl,
+  onHeroImageChange, onAboutImageChange,
+  industry,
+  onScrollToSection,
 }: {
-  content:        StructuredSiteContent;
-  onChange:       (c: StructuredSiteContent) => void;
-  theme:          ThemeConfig;
-  onThemeChange:  (t: ThemeConfig) => void;
-  businessName?:  string;
+  content:            StructuredSiteContent;
+  onChange:           (c: StructuredSiteContent) => void;
+  theme:              ThemeConfig;
+  onThemeChange:      (t: ThemeConfig) => void;
+  businessName?:      string;
+  siteId:             string;
+  heroImageUrl:       string | null;
+  aboutImageUrl:      string | null;
+  onHeroImageChange:  (url: string | null) => void;
+  onAboutImageChange: (url: string | null) => void;
+  industry:           string;
+  onScrollToSection:  (anchor: string) => void;
 }) {
-  const [expanded, setExpanded] = useState<ContentSection | null>("navbar");
+  const [activeTab, setActiveTab]           = useState<ContentSection>("hero");
+  const [uploading, setUploading]           = useState(false);
+  const [uploadError, setUploadError]       = useState<string | null>(null);
+  const [heroSuccess, setHeroSuccess]       = useState(false);
+  const [aboutUploading, setAboutUploading] = useState(false);
+  const [aboutError, setAboutError]         = useState<string | null>(null);
+  const [aboutSuccess, setAboutSuccess]     = useState(false);
+  const fileRef      = useRef<HTMLInputElement>(null);
+  const aboutFileRef = useRef<HTMLInputElement>(null);
 
-  function toggle(s: ContentSection) {
-    setExpanded((prev) => (prev === s ? null : s));
-  }
-
+  // ── Content helpers ─────────────────────────────────────────────────────────
   function setHero(field: keyof StructuredSiteContent["hero"], value: string) {
     onChange({ ...content, hero: { ...content.hero, [field]: value } });
   }
-
-  function setService(i: number, field: "name" | "description" | "icon", value: string) {
-    const services = content.services.map((s, idx) =>
-      idx === i ? { ...s, [field]: value } : s
-    );
-    onChange({ ...content, services });
+  function setNavLink(i: number, value: string) {
+    const cur = content.nav?.links ?? ["Services", "About", "Contact"];
+    const updated: [string, string, string] = [cur[0] ?? "Services", cur[1] ?? "About", cur[2] ?? "Contact"];
+    updated[i] = value;
+    onChange({ ...content, nav: { ...content.nav, links: updated } });
   }
-
+  function setService(i: number, field: "name" | "description" | "icon", value: string) {
+    onChange({ ...content, services: content.services.map((s, idx) => idx === i ? { ...s, [field]: value } : s) });
+  }
   function addService() {
     if (content.services.length >= 8) return;
-    onChange({
-      ...content,
-      services: [...content.services, { name: "New Service", description: "Description", icon: "✓" }],
-    });
+    onChange({ ...content, services: [...content.services, { name: "New Service", description: "Description", icon: "✓" }] });
   }
-
   function removeService(i: number) {
     onChange({ ...content, services: content.services.filter((_, idx) => idx !== i) });
   }
-
-  function setAbout(field: keyof Pick<StructuredSiteContent["about"], "title" | "body">, value: string) {
+  function setAboutField(field: "title" | "body", value: string) {
     onChange({ ...content, about: { ...content.about, [field]: value } });
   }
-
-  function setTestimonial(i: number, field: "name" | "role" | "quote", value: string) {
-    const testimonials = content.testimonials.map((t, idx) =>
-      idx === i ? { ...t, [field]: value } : t
-    );
-    onChange({ ...content, testimonials });
+  function setStat(i: number, field: "label" | "value", value: string) {
+    const stats = (content.about.stats ?? []).map((s, idx) => idx === i ? { ...s, [field]: value } : s);
+    onChange({ ...content, about: { ...content.about, stats } });
   }
-
+  function setTestimonial(i: number, field: "name" | "role" | "quote", value: string) {
+    onChange({ ...content, testimonials: content.testimonials.map((t, idx) => idx === i ? { ...t, [field]: value } : t) });
+  }
+  function setTestimonialRating(i: number, rating: number) {
+    onChange({ ...content, testimonials: content.testimonials.map((t, idx) => idx === i ? { ...t, rating } : t) });
+  }
+  function addTestimonial() {
+    if (content.testimonials.length >= 6) return;
+    onChange({ ...content, testimonials: [...content.testimonials, { name: "Happy Customer", role: "Customer", quote: "Great service!", rating: 5 }] });
+  }
+  function removeTestimonial(i: number) {
+    if (content.testimonials.length <= 1) return;
+    onChange({ ...content, testimonials: content.testimonials.filter((_, idx) => idx !== i) });
+  }
   function setCTA(field: keyof StructuredSiteContent["cta"], value: string) {
     onChange({ ...content, cta: { ...content.cta, [field]: value } });
   }
 
+  // ── Image upload helpers ────────────────────────────────────────────────────
+  async function uploadImage(
+    file: File, section: "hero" | "about",
+    onSuccess: (url: string) => void,
+    setErr: (e: string | null) => void,
+    setLoading: (v: boolean) => void,
+    setOk: (v: boolean) => void,
+  ) {
+    if (file.size > 2 * 1024 * 1024) { setErr("Image must be under 2 MB"); return; }
+    setErr(null); setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      try {
+        const res = await fetch(`/api/sites/${siteId}/image`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ section, image: dataUrl }),
+        });
+        if (!res.ok) { setErr("Upload failed"); return; }
+        onSuccess(dataUrl); setOk(true); setTimeout(() => setOk(false), 2500);
+      } catch { setErr("Upload failed"); }
+      finally { setLoading(false); }
+    };
+    reader.readAsDataURL(file);
+  }
+  function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return;
+    void uploadImage(file, "hero", onHeroImageChange, setUploadError, setUploading, setHeroSuccess);
+  }
+  function handleAboutFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return;
+    void uploadImage(file, "about", onAboutImageChange, setAboutError, setAboutUploading, setAboutSuccess);
+  }
+  async function handleRemoveHeroImage() {
+    await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: "hero", image: null }) });
+    onHeroImageChange(null);
+  }
+  async function handleRemoveAboutImage() {
+    await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: "about", image: null }) });
+    onAboutImageChange(null);
+  }
+
+  const navLinks = content.nav?.links ?? ["Services", "About", "Contact"];
+
   return (
-    <div className="divide-y divide-white/[0.06]">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {/* ── Navbar ────────────────────────────────────────────────────────────── */}
-      <div>
-        <SectionHeader label="🧭 Navbar" expanded={expanded === "navbar"} onToggle={() => toggle("navbar")} />
-        {expanded === "navbar" && (
-          <div className="px-4 pb-4 space-y-4">
+      {/* ── Section tab strip ───────────────────────────────────────────────── */}
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(7, 1fr)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0,
+      }}>
+        {SECTION_TABS.map((tab) => {
+          const active = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); onScrollToSection(tab.anchor); }}
+              style={{
+                display: "flex", flexDirection: "column", alignItems: "center",
+                gap: 3, padding: "10px 2px",
+                background: active ? "rgba(0,229,160,0.07)" : "transparent",
+                borderBottom: active ? "2px solid #00e5a0" : "2px solid transparent",
+                border: "none", borderRadius: 0, cursor: "pointer", transition: "all 0.15s",
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>{tab.icon}</span>
+              <span style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: active ? "#00e5a0" : "#4b5563" }}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-            {/* Business Name — read-only */}
+      {/* ── Section content area ────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: 16 }} className="space-y-3">
+
+        {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
+        {activeTab === "navbar" && (
+          <div className="space-y-4">
             {businessName && (
               <div>
                 <label className={LABEL}>Business Name</label>
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
                   <span className="text-xs text-[#f0f0f0]">{businessName}</span>
-                  <span className="block text-[10px] text-[#4b5563] mt-0.5">
-                    Set when site was created
-                  </span>
+                  <span className="block text-[10px] text-[#4b5563] mt-0.5">Set when site was created</span>
                 </div>
               </div>
             )}
-
-            {/* Navbar Background Color */}
-            {(
-              [
-                { key: "surface",   label: "Navbar Background", fallback: "#0d0e10" },
-                { key: "bodyColor", label: "Nav Link Color",     fallback: "#9ca3af" },
-              ] as const
-            ).map(({ key, label, fallback }) => {
-              const value = (theme[key] as string | undefined) ?? fallback;
-              return (
-                <div key={key} className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] text-[#9ca3af] flex-1">{label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#4b5563] font-mono">{value}</span>
-                    <label className="relative cursor-pointer">
-                      <span
-                        className="block w-7 h-7 rounded border border-white/20 cursor-pointer"
-                        style={{ background: value }}
-                      />
-                      <input
-                        type="color"
-                        value={value}
-                        onChange={(e) => onThemeChange({ ...theme, [key]: e.target.value })}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                    </label>
-                  </div>
-                </div>
-              );
-            })}
-
-            <button
-              onClick={() => onThemeChange({ ...theme, surface: undefined, bodyColor: undefined })}
-              className="text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2"
-            >
-              Reset to template defaults
+            <div>
+              <label className={LABEL}>Nav Link Labels</label>
+              <div className="space-y-2">
+                {(["Services", "About", "Contact"] as const).map((placeholder, i) => (
+                  <input key={i} className={INPUT} placeholder={placeholder}
+                    value={navLinks[i] ?? placeholder}
+                    onChange={(e) => setNavLink(i, e.target.value)} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className={LABEL}>Navbar Colors</label>
+              <div className="space-y-2">
+                <ColorPicker label="Background" value={theme.surface} fallback="#0d0e10"
+                  onChange={(v) => onThemeChange({ ...theme, surface: v })} />
+                <ColorPicker label="Link Color" value={theme.bodyColor} fallback="#9ca3af"
+                  onChange={(v) => onThemeChange({ ...theme, bodyColor: v })} />
+              </div>
+            </div>
+            <button onClick={() => onThemeChange({ ...theme, surface: undefined, bodyColor: undefined })}
+              className="text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2">
+              Reset navbar colors
             </button>
           </div>
         )}
-      </div>
 
-      {/* Style */}
-      <div>
-        <SectionHeader label="🎨 Style" expanded={expanded === "style"} onToggle={() => toggle("style")} />
-        {expanded === "style" && (
-          <div className="px-4 pb-4 space-y-4">
+        {/* ── HERO ───────────────────────────────────────────────────────── */}
+        {activeTab === "hero" && (
+          <div className="space-y-3">
+            <div>
+              <label className={LABEL}>Headline</label>
+              <input className={INPUT} value={content.hero.headline} onChange={(e) => setHero("headline", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Subheadline</label>
+              <textarea className={INPUT} rows={3} value={content.hero.subheadline} onChange={(e) => setHero("subheadline", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Button Text</label>
+              <input className={INPUT} value={content.hero.ctaText} onChange={(e) => setHero("ctaText", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Badge / Location Tag</label>
+              <input className={INPUT} value={content.hero.badge} onChange={(e) => setHero("badge", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Hero Background Color</label>
+              <ColorPicker label="Background" value={theme.background} fallback="#080808"
+                onChange={(v) => onThemeChange({ ...theme, background: v })} />
+            </div>
+            {/* Hero image */}
+            <div>
+              <label className={LABEL}>Hero Photo</label>
+              <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-2" style={{ aspectRatio: "16/7" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={heroImageUrl ?? `https://picsum.photos/id/${industryPhotoId(industry)}/400/175`}
+                  alt="Hero" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => fileRef.current?.click()} disabled={uploading}
+                  className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50">
+                  {uploading ? "Uploading…" : "📷 Upload Photo"}
+                </button>
+                {heroImageUrl && (
+                  <button onClick={handleRemoveHeroImage}
+                    className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors">
+                    Remove
+                  </button>
+                )}
+              </div>
+              {heroSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ Hero image updated!</p>}
+              {uploadError && <p className="text-[10px] text-red-400 mt-1.5">{uploadError}</p>}
+              {!heroImageUrl && !heroSuccess && <p className="text-[10px] text-[#4b5563] mt-1.5">Using industry photo. Upload to customise.</p>}
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleHeroFileChange} />
+            </div>
+          </div>
+        )}
+
+        {/* ── SERVICES ───────────────────────────────────────────────────── */}
+        {activeTab === "services" && (
+          <div className="space-y-3">
+            {content.services.map((svc, i) => (
+              <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-[#6b7280] uppercase tracking-widest">Service {i + 1}</span>
+                  <button onClick={() => removeService(i)} className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">Remove</button>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className={LABEL}>Name</label>
+                    <input className={INPUT} value={svc.name} onChange={(e) => setService(i, "name", e.target.value)} />
+                  </div>
+                  <div className="w-14">
+                    <label className={LABEL}>Icon</label>
+                    <input className={INPUT} value={svc.icon} onChange={(e) => setService(i, "icon", e.target.value)} />
+                  </div>
+                </div>
+                <div>
+                  <label className={LABEL}>Description</label>
+                  <textarea className={INPUT} rows={2} value={svc.description} onChange={(e) => setService(i, "description", e.target.value)} />
+                </div>
+              </div>
+            ))}
+            {content.services.length < 8 && (
+              <button onClick={addService}
+                className="w-full py-2 text-xs text-[#00e5a0] border border-[#00e5a0]/30 rounded-xl hover:bg-[#00e5a0]/5 transition-colors">
+                + Add Service
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── ABOUT ──────────────────────────────────────────────────────── */}
+        {activeTab === "about" && (
+          <div className="space-y-3">
+            <div>
+              <label className={LABEL}>Section Title</label>
+              <input className={INPUT} value={content.about.title} onChange={(e) => setAboutField("title", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Body Text</label>
+              <textarea className={INPUT} rows={4} value={content.about.body} onChange={(e) => setAboutField("body", e.target.value)} />
+            </div>
+            {(content.about.stats?.length ?? 0) > 0 && (
+              <div>
+                <label className={LABEL}>Stats</label>
+                <div className="space-y-2">
+                  {(content.about.stats ?? []).map((stat, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input className={INPUT} placeholder="Label" value={stat.label} onChange={(e) => setStat(i, "label", e.target.value)} />
+                      <input className={INPUT} placeholder="Value" value={stat.value}
+                        style={{ width: 72, flexShrink: 0 }} onChange={(e) => setStat(i, "value", e.target.value)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* About image */}
+            <div>
+              <label className={LABEL}>About Photo</label>
+              {aboutImageUrl ? (
+                <div className="rounded-xl overflow-hidden border border-white/[0.07] mb-2" style={{ aspectRatio: "4/3", maxHeight: 120 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={aboutImageUrl} alt="About" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-white/[0.15] mb-2 flex items-center justify-center" style={{ height: 70 }}>
+                  <span className="text-[11px] text-[#4b5563]">No about image</span>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <button onClick={() => aboutFileRef.current?.click()} disabled={aboutUploading}
+                  className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50">
+                  {aboutUploading ? "Uploading…" : "📷 Upload Photo"}
+                </button>
+                {aboutImageUrl && (
+                  <button onClick={handleRemoveAboutImage}
+                    className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors">
+                    Remove
+                  </button>
+                )}
+              </div>
+              {aboutSuccess && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ About image updated!</p>}
+              {aboutError && <p className="text-[10px] text-red-400 mt-1.5">{aboutError}</p>}
+              <input ref={aboutFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAboutFileChange} />
+            </div>
+          </div>
+        )}
+
+        {/* ── TESTIMONIALS ───────────────────────────────────────────────── */}
+        {activeTab === "testimonials" && (
+          <div className="space-y-3">
+            {content.testimonials.map((t, i) => (
+              <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold text-[#6b7280] uppercase tracking-widest">Review {i + 1}</span>
+                  {content.testimonials.length > 1 && (
+                    <button onClick={() => removeTestimonial(i)} className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">Remove</button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className={LABEL}>Name</label>
+                    <input className={INPUT} value={t.name} onChange={(e) => setTestimonial(i, "name", e.target.value)} />
+                  </div>
+                  <div className="flex-1">
+                    <label className={LABEL}>Role</label>
+                    <input className={INPUT} value={t.role} onChange={(e) => setTestimonial(i, "role", e.target.value)} />
+                  </div>
+                </div>
+                <div>
+                  <label className={LABEL}>Quote</label>
+                  <textarea className={INPUT} rows={2} value={t.quote} onChange={(e) => setTestimonial(i, "quote", e.target.value)} />
+                </div>
+                <div>
+                  <label className={LABEL}>Rating</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button key={star} onClick={() => setTestimonialRating(i, star)}
+                        style={{ fontSize: 18, background: "none", border: "none", cursor: "pointer", padding: "1px",
+                          color: star <= (t.rating ?? 5) ? "#eab308" : "#374151" }}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {content.testimonials.length < 6 && (
+              <button onClick={addTestimonial}
+                className="w-full py-2 text-xs text-[#00e5a0] border border-[#00e5a0]/30 rounded-xl hover:bg-[#00e5a0]/5 transition-colors">
+                + Add Review
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── CTA ────────────────────────────────────────────────────────── */}
+        {activeTab === "cta" && (
+          <div className="space-y-3">
+            <div>
+              <label className={LABEL}>Headline</label>
+              <input className={INPUT} value={content.cta.headline} onChange={(e) => setCTA("headline", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Subtext</label>
+              <input className={INPUT} value={content.cta.subtext} onChange={(e) => setCTA("subtext", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>Button Text</label>
+              <input className={INPUT} value={content.cta.buttonText} onChange={(e) => setCTA("buttonText", e.target.value)} />
+            </div>
+            <div>
+              <label className={LABEL}>CTA Background</label>
+              <ColorPicker label="Background" value={theme.surface} fallback="#0d0e10"
+                onChange={(v) => onThemeChange({ ...theme, surface: v })} />
+            </div>
+          </div>
+        )}
+
+        {/* ── DESIGN ─────────────────────────────────────────────────────── */}
+        {activeTab === "design" && (
+          <div className="space-y-5">
+            {/* Colors */}
+            <div>
+              <label className={LABEL}>Colors</label>
+              <div className="space-y-2">
+                <ColorPicker label="Primary Color"   value={theme.primaryColor}    fallback="#10b981" onChange={(v) => onThemeChange({ ...theme, primaryColor: v })} />
+                <ColorPicker label="Page Background" value={theme.background}      fallback="#080808" onChange={(v) => onThemeChange({ ...theme, background: v })} />
+                <ColorPicker label="Navbar / Cards"  value={theme.surface}         fallback="#0d0e10" onChange={(v) => onThemeChange({ ...theme, surface: v })} />
+                <ColorPicker label="Heading Color"   value={theme.headingColor}    fallback="#ffffff" onChange={(v) => onThemeChange({ ...theme, headingColor: v })} />
+                <ColorPicker label="Body Text"       value={theme.bodyColor}       fallback="#9ca3af" onChange={(v) => onThemeChange({ ...theme, bodyColor: v })} />
+                <ColorPicker label="Accent Color"    value={theme.accentColor}     fallback="#10b981" onChange={(v) => onThemeChange({ ...theme, accentColor: v })} />
+                <ColorPicker label="Button Text"     value={theme.buttonTextColor} fallback="#000000" onChange={(v) => onThemeChange({ ...theme, buttonTextColor: v })} />
+              </div>
+              <button
+                onClick={() => onThemeChange({ ...theme, primaryColor: theme.primaryColor, headingColor: undefined, bodyColor: undefined, accentColor: undefined, buttonTextColor: undefined, background: undefined, surface: undefined })}
+                className="mt-2 text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2">
+                Reset all colors
+              </button>
+            </div>
+
+            <div className="border-t border-white/[0.06]" />
+
             {/* Font Style */}
             <div>
               <label className={LABEL}>Font Style</label>
@@ -647,18 +808,12 @@ function ContentPanel({
                 {FONT_OPTIONS.map((opt) => {
                   const active = (theme.fontStyle ?? "modern") === opt.value;
                   return (
-                    <button
-                      key={opt.value}
-                      onClick={() => onThemeChange({ ...theme, fontStyle: opt.value })}
+                    <button key={opt.value} onClick={() => onThemeChange({ ...theme, fontStyle: opt.value })}
                       style={{ fontFamily: opt.fontFamily }}
                       className={`px-3 py-2 rounded-lg text-xs transition-all text-left border ${
-                        active
-                          ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
-                          : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
+                        active ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
+                               : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
+                      }`}>{opt.label}</button>
                   );
                 })}
               </div>
@@ -671,21 +826,12 @@ function ContentPanel({
                 {BUTTON_OPTIONS.map((opt) => {
                   const active = (theme.buttonStyle ?? "rounded") === opt.value;
                   return (
-                    <button
-                      key={opt.value}
-                      onClick={() => onThemeChange({ ...theme, buttonStyle: opt.value })}
+                    <button key={opt.value} onClick={() => onThemeChange({ ...theme, buttonStyle: opt.value })}
                       className={`relative px-2 py-2.5 text-[11px] transition-all border flex flex-col items-center gap-1.5 ${
-                        active
-                          ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
-                          : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
-                      }`}
-                      style={{ borderRadius: "10px" }}
-                    >
-                      {/* Mini button preview */}
-                      <span
-                        className="block w-12 h-4 bg-current opacity-30"
-                        style={{ borderRadius: opt.radius }}
-                      />
+                        active ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0] font-bold"
+                               : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20 hover:bg-white/[0.05]"
+                      }`} style={{ borderRadius: "10px" }}>
+                      <span className="block w-12 h-4 bg-current opacity-30" style={{ borderRadius: opt.radius }} />
                       {opt.label}
                     </button>
                   );
@@ -693,206 +839,26 @@ function ContentPanel({
               </div>
             </div>
 
-            {/* Text Colors */}
+            {/* Font Size */}
             <div>
-              <label className={LABEL}>Text Colors</label>
-              <div className="space-y-2">
-                {(
-                  [
-                    { key: "headingColor",    label: "Heading Color",     fallback: "#111111" },
-                    { key: "bodyColor",       label: "Body Text Color",   fallback: "#6b7280" },
-                    { key: "accentColor",     label: "Accent Color",      fallback: "#10b981" },
-                    { key: "buttonTextColor", label: "Button Text Color", fallback: "#ffffff" },
-                  ] as const
-                ).map(({ key, label, fallback }) => {
-                  const value = (theme[key] as string | undefined) ?? fallback;
+              <label className={LABEL}>Font Size</label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(["small", "medium", "large", "xlarge"] as const).map((size) => {
+                  const active = (theme.fontSize ?? "medium") === size;
+                  const lbl = { small: "S", medium: "M", large: "L", xlarge: "XL" }[size];
                   return (
-                    <div key={key} className="flex items-center justify-between gap-3">
-                      <span className="text-[11px] text-[#9ca3af] flex-1">{label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-[#4b5563] font-mono">{value}</span>
-                        <label className="relative cursor-pointer">
-                          <span
-                            className="block w-7 h-7 rounded border border-white/20 cursor-pointer"
-                            style={{ background: value }}
-                          />
-                          <input
-                            type="color"
-                            value={value}
-                            onChange={(e) => onThemeChange({ ...theme, [key]: e.target.value })}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                        </label>
-                      </div>
-                    </div>
+                    <button key={size} onClick={() => onThemeChange({ ...theme, fontSize: size })}
+                      className={`py-2 text-[11px] rounded-lg transition-all border font-bold ${
+                        active ? "border-[#00e5a0] bg-[#00e5a0]/10 text-[#00e5a0]"
+                               : "border-white/[0.08] bg-white/[0.02] text-[#d1d5db] hover:border-white/20"
+                      }`}>{lbl}</button>
                   );
                 })}
               </div>
-              <button
-                onClick={() => onThemeChange({
-                  ...theme,
-                  headingColor: undefined,
-                  bodyColor: undefined,
-                  accentColor: undefined,
-                  buttonTextColor: undefined,
-                })}
-                className="mt-2 text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2"
-              >
-                Reset to template defaults
-              </button>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Hero */}
-      <div>
-        <SectionHeader label="🦸 Hero" expanded={expanded === "hero"} onToggle={() => toggle("hero")} />
-        {expanded === "hero" && (
-          <div className="px-4 pb-4 space-y-3">
-            <div>
-              <label className={LABEL}>Headline</label>
-              <input className={INPUT} value={content.hero.headline}
-                onChange={(e) => setHero("headline", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Subheadline</label>
-              <textarea className={INPUT} rows={3} value={content.hero.subheadline}
-                onChange={(e) => setHero("subheadline", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Button text</label>
-              <input className={INPUT} value={content.hero.ctaText}
-                onChange={(e) => setHero("ctaText", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Badge / location tag</label>
-              <input className={INPUT} value={content.hero.badge}
-                onChange={(e) => setHero("badge", e.target.value)} />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Services */}
-      <div>
-        <SectionHeader label="🛠 Services" expanded={expanded === "services"} onToggle={() => toggle("services")} />
-        {expanded === "services" && (
-          <div className="px-4 pb-4 space-y-4">
-            {content.services.map((svc, i) => (
-              <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold text-[#6b7280] uppercase tracking-widest">
-                    Service {i + 1}
-                  </span>
-                  <button onClick={() => removeService(i)}
-                    className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">
-                    Remove
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className={LABEL}>Name</label>
-                    <input className={INPUT} value={svc.name}
-                      onChange={(e) => setService(i, "name", e.target.value)} />
-                  </div>
-                  <div className="w-14">
-                    <label className={LABEL}>Icon</label>
-                    <input className={INPUT} value={svc.icon}
-                      onChange={(e) => setService(i, "icon", e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <label className={LABEL}>Description</label>
-                  <input className={INPUT} value={svc.description}
-                    onChange={(e) => setService(i, "description", e.target.value)} />
-                </div>
-              </div>
-            ))}
-            {content.services.length < 8 && (
-              <button onClick={addService}
-                className="w-full py-2 text-xs text-[#00e5a0] border border-[#00e5a0]/30 rounded-xl hover:bg-[#00e5a0]/5 transition-colors">
-                + Add Service
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* About */}
-      <div>
-        <SectionHeader label="ℹ️ About" expanded={expanded === "about"} onToggle={() => toggle("about")} />
-        {expanded === "about" && (
-          <div className="px-4 pb-4 space-y-3">
-            <div>
-              <label className={LABEL}>Section title</label>
-              <input className={INPUT} value={content.about.title}
-                onChange={(e) => setAbout("title", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Body text</label>
-              <textarea className={INPUT} rows={4} value={content.about.body}
-                onChange={(e) => setAbout("body", e.target.value)} />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Testimonials */}
-      <div>
-        <SectionHeader label="⭐ Testimonials" expanded={expanded === "testimonials"} onToggle={() => toggle("testimonials")} />
-        {expanded === "testimonials" && (
-          <div className="px-4 pb-4 space-y-4">
-            {content.testimonials.map((t, i) => (
-              <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
-                <span className="text-[10px] font-bold text-[#6b7280] uppercase tracking-widest">
-                  Review {i + 1}
-                </span>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className={LABEL}>Name</label>
-                    <input className={INPUT} value={t.name}
-                      onChange={(e) => setTestimonial(i, "name", e.target.value)} />
-                  </div>
-                  <div className="flex-1">
-                    <label className={LABEL}>Role</label>
-                    <input className={INPUT} value={t.role}
-                      onChange={(e) => setTestimonial(i, "role", e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <label className={LABEL}>Quote</label>
-                  <textarea className={INPUT} rows={2} value={t.quote}
-                    onChange={(e) => setTestimonial(i, "quote", e.target.value)} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* CTA */}
-      <div>
-        <SectionHeader label="📣 CTA" expanded={expanded === "cta"} onToggle={() => toggle("cta")} />
-        {expanded === "cta" && (
-          <div className="px-4 pb-4 space-y-3">
-            <div>
-              <label className={LABEL}>Headline</label>
-              <input className={INPUT} value={content.cta.headline}
-                onChange={(e) => setCTA("headline", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Subtext</label>
-              <input className={INPUT} value={content.cta.subtext}
-                onChange={(e) => setCTA("subtext", e.target.value)} />
-            </div>
-            <div>
-              <label className={LABEL}>Button text</label>
-              <input className={INPUT} value={content.cta.buttonText}
-                onChange={(e) => setCTA("buttonText", e.target.value)} />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -996,6 +962,14 @@ export function SiteEditor({
 
   function handleAboutImageChange(url: string | null) {
     setAboutImageUrl(url);
+  }
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  function scrollToSection(anchor: string) {
+    if (!anchor || !scrollContainerRef.current) return;
+    const el = scrollContainerRef.current.querySelector(anchor);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const panelOpen = activePanel !== null;
@@ -1156,7 +1130,7 @@ export function SiteEditor({
       </div>{/* end toolbar */}
 
       {/* ── Scroll container — fills remaining height of the flex column ─── */}
-      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+      <div ref={scrollContainerRef} style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
         <TemplateRenderer
           site={{ ...site, template: currentTemplate }}
           content={currentContent}
@@ -1171,44 +1145,47 @@ export function SiteEditor({
       {/* ── Side panel ──────────────────────────────────────────────────────── */}
       <div
         style={{
-          position:   "fixed",
-          top:         0,
-          left:        0,
-          width:      `${PANEL_W}px`,
-          height:      "100vh",
-          zIndex:      150,
-          background:  "#111214",
-          borderRight: "1px solid rgba(255,255,255,0.07)",
-          overflowY:   "auto",
-          transform:   panelOpen ? "translateX(0)" : `translateX(-${PANEL_W}px)`,
-          transition:  "transform 0.25s ease",
+          position:    "fixed",
+          top:          0,
+          left:         0,
+          width:       `${PANEL_W}px`,
+          height:       "100vh",
+          zIndex:       150,
+          background:   "#111214",
+          borderRight:  "1px solid rgba(255,255,255,0.07)",
+          display:      "flex",
+          flexDirection: "column",
+          overflow:     "hidden",
+          transform:    panelOpen ? "translateX(0)" : `translateX(-${PANEL_W}px)`,
+          transition:   "transform 0.25s ease",
         }}
       >
-        <div style={{ minHeight: "100%" }}>
-          {activePanel === "themes" && (
+        {activePanel === "themes" && (
+          <div style={{ overflowY: "auto", flex: 1 }}>
             <ThemesPanel
               currentThemeKey={currentThemeKey}
               onSelectTheme={handleSelectTheme}
               currentTemplate={currentTemplate}
               onSelectTemplate={handleSelectTemplate}
-              siteId={siteId}
-              currentHeroImageUrl={heroImageUrl}
-              currentAboutImageUrl={aboutImageUrl}
-              industry={site.industry}
-              onHeroImageChange={handleHeroImageChange}
-              onAboutImageChange={handleAboutImageChange}
             />
-          )}
-          {activePanel === "content" && (
-            <ContentPanel
-              content={currentContent}
-              onChange={handleContentChange}
-              theme={currentTheme}
-              onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
-              businessName={site.businessName}
-            />
-          )}
-        </div>
+          </div>
+        )}
+        {activePanel === "content" && (
+          <ContentPanel
+            content={currentContent}
+            onChange={handleContentChange}
+            theme={currentTheme}
+            onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
+            businessName={site.businessName}
+            siteId={siteId}
+            heroImageUrl={heroImageUrl}
+            aboutImageUrl={aboutImageUrl}
+            onHeroImageChange={handleHeroImageChange}
+            onAboutImageChange={handleAboutImageChange}
+            industry={site.industry ?? "Other"}
+            onScrollToSection={scrollToSection}
+          />
+        )}
       </div>
 
       {/* ── Ask Bailey side panel (right side) ────────────────────────────────── */}

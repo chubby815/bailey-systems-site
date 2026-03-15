@@ -83,7 +83,7 @@ function Styles({ p, offBg, bg, btnRadius }: { p: string; offBg: string; bg: str
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor, surface }: { businessName: string; primaryColor: string; surface: string }) {
+function Navbar({ businessName, primaryColor, surface, navLinks }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string] }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
@@ -99,8 +99,8 @@ function Navbar({ businessName, primaryColor, surface }: { businessName: string;
         </span>
         <div style={{ display: "flex", gap: "2.5rem", alignItems: "center" }}>
           <div className="mn-nav-links" style={{ display: "flex", gap: "2rem" }}>
-            {["Services", "About", "Contact"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{
+            {(navLinks ?? ["Services", "About", "Contact"]).map((l, i) => (
+              <a key={i} href={["#services", "#about", "#contact"][i]} style={{
                 fontFamily: FF, fontSize: "0.875rem", fontWeight: 400,
                 color: MUTED, textDecoration: "none",
               }}>{l}</a>
@@ -490,7 +490,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
     <>
       <Styles p={primaryColor} offBg={OFF_BG} bg={BG} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF, background: BG, color: TEXT, overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />

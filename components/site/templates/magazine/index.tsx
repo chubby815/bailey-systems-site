@@ -84,7 +84,7 @@ function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ businessName, primaryColor, surface }: { businessName: string; primaryColor: string; surface: string }) {
+function Navbar({ businessName, primaryColor, surface, navLinks }: { businessName: string; primaryColor: string; surface: string; navLinks?: [string, string, string] }) {
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 50,
@@ -101,8 +101,8 @@ function Navbar({ businessName, primaryColor, surface }: { businessName: string;
         }}>{businessName}</span>
         <div style={{ display: "flex", gap: "2.5rem", alignItems: "center" }}>
           <div className="mg-nav-links" style={{ display: "flex", gap: "2.5rem" }}>
-            {["Services", "About", "Contact"].map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} style={{
+            {(navLinks ?? ["Services", "About", "Contact"]).map((l, i) => (
+              <a key={i} href={["#services", "#about", "#contact"][i]} style={{
                 fontFamily: FF_SAN, fontSize: "0.78rem", fontWeight: 400, color: MUTED,
                 textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.08em",
               }}>{l}</a>
@@ -548,7 +548,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
     <>
       <Styles p={primaryColor} btnRadius={btnRadius} />
       <div style={{ fontFamily: FF_SAN, background: BG, color: BLACK, overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} />
+        <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} />
         <Hero
           content={content.hero}
           heroImageUrl={heroImageUrl}
