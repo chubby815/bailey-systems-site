@@ -12,7 +12,7 @@ import { AskBailey }        from "@/components/editor/AskBailey";
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Panel = "themes" | "content" | "askbailey" | null;
 
-type ContentSection = "style" | "hero" | "services" | "about" | "testimonials" | "cta";
+type ContentSection = "navbar" | "style" | "hero" | "services" | "about" | "testimonials" | "cta";
 
 type Props = {
   site:                SiteRecord;
@@ -521,13 +521,15 @@ function ContentPanel({
   onChange,
   theme,
   onThemeChange,
+  businessName,
 }: {
-  content:       StructuredSiteContent;
-  onChange:      (c: StructuredSiteContent) => void;
-  theme:         ThemeConfig;
-  onThemeChange: (t: ThemeConfig) => void;
+  content:        StructuredSiteContent;
+  onChange:       (c: StructuredSiteContent) => void;
+  theme:          ThemeConfig;
+  onThemeChange:  (t: ThemeConfig) => void;
+  businessName?:  string;
 }) {
-  const [expanded, setExpanded] = useState<ContentSection | null>("style");
+  const [expanded, setExpanded] = useState<ContentSection | null>("navbar");
 
   function toggle(s: ContentSection) {
     setExpanded((prev) => (prev === s ? null : s));
@@ -573,6 +575,66 @@ function ContentPanel({
 
   return (
     <div className="divide-y divide-white/[0.06]">
+
+      {/* ── Navbar ────────────────────────────────────────────────────────────── */}
+      <div>
+        <SectionHeader label="🧭 Navbar" expanded={expanded === "navbar"} onToggle={() => toggle("navbar")} />
+        {expanded === "navbar" && (
+          <div className="px-4 pb-4 space-y-4">
+
+            {/* Business Name — read-only */}
+            {businessName && (
+              <div>
+                <label className={LABEL}>Business Name</label>
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
+                  <span className="text-xs text-[#f0f0f0]">{businessName}</span>
+                  <span className="block text-[10px] text-[#4b5563] mt-0.5">
+                    Set when site was created
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Navbar Background Color */}
+            {(
+              [
+                { key: "surface",   label: "Navbar Background", fallback: "#0d0e10" },
+                { key: "bodyColor", label: "Nav Link Color",     fallback: "#9ca3af" },
+              ] as const
+            ).map(({ key, label, fallback }) => {
+              const value = (theme[key] as string | undefined) ?? fallback;
+              return (
+                <div key={key} className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-[#9ca3af] flex-1">{label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-[#4b5563] font-mono">{value}</span>
+                    <label className="relative cursor-pointer">
+                      <span
+                        className="block w-7 h-7 rounded border border-white/20 cursor-pointer"
+                        style={{ background: value }}
+                      />
+                      <input
+                        type="color"
+                        value={value}
+                        onChange={(e) => onThemeChange({ ...theme, [key]: e.target.value })}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+
+            <button
+              onClick={() => onThemeChange({ ...theme, surface: undefined, bodyColor: undefined })}
+              className="text-[10px] text-[#4b5563] hover:text-[#9ca3af] transition-colors underline underline-offset-2"
+            >
+              Reset to template defaults
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Style */}
       <div>
         <SectionHeader label="🎨 Style" expanded={expanded === "style"} onToggle={() => toggle("style")} />
@@ -1143,6 +1205,7 @@ export function SiteEditor({
               onChange={handleContentChange}
               theme={currentTheme}
               onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
+              businessName={site.businessName}
             />
           )}
         </div>
