@@ -957,6 +957,7 @@ export function SiteEditor({
           bottom:         0,
           display:       "flex",
           flexDirection: "column",
+          zIndex:         200,
           transition:    "left 0.25s ease, right 0.25s ease",
         }}
       >

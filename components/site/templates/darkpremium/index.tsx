@@ -98,8 +98,8 @@ function Navbar({ businessName, ctaText, primaryColor, navBackground }: { busine
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: navBackground, backdropFilter: "blur(20px) saturate(180%)",
-      borderBottom: `1px solid ${BORDER}`,
+      background: navBackground,
+      borderBottom: "1px solid rgba(255,255,255,0.15)",
       padding: "0 clamp(1rem, 5vw, 3rem)",
     }}>
       <div style={{
@@ -605,7 +605,6 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme }: TemplateProps) {
   const BG   = theme?.background ?? "#080808";
   const CARD = theme?.surface ?? "#0d0e10";
-  const navBackground = hexToRgba(BG, 0.85);
   const btnRadius =
     theme?.buttonStyle === "sharp" ? "0px" :
     theme?.buttonStyle === "pill"  ? "999px" : "12px";
@@ -613,7 +612,7 @@ export function DarkPremiumLayout({ site, content, primaryColor, heroImageUrl, a
     <>
       <Styles p={primaryColor} card={CARD} />
       <div style={{ fontFamily: FF, background: BG, color: "#f0f0f0", overflowX: "clip" }}>
-        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={navBackground} />
+        <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} primaryColor={primaryColor} navBackground={BG} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} theme={theme} btnRadius={btnRadius} />
         <StatsRow content={content.about} site={site} primaryColor={primaryColor} card={CARD} />
         <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
