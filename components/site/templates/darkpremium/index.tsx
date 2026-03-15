@@ -144,7 +144,7 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl, theme, btnRad
     <section id="home" style={{
       minHeight: "100vh", backgroundColor: bg,
       display: "flex", alignItems: "center", justifyContent: "center",
-      position: "relative", overflow: "hidden", padding: "8rem clamp(1rem, 5vw, 3rem) 5rem",
+      position: "relative", overflow: "hidden", padding: "2rem clamp(1rem, 5vw, 3rem) 5rem",
       backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : GRAIN,
       backgroundSize: heroImageUrl ? "cover" : undefined,
       backgroundPosition: heroImageUrl ? "center" : undefined,

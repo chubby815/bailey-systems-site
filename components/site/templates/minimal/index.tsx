@@ -126,7 +126,7 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
   return (
     <section id="home" style={{
       background: heroImageUrl ? "#111" : bg,
-      padding: "9rem clamp(1rem, 5vw, 3rem) 7rem",
+      padding: "2rem clamp(1rem, 5vw, 3rem) 7rem",
       textAlign: "center", position: "relative",
       ...(heroImageUrl ? { backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
     }}>

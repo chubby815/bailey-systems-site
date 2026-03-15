@@ -165,7 +165,7 @@ function Hero({ content, heroImageUrl, location }: {
   return (
     <section id="home" style={{
       backgroundImage: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY2} 60%, #0a1020 100%)`,
-      padding: "6rem clamp(1rem, 5vw, 3rem) 5rem",
+      padding: "2rem clamp(1rem, 5vw, 3rem) 5rem",
       position: "relative", overflow: "hidden",
     }}>
       {/* Subtle texture */}
