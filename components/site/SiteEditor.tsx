@@ -974,41 +974,31 @@ export function SiteEditor({
 
   const panelOpen = activePanel !== null;
   const BAR_H     = 52;
-  const PANEL_W   = 360;
+  const SIDEBAR_W = 320;
 
   return (
-    <>
-      {/* ── Editor shell: toolbar + scroll container in ONE flex column ──────
-          The toolbar is a flex child (height: BAR_H, never scrolls).
-          The scroll container is the next flex child (flex: 1, scrollable).
-          No spacer needed — the toolbar physically pushes content below it.
-          Template navbars (position:sticky, top:0) stick at the top of the
-          scroll container, which is visually right below the toolbar. ────── */}
+    <div style={{
+      position:      "fixed",
+      top:            0, left: 0, right: 0, bottom: 0,
+      display:       "flex",
+      flexDirection: "column",
+      overflow:      "hidden",
+      zIndex:         200,
+    }}>
+
+      {/* ── TOOLBAR — full width, fixed height ─────────────────────────────── */}
       <div
         style={{
-          position:      "fixed",
-          top:            0,
-          left:          panelOpen ? `${PANEL_W}px` : "0",
-          right:         askBaileyOpen ? `${PANEL_W}px` : "0",
-          bottom:         0,
-          display:       "flex",
-          flexDirection: "column",
-          zIndex:         200,
-          transition:    "left 0.25s ease, right 0.25s ease",
-        }}
-      >
-      {/* ── Editor top bar (flex child — height is fixed, never scrolls) ──── */}
-      <div
-        style={{
-          height:       `${BAR_H}px`,
-          flexShrink:    0,
-          background:   "#0d0e10",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-          display:      "flex",
-          alignItems:   "center",
+          height:         `${BAR_H}px`,
+          flexShrink:      0,
+          background:     "#0d0e10",
+          borderBottom:   "1px solid rgba(255,255,255,0.08)",
+          display:        "flex",
+          alignItems:     "center",
           justifyContent: "space-between",
-          padding:      "0 1rem",
-          gap:          "0.75rem",
+          padding:        "0 1rem",
+          gap:            "0.75rem",
+          zIndex:          10,
         }}
       >
         {/* Left */}
@@ -1129,101 +1119,105 @@ export function SiteEditor({
         </div>
       </div>{/* end toolbar */}
 
-      {/* ── Scroll container — fills remaining height of the flex column ─── */}
-      <div ref={scrollContainerRef} style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
-        <TemplateRenderer
-          site={{ ...site, template: currentTemplate }}
-          content={currentContent}
-          theme={currentTheme}
-          heroImageUrl={heroImageUrl}
-          aboutImageUrl={aboutImageUrl}
-          isEditing={true}
-        />
-      </div>
+      {/* ── MAIN AREA: sidebar + preview + ask bailey in a flex row ────────── */}
+      <div style={{
+        flex:          1,
+        display:       "flex",
+        flexDirection: "row",
+        overflow:      "hidden",
+        minHeight:      0,
+      }}>
 
-      </div>{/* end editor shell */}
+        {/* ── LEFT SIDEBAR — pushes preview to the right ───────────────────── */}
+        {panelOpen && (
+          <div style={{
+            width:          `${SIDEBAR_W}px`,
+            flexShrink:      0,
+            height:         "100%",
+            background:     "#111214",
+            borderRight:    "1px solid rgba(255,255,255,0.07)",
+            display:        "flex",
+            flexDirection:  "column",
+            overflow:       "hidden",
+          }}>
+            {activePanel === "themes" && (
+              <div style={{ overflowY: "auto", flex: 1 }}>
+                <ThemesPanel
+                  currentThemeKey={currentThemeKey}
+                  onSelectTheme={handleSelectTheme}
+                  currentTemplate={currentTemplate}
+                  onSelectTemplate={handleSelectTemplate}
+                />
+              </div>
+            )}
+            {activePanel === "content" && (
+              <ContentPanel
+                content={currentContent}
+                onChange={handleContentChange}
+                theme={currentTheme}
+                onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
+                businessName={site.businessName}
+                siteId={siteId}
+                heroImageUrl={heroImageUrl}
+                aboutImageUrl={aboutImageUrl}
+                onHeroImageChange={handleHeroImageChange}
+                onAboutImageChange={handleAboutImageChange}
+                industry={site.industry ?? "Other"}
+                onScrollToSection={scrollToSection}
+              />
+            )}
+          </div>
+        )}
 
-      {/* ── Side panel ──────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          position:    "fixed",
-          top:         `${BAR_H}px`,
-          left:         0,
-          width:       `${PANEL_W}px`,
-          height:      `calc(100vh - ${BAR_H}px)`,
-          zIndex:       150,
-          background:   "#111214",
-          borderRight:  "1px solid rgba(255,255,255,0.07)",
-          display:      "flex",
-          flexDirection: "column",
-          overflow:     "hidden",
-          transform:    panelOpen ? "translateX(0)" : `translateX(-${PANEL_W}px)`,
-          transition:   "transform 0.25s ease",
-        }}
-      >
-        {activePanel === "themes" && (
-          <div style={{ overflowY: "auto", flex: 1 }}>
-            <ThemesPanel
-              currentThemeKey={currentThemeKey}
-              onSelectTheme={handleSelectTheme}
-              currentTemplate={currentTemplate}
-              onSelectTemplate={handleSelectTemplate}
+        {/* ── PREVIEW CANVAS — fills all remaining horizontal space ─────────── */}
+        <div ref={scrollContainerRef} style={{
+          flex:      1,
+          height:    "100%",
+          overflowY: "auto",
+          minWidth:   0,
+        }}>
+          <TemplateRenderer
+            site={{ ...site, template: currentTemplate }}
+            content={currentContent}
+            theme={currentTheme}
+            heroImageUrl={heroImageUrl}
+            aboutImageUrl={aboutImageUrl}
+            isEditing={true}
+          />
+        </div>
+
+        {/* ── RIGHT PANEL — Ask Bailey ──────────────────────────────────────── */}
+        {askBaileyOpen && (
+          <div style={{
+            width:          `${SIDEBAR_W}px`,
+            flexShrink:      0,
+            height:         "100%",
+            background:     "#111214",
+            borderLeft:     "1px solid rgba(255,255,255,0.07)",
+            display:        "flex",
+            flexDirection:  "column",
+            overflow:       "hidden",
+          }}>
+            <AskBailey
+              siteData={{ content: currentContent, theme: currentTheme }}
+              plan={plan}
+              onPreview={(updated) => {
+                const u = updated as { content?: unknown; theme?: unknown };
+                if (u.content) setCurrentContent(u.content as StructuredSiteContent);
+                if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
+              }}
+              onApply={(updated) => {
+                const u = updated as { content?: unknown; theme?: unknown };
+                hasChanges.current = true;
+                if (u.content) setCurrentContent(u.content as StructuredSiteContent);
+                if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
+              }}
             />
           </div>
         )}
-        {activePanel === "content" && (
-          <ContentPanel
-            content={currentContent}
-            onChange={handleContentChange}
-            theme={currentTheme}
-            onThemeChange={(t) => { hasChanges.current = true; setCurrentTheme(t); }}
-            businessName={site.businessName}
-            siteId={siteId}
-            heroImageUrl={heroImageUrl}
-            aboutImageUrl={aboutImageUrl}
-            onHeroImageChange={handleHeroImageChange}
-            onAboutImageChange={handleAboutImageChange}
-            industry={site.industry ?? "Other"}
-            onScrollToSection={scrollToSection}
-          />
-        )}
-      </div>
 
-      {/* ── Ask Bailey side panel (right side) ────────────────────────────────── */}
-      <div
-        style={{
-          position:    "fixed",
-          top:          0,
-          right:        0,
-          width:       `${PANEL_W}px`,
-          height:       "100vh",
-          zIndex:       150,
-          background:   "#111214",
-          borderLeft:   "1px solid rgba(255,255,255,0.07)",
-          display:      "flex",
-          flexDirection: "column",
-          overflow:     "hidden",
-          transform:    askBaileyOpen ? "translateX(0)" : `translateX(${PANEL_W}px)`,
-          transition:   "transform 0.25s ease",
-        }}
-      >
-        <AskBailey
-          siteData={{ content: currentContent, theme: currentTheme }}
-          plan={plan}
-          onPreview={(updated) => {
-            const u = updated as { content?: unknown; theme?: unknown };
-            if (u.content) setCurrentContent(u.content as StructuredSiteContent);
-            if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
-          }}
-          onApply={(updated) => {
-            const u = updated as { content?: unknown; theme?: unknown };
-            hasChanges.current = true;
-            if (u.content) setCurrentContent(u.content as StructuredSiteContent);
-            if (u.theme)   setCurrentTheme(u.theme as ThemeConfig);
-          }}
-        />
-      </div>
+      </div>{/* end main area */}
 
-    </>
+    </div>
   );
 }
