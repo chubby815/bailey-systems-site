@@ -471,7 +471,7 @@ function Hero({
           style={{
             fontFamily: FF_BODY,
             fontSize: "clamp(1rem, 2.5vw, 1.1875rem)",
-            color: "#71717a",
+            color: C_BODY,
             lineHeight: 1.75,
             maxWidth: "560px",
             margin: "0 auto 3.5rem",

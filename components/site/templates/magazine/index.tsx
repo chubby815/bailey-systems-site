@@ -240,7 +240,7 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
 
         <p style={{
           fontFamily: FF_SAN, fontSize: "clamp(0.9rem, 2vw, 1.0625rem)",
-          color: "rgba(255,255,255,0.7)", maxWidth: "480px", lineHeight: 1.75, marginBottom: "2.5rem",
+          color: C_BODY, maxWidth: "480px", lineHeight: 1.75, marginBottom: "2.5rem",
         }}>
           {content.subheadline}
         </p>

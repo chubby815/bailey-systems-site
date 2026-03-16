@@ -209,7 +209,7 @@ function Hero({ content, primaryColor, location, bg, heroImageUrl }: {
 
         <p style={{
           fontFamily: FF, fontSize: "clamp(1rem, 2.5vw, 1.1875rem)", fontWeight: 400,
-          color: MUTED, lineHeight: 1.75, marginBottom: "3rem",
+          color: C_BODY, lineHeight: 1.75, marginBottom: "3rem",
           maxWidth: "520px", margin: "0 auto 3rem",
         }}>
           {content.subheadline}
