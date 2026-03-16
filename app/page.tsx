@@ -1,5 +1,6 @@
 import { HeroInput } from "@/components/HeroInput";
 import { AgentCards } from "@/components/AgentCards";
+import HeroHeadline from "@/components/HeroHeadline";
 
 export default function Home() {
   return (
@@ -33,10 +34,7 @@ export default function Home() {
           </div>
 
           {/* H1 */}
-          <h1 className="font-syne text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-            AI Builds Your Business<br />
-            Website in <span className="text-[#00e5a0]">60 Seconds</span>
-          </h1>
+          <HeroHeadline />
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-[#6b7280] max-w-2xl mx-auto mb-10 leading-relaxed">
