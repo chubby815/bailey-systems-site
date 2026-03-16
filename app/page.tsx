@@ -2,6 +2,7 @@ import { HeroInput } from "@/components/HeroInput";
 import { AgentCards } from "@/components/AgentCards";
 import HeroHeadline from "@/components/HeroHeadline";
 import TemplatePreviews from "@/components/TemplatePreviews";
+import TeamHeading from "@/components/TeamHeading";
 
 export default function Home() {
   return (
@@ -79,9 +80,7 @@ export default function Home() {
             <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
               Our Team
             </p>
-            <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight mb-5">
-              The people behind Bailey
-            </h2>
+            <TeamHeading />
             <p className="text-[#6b7280] max-w-2xl mx-auto text-base leading-relaxed">
               BaileyAgents is a platform designed to help businesses generate 
               professional websites and powerful AI agents in minutes. Our mission 
