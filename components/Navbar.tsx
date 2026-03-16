@@ -77,6 +77,7 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
         <div className="hidden md:flex items-center gap-8">
           <NavLink href="#agents">Agents</NavLink>
           <NavLink href="#how-it-works">How It Works</NavLink>
+          <NavLink href="#team">Team</NavLink>
           <NavLink href="/pricing">Pricing</NavLink>
           <NavLink href="/pro">Pro</NavLink>
           <NavLink href="/elite">Elite 👑</NavLink>
@@ -167,6 +168,7 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
         <div className="md:hidden border-t border-white/[0.07] bg-[#08090a] px-6 py-4 flex flex-col gap-4">
           <MobileLink href="#agents" onClick={() => setMobileOpen(false)}>Agents</MobileLink>
           <MobileLink href="#how-it-works" onClick={() => setMobileOpen(false)}>How It Works</MobileLink>
+          <MobileLink href="#team" onClick={() => setMobileOpen(false)}>Team</MobileLink>
           <MobileLink href="/pricing" onClick={() => setMobileOpen(false)}>Pricing</MobileLink>
           <MobileLink href="/pro" onClick={() => setMobileOpen(false)}>Pro</MobileLink>
           <MobileLink href="/elite" onClick={() => setMobileOpen(false)}>Elite 👑</MobileLink>

@@ -73,6 +73,92 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── SECTION: TEAM ───────────────────────────────────────────── */}
+      <section id="team" className="py-24 px-6 bg-[#0d0e10]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-6">
+            <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
+              Our Team
+            </p>
+            <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight mb-5">
+              The people behind Bailey
+            </h2>
+            <p className="text-[#6b7280] max-w-2xl mx-auto text-base leading-relaxed">
+              BaileyAgents is a platform designed to help businesses generate 
+              professional websites and powerful AI agents in minutes. Our mission 
+              is to make advanced AI automation simple and accessible for 
+              entrepreneurs, creators, and local businesses.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+            {[
+              {
+                name: "Javier Sandoval",
+                title: "Founder & AI Systems Developer",
+                desc: "Creator of the BaileyAgents platform and the developer behind the Bailey AI automation system. Focused on building AI-powered tools that save time and improve productivity.",
+                initial: "JS",
+                color: "bg-[#00e5a0]/10 text-[#00e5a0] border border-[#00e5a0]/20",
+                ai: false,
+              },
+              {
+                name: "Rosa Sandoval",
+                title: "Media Director & Creative Production",
+                desc: "Leads visual and media production for BaileyAgents — photography, video, and creative content used across branding, marketing, and promotional material.",
+                initial: "RS",
+                color: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+                ai: false,
+              },
+              {
+                name: "Manny Sandoval",
+                title: "Head of Marketing & Growth",
+                desc: "Leads marketing strategy and platform growth. Helps businesses understand how AI automation can transform their marketing and online presence.",
+                initial: "MS",
+                color: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+                ai: false,
+              },
+              {
+                name: "Bailey AI",
+                title: "Chief AI Automation Agent",
+                desc: "The AI system powering BaileyAgents. Generates websites, operates agents, automates creative workflows, and assists businesses with AI-driven tools.",
+                initial: "✦",
+                color: "bg-[#00e5a0]/10 text-[#00e5a0] border border-[#00e5a0]/20",
+                ai: true,
+              },
+            ].map((member) => (
+              <div
+                key={member.name}
+                className="bg-[#111214] border border-white/[0.07] rounded-2xl p-6 flex flex-col gap-5 hover:border-white/20 transition-colors group"
+              >
+                {/* Photo placeholder */}
+                <div className="w-full aspect-square rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col items-center justify-center gap-2 group-hover:border-white/10 transition-colors">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-black ${member.color}`}>
+                    {member.initial}
+                  </div>
+                  <span className="text-[10px] text-[#3f3f46] uppercase tracking-widest">
+                    {member.ai ? "AI Agent" : "Photo coming soon"}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-syne font-bold text-[#f0f0f0] text-base">{member.name}</p>
+                    {member.ai && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest bg-[#00e5a0]/10 text-[#00e5a0] border border-[#00e5a0]/20 px-2 py-0.5 rounded-full">
+                        AI
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#00e5a0] font-semibold mb-3">{member.title}</p>
+                  <p className="text-xs text-[#6b7280] leading-relaxed">{member.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 2: TEMPLATE PREVIEWS ───────────────────────────── */}
       <section className="py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-14">
