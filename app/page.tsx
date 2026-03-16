@@ -4,6 +4,7 @@ import HeroHeadline from "@/components/HeroHeadline";
 import TemplatePreviews from "@/components/TemplatePreviews";
 import TeamHeading from "@/components/TeamHeading";
 import TeamCards from "@/components/TeamCards";
+import AIAgentsHeading from "@/components/AIAgentsHeading";
 
 export default function Home() {
   return (
@@ -117,9 +118,7 @@ export default function Home() {
           <p className="text-[#00e5a0] text-xs font-semibold uppercase tracking-widest mb-3">
             AI Agents
           </p>
-          <h2 className="font-syne text-4xl md:text-5xl font-black tracking-tight">
-            Your AI team, working 24/7
-          </h2>
+          <AIAgentsHeading />
           <p className="text-[#6b7280] mt-4 max-w-xl mx-auto">
             Eight specialized agents that handle the work you hate — automatically.
           </p>
