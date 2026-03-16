@@ -6,7 +6,7 @@ export default function TemplatePreviews() {
   return (
     <div className="grid md:grid-cols-5 gap-4">
 
-      <ElectricBorder color="#FFD700" speed={0.8} chaos={0.18} borderRadius={16}>
+      <ElectricBorder color="#ffffff" speed={0.4} chaos={0.06} borderRadius={16}>
         <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-[#00e5a0]/30 transition-colors group cursor-pointer flex flex-col">
           <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
             <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -29,7 +29,7 @@ export default function TemplatePreviews() {
         </div>
       </ElectricBorder>
 
-      <ElectricBorder color="#FFD700" speed={0.8} chaos={0.18} borderRadius={16}>
+      <ElectricBorder color="#ffffff" speed={0.4} chaos={0.06} borderRadius={16}>
         <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-400/30 transition-colors group cursor-pointer flex flex-col">
           <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
             <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -52,7 +52,7 @@ export default function TemplatePreviews() {
         </div>
       </ElectricBorder>
 
-      <ElectricBorder color="#FFD700" speed={0.8} chaos={0.18} borderRadius={16}>
+      <ElectricBorder color="#ffffff" speed={0.4} chaos={0.06} borderRadius={16}>
         <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-blue-400/30 transition-colors group cursor-pointer flex flex-col">
           <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
             <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -75,7 +75,7 @@ export default function TemplatePreviews() {
         </div>
       </ElectricBorder>
 
-      <ElectricBorder color="#FFD700" speed={0.8} chaos={0.18} borderRadius={16}>
+      <ElectricBorder color="#ffffff" speed={0.4} chaos={0.06} borderRadius={16}>
         <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-rose-400/30 transition-colors group cursor-pointer flex flex-col">
           <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
             <div className="w-2 h-2 rounded-full bg-red-500/60" />
@@ -98,7 +98,7 @@ export default function TemplatePreviews() {
         </div>
       </ElectricBorder>
 
-      <ElectricBorder color="#FFD700" speed={0.8} chaos={0.18} borderRadius={16}>
+      <ElectricBorder color="#ffffff" speed={0.4} chaos={0.06} borderRadius={16}>
         <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-yellow-600/30 transition-colors group cursor-pointer flex flex-col">
           <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/[0.07]">
             <div className="w-2 h-2 rounded-full bg-red-500/60" />
