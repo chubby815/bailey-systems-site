@@ -13,6 +13,7 @@ export default function HeroSection() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: "#000000",
       }}
     >
       {/* Background video */}
@@ -27,10 +28,8 @@ export default function HeroSection() {
           left: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          objectFit: "contain",
           objectPosition: "center center",
-          transform: "scale(0.9)",
-          transformOrigin: "center center",
           zIndex: 0,
         }}
       >
