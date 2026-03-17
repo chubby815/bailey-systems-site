@@ -8,7 +8,7 @@ export default function HeroSection() {
     <section
       style={{
         position: "relative",
-        minHeight: "92vh",
+        minHeight: "95vh",
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
@@ -28,8 +28,8 @@ export default function HeroSection() {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: "center top",
-          transform: "scale(0.85)",
+          objectPosition: "center center",
+          transform: "scale(0.9)",
           transformOrigin: "center center",
           zIndex: 0,
         }}
