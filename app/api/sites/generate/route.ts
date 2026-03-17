@@ -333,6 +333,12 @@ export async function POST(req: NextRequest) {
   };
 
   console.log(`[sites/generate] siteId="${siteId}" enableChat=${siteData.enableChat}`);
+  console.log(
+    "[generate] saving generatedHTML:",
+    generatedHTML
+      ? `${generatedHTML.length} chars`
+      : "MISSING"
+  );
 
   // Save site record
   await saveSite(siteId, siteData);

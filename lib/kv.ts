@@ -112,29 +112,59 @@ export type SiteRecord = {
   generatedHTML?: string;
 };
 
-/** Save a generated site to Redis */
+/** Save a generated site to Redis.
+ *  generatedHTML is stored under a separate key (html:{siteId}) because
+ *  the full HTML + embedded base64 images can exceed 1 MB — Upstash's
+ *  per-command limit — causing the entire save to fail silently. */
 export async function saveSite(siteId: string, data: SiteRecord): Promise<void> {
   try {
-    await kv.set(`site:${siteId}`, data);
+    // Separate the large HTML blob so the main record stays small
+    const { generatedHTML: htmlToStore, ...recordWithoutHTML } = data;
+
+    await kv.set(`site:${siteId}`, recordWithoutHTML);
+
+    if (htmlToStore && htmlToStore !== "[generated]") {
+      await kv.set(`html:${siteId}`, htmlToStore);
+      console.log(`[saveSite] html:${siteId} saved — ${htmlToStore.length} chars`);
+    }
   } catch (err) {
     console.error("[saveSite] Redis error:", err);
   }
 }
 
-/** Get a generated site from Redis */
+/** Get a generated site from Redis.
+ *  Fetches the main record then merges in the separately stored HTML blob. */
 export async function getSite(siteId: string): Promise<SiteRecord | null> {
   try {
-    return await kv.get<SiteRecord>(`site:${siteId}`);
+    const result = await kv.get<SiteRecord>(`site:${siteId}`);
+    if (!result) return null;
+
+    // Fetch the HTML that was stored separately to avoid size limits
+    if (!result.generatedHTML) {
+      const storedHTML = await kv.get<string>(`html:${siteId}`);
+      if (storedHTML) {
+        result.generatedHTML = storedHTML;
+      }
+    }
+
+    console.log(
+      "[getSite] generatedHTML:",
+      result?.generatedHTML
+        ? `${result.generatedHTML.length} chars`
+        : "MISSING"
+    );
+    return result;
   } catch (err) {
     console.error("[getSite] Redis error:", err);
     return null;
   }
 }
 
-/** Delete a generated site from Redis */
+/** Delete a generated site from Redis (cleans up both keys). */
 export async function deleteSite(siteId: string): Promise<void> {
   try {
     await kv.del(`site:${siteId}`);
+    await kv.del(`html:${siteId}`);
   } catch (err) {
     console.error("[deleteSite] Redis error:", err);
   }

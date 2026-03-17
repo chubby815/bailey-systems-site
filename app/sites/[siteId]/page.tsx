@@ -154,6 +154,12 @@ export default async function SitePage({
   } catch { viewerPlan = "starter"; }
 
   // ── Full HTML generated site (new pipeline) ──────────────────────────────
+  console.log(
+    "[sitePage] site.generatedHTML:",
+    site?.generatedHTML
+      ? `${site.generatedHTML.length} chars`
+      : "MISSING"
+  );
   if (site.generatedHTML) {
     return (
       <div
