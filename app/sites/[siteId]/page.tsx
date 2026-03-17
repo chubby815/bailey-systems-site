@@ -153,7 +153,45 @@ export default async function SitePage({
       : "starter";
   } catch { viewerPlan = "starter"; }
 
-  // ── Full HTML generated site (new pipeline) ──────────────────────────────
+  const c             = site.generatedContent;
+  const theme         = site.editorTheme ?? buildThemeConfig(site);
+  const heroImageUrl  = site.heroImage  ?? undefined;
+  const aboutImageUrl = site.aboutImage ?? undefined;
+
+  // ── Edit mode: mount SiteEditor FIRST — before any early returns ──────────
+  // This must come before the generatedHTML early return so that HTML sites
+  // are editable when the owner visits with ?edit=true.
+  if (isOwner && editMode) {
+    // For HTML sites generatedContent is the buildFallback stub (passes
+    // isStructuredContent). The inline fallback below only fires for legacy
+    // edge-case sites and provides a safe minimum shape for the editor.
+    const editorContent = isStructuredContent(c) ? c : {
+      hero:         { headline: site.businessName ?? "", subheadline: "", ctaText: "Contact Us", badge: site.location ?? "" },
+      services:     [] as { name: string; description: string; icon: string }[],
+      about:        { title: site.businessName ?? "", body: "", stats: [] as { label: string; value: string }[] },
+      testimonials: [] as { name: string; role: string; quote: string; rating: number }[],
+      cta:          { headline: "", subtext: "", buttonText: "" },
+      seo:          { title: site.businessName ?? "", description: "" },
+    };
+
+    return (
+      <>
+        {siteIsPaused && <PausedOverlay />}
+        <SiteEditor
+          site={site}
+          content={editorContent}
+          theme={theme}
+          isOwner={true}
+          editMode={true}
+          siteId={siteId}
+          initialHeroImageUrl={heroImageUrl}
+          plan={viewerPlan}
+        />
+      </>
+    );
+  }
+
+  // ── Full HTML generated site — visitor view ───────────────────────────────
   console.log(
     "[sitePage] site.generatedHTML:",
     site?.generatedHTML
@@ -163,54 +201,14 @@ export default async function SitePage({
   if (site.generatedHTML) {
     return (
       <div
-        dangerouslySetInnerHTML={{
-          __html: site.generatedHTML
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-          minHeight: '100vh',
-        }}
+        dangerouslySetInnerHTML={{ __html: site.generatedHTML }}
+        style={{ width: "100%", minHeight: "100vh" }}
       />
-    )
+    );
   }
 
-  const c = site.generatedContent;
-
-  // ── New structured format ─────────────────────────────────────────────────
+  // ── New structured format — visitor view ─────────────────────────────────
   if (isStructuredContent(c)) {
-    // Use the owner's saved editor theme if present, otherwise derive from record
-    const theme = site.editorTheme ?? buildThemeConfig(site);
-
-    // Read hero and about images directly from the site record (base64 data URLs
-    // saved by app/api/sites/[siteId]/image/route.ts).
-    const heroImageUrl  = site.heroImage  ?? undefined;
-    const aboutImageUrl = site.aboutImage ?? undefined;
-
-    // Only mount the editor chrome when the owner explicitly visits with ?edit=true.
-    // All other visits (visitors, or owner without ?edit=true) get the clean site.
-    if (isOwner && editMode) {
-      // SiteShareBar is intentionally omitted here — the editor toolbar already
-      // has a "View Live ↗" button. Showing SiteShareBar in edit mode would
-      // place it at position:fixed / top:52px / z-index:9999, covering the
-      // template's site navbar in the preview canvas.
-      return (
-        <>
-          {siteIsPaused && <PausedOverlay />}
-          <SiteEditor
-            site={site}
-            content={c}
-            theme={theme}
-            isOwner={true}
-            editMode={true}
-            siteId={siteId}
-            initialHeroImageUrl={heroImageUrl}
-            plan={viewerPlan}
-          />
-        </>
-      );
-    }
-
     return (
       <>
         {siteIsPaused && <PausedOverlay />}

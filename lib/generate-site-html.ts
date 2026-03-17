@@ -631,10 +631,33 @@ REQUIRED SECTIONS (all 8, in this order)
    • Design per style guide (cards, masonry, or strips)
 
 7. CONTACT
-   • Full contact form: Name, Email, Phone, Message fields
+   • Full contact form: Name, Email, Phone, Message fields (ALL inputs MUST have name attributes)
    • Display: phone, email, hours if provided
    • Map placeholder or address block
    • Submit button with hover animation
+   • The form MUST include this working submit script:
+     <script>
+     document.addEventListener('DOMContentLoaded', function() {
+       const form = document.querySelector('#contact form, section form, form');
+       if (!form) return;
+       form.addEventListener('submit', function(e) {
+         e.preventDefault();
+         const btn = form.querySelector('button[type="submit"], button');
+         if (!btn) return;
+         const orig = btn.textContent;
+         btn.textContent = 'Sending...';
+         btn.disabled = true;
+         setTimeout(function() {
+           btn.textContent = '✓ Message Sent!';
+           setTimeout(function() {
+             btn.textContent = orig;
+             btn.disabled = false;
+             form.reset();
+           }, 3000);
+         }, 1500);
+       });
+     });
+     </script>
 
 8. FOOTER
    • Business name + tagline
@@ -724,7 +747,7 @@ OUTPUT RULES
 
     const chatWidget = `
 <div id="bailey-chat" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;font-family:Inter,sans-serif;">
-  <button id="bailey-chat-btn" onclick="toggleBaileyChat()" style="width:56px;height:56px;border-radius:50%;background:var(--primary,#00e5a0);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);font-size:1.4rem;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💬</button>
+  <button id="bailey-chat-btn" onclick="toggleBaileyChat()" style="width:56px;height:56px;border-radius:50%;background:var(--primary,#00e5a0);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);font-size:1.4rem;position:relative;z-index:10000;pointer-events:auto !important;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💬</button>
   <div id="bailey-chat-panel" style="display:none;position:absolute;bottom:70px;right:0;width:320px;background:#111214;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
     <div style="padding:1rem 1.2rem;background:var(--primary,#00e5a0);display:flex;align-items:center;gap:0.75rem;">
       <div style="width:8px;height:8px;background:#000;border-radius:50%;"></div>
@@ -745,8 +768,10 @@ OUTPUT RULES
   const BAILEY_CONTEXT = 'Business: ${escapedName}\\nLocation: ${escapedLocation}\\nServices: ${escapedServices}${escapedDesc ? `\\nAbout: ${escapedDesc}` : ''}';
   function toggleBaileyChat() {
     const p = document.getElementById('bailey-chat-panel');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-    if (p.style.display === 'block') document.getElementById('bailey-input').focus();
+    if (!p) return;
+    const isHidden = p.style.display === 'none' || p.style.display === '';
+    p.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) { const inp = document.getElementById('bailey-input'); if (inp) inp.focus(); }
   }
   async function sendBaileyMsg() {
     const input = document.getElementById('bailey-input');

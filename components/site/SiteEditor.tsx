@@ -968,12 +968,13 @@ export function SiteEditor({
   const [isRegenerating, setIsRegenerating]   = useState(false);
   const [regenError, setRegenError]           = useState<string | null>(null);
   const [regenForm, setRegenForm]             = useState({
-    businessName: site.businessName  ?? "",
-    tagline:      site.tagline       ?? "",
-    services:     site.services      ?? "",
-    contactPhone: site.contactPhone  ?? "",
-    contactEmail: site.contactEmail  ?? "",
-    primaryColor: site.primaryColor  ?? "",
+    businessName:  site.businessName  ?? "",
+    tagline:       site.tagline       ?? "",
+    services:      site.services      ?? "",
+    contactPhone:  site.contactPhone  ?? "",
+    contactEmail:  site.contactEmail  ?? "",
+    businessHours: site.businessHours ?? "",
+    primaryColor:  site.primaryColor  ?? "",
   });
   const hasChanges                            = useRef(false);
 
@@ -1123,7 +1124,7 @@ export function SiteEditor({
           description:   site.description   ?? "",
           contactEmail:  regenForm.contactEmail,
           contactPhone:  regenForm.contactPhone,
-          businessHours: site.businessHours  ?? "",
+          businessHours: regenForm.businessHours,
           facebookUrl:   site.facebookUrl    ?? "",
           instagramUrl:  site.instagramUrl   ?? "",
           enableChat:    site.enableChat     ?? false,
@@ -1214,40 +1215,45 @@ export function SiteEditor({
               </button>
             );
           })}
-          <button
-            onClick={() => { setActivePanel(null); setAskBaileyOpen(false); }}
-            style={{
-              fontSize:     "0.75rem",
-              fontWeight:   (activePanel === null && !askBaileyOpen) ? 700 : 500,
-              padding:      "5px 14px",
-              borderRadius: "9px",
-              border:       "none",
-              cursor:       "pointer",
-              background:   (activePanel === null && !askBaileyOpen) ? "rgba(255,255,255,0.08)" : "transparent",
-              color:        (activePanel === null && !askBaileyOpen) ? "#f0f0f0" : "#9ca3af",
-              transition:   "all 0.15s",
-            }}
-          >
-            👁 Preview
-          </button>
-          {/* ── Ask Bailey toggle ── */}
-          <button
-            onClick={() => { setAskBaileyOpen((o) => !o); setActivePanel(null); }}
-            style={{
-              fontSize:     "0.75rem",
-              fontWeight:   askBaileyOpen ? 700 : 500,
-              padding:      "5px 14px",
-              borderRadius: "9px",
-              border:       askBaileyOpen ? "none" : "1px solid rgba(0,229,160,0.3)",
-              cursor:       "pointer",
-              background:   askBaileyOpen ? "#00e5a0" : "rgba(0,229,160,0.06)",
-              color:        askBaileyOpen ? "#000"    : "#00e5a0",
-              transition:   "all 0.15s",
-              whiteSpace:   "nowrap",
-            }}
-          >
-            💬 Ask Bailey ✦
-          </button>
+          {/* Preview button — hidden for HTML sites (iframe IS the live preview) */}
+          {!isHTMLSite && (
+            <button
+              onClick={() => { setActivePanel(null); setAskBaileyOpen(false); }}
+              style={{
+                fontSize:     "0.75rem",
+                fontWeight:   (activePanel === null && !askBaileyOpen) ? 700 : 500,
+                padding:      "5px 14px",
+                borderRadius: "9px",
+                border:       "none",
+                cursor:       "pointer",
+                background:   (activePanel === null && !askBaileyOpen) ? "rgba(255,255,255,0.08)" : "transparent",
+                color:        (activePanel === null && !askBaileyOpen) ? "#f0f0f0" : "#9ca3af",
+                transition:   "all 0.15s",
+              }}
+            >
+              👁 Preview
+            </button>
+          )}
+          {/* Ask Bailey — hidden for HTML sites to avoid wasting API credits */}
+          {!isHTMLSite && (
+            <button
+              onClick={() => { setAskBaileyOpen((o) => !o); setActivePanel(null); }}
+              style={{
+                fontSize:     "0.75rem",
+                fontWeight:   askBaileyOpen ? 700 : 500,
+                padding:      "5px 14px",
+                borderRadius: "9px",
+                border:       askBaileyOpen ? "none" : "1px solid rgba(0,229,160,0.3)",
+                cursor:       "pointer",
+                background:   askBaileyOpen ? "#00e5a0" : "rgba(0,229,160,0.06)",
+                color:        askBaileyOpen ? "#000"    : "#00e5a0",
+                transition:   "all 0.15s",
+                whiteSpace:   "nowrap",
+              }}
+            >
+              💬 Ask Bailey ✦
+            </button>
+          )}
         </div>
 
         {/* Right */}
@@ -1401,6 +1407,20 @@ export function SiteEditor({
                       defaultValue={regenForm.contactEmail}
                       placeholder="hello@yourbusiness.com"
                       onChange={e => setRegenForm(p => ({ ...p, contactEmail: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Hours */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Hours
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={regenForm.businessHours}
+                      placeholder="Mon–Fri 9am–6pm, Sat 10am–4pm"
+                      onChange={e => setRegenForm(p => ({ ...p, businessHours: e.target.value }))}
                       style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                     />
                   </div>
