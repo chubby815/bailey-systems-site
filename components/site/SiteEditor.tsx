@@ -1084,7 +1084,8 @@ export function SiteEditor({
         background: ${color} !important; color: #000 !important;
       }
     `;
-    setRegenForm(prev => ({ ...prev, primaryColor: color }));
+    // Color picker is visual-only — do NOT write to regenForm.primaryColor.
+    // The API expects a color NAME (e.g. "Hot Pink"), not a hex value.
   }
 
   function applyBgToSite(bg: string) {
@@ -1116,7 +1117,7 @@ export function SiteEditor({
           location:      site.location,
           services:      regenForm.services,
           tone:          site.tone,
-          primaryColor:  regenForm.primaryColor || site.primaryColor,
+          primaryColor:  site.primaryColor,  // always the stored name, never a hex
           fontStyle:     site.fontStyle     ?? "Modern",
           heroStyle:     site.heroStyle     ?? "Photo Background",
           layoutStyle:   site.layoutStyle   ?? "Standard",
