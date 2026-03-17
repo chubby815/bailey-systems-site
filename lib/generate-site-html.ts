@@ -294,7 +294,7 @@ async function generateGrokImages(
       console.log(`[GROK] Generating image ${i + 1}/${count}: ${prompts[i].slice(0, 60)}…`)
 
       const response = await grok.images.generate({
-        model:           'aurora',
+        model:           'grok-2-image-1212',
         prompt:          prompts[i],
         n:               1,
         response_format: 'b64_json',
