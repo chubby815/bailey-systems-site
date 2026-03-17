@@ -10,13 +10,14 @@ import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  primaryColor:   string;
-  heroImageUrl?:  string;
-  aboutImageUrl?: string;
-  theme?:         ThemeConfig;
-  isEditing?:     boolean;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  primaryColor:    string;
+  heroImageUrl?:   string;
+  aboutImageUrl?:  string;
+  serviceImages?:  Record<number, string>;
+  theme?:          ThemeConfig;
+  isEditing?:      boolean;
 };
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -605,10 +606,10 @@ function Services({
                 className="dp2-bento-card dp2-bento-card-featured dp2-bento-featured"
                 style={{ gridColumn: "span 2", minHeight: "320px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}
               >
-                {services[0].image && services[0].image !== "[uploaded]" && (
+                {serviceImages?.[0] && serviceImages[0] !== "[uploaded]" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={services[0].image}
+                    src={serviceImages[0]}
                     alt={services[0].name}
                     style={{
                       width: "calc(100% + 4rem)",
@@ -710,10 +711,10 @@ function Services({
             {/* ── Card 1: Standard right column ── */}
             {services[1] && (
               <div className="dp2-bento-card" style={{ minHeight: "320px", display: "flex", flexDirection: "column" }}>
-                {services[1].image && services[1].image !== "[uploaded]" && (
+                {serviceImages?.[1] && serviceImages[1] !== "[uploaded]" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={services[1].image}
+                    src={serviceImages[1]}
                     alt={services[1].name}
                     style={{
                       width: "calc(100% + 4rem)",
@@ -758,16 +759,18 @@ function Services({
             )}
 
             {/* ── Cards 2–4: Bottom row, 3 equal columns ── */}
-            {services.slice(2, 5).map((s, i) => (
+            {services.slice(2, 5).map((s, i) => {
+              const svcImg = serviceImages?.[i + 2];
+              return (
               <div
                 key={`mid-${i}`}
                 className="dp2-bento-card"
                 style={{ minHeight: "220px", display: "flex", flexDirection: "column" }}
               >
-                {s.image && s.image !== "[uploaded]" && (
+                {svcImg && svcImg !== "[uploaded]" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={s.image}
+                    src={svcImg}
                     alt={s.name}
                     style={{
                       width: "calc(100% + 4rem)",
@@ -807,7 +810,8 @@ function Services({
                   {s.description || `Professional ${s.name.toLowerCase()} services.`}
                 </p>
               </div>
-            ))}
+              );
+            })}
 
             {/* ── Card 5: Wide gradient CTA card ── */}
             {services[5] && (
@@ -824,10 +828,10 @@ function Services({
                   flexWrap: "wrap",
                 }}
               >
-                {services[5].image && services[5].image !== "[uploaded]" && (
+                {serviceImages?.[5] && serviceImages[5] !== "[uploaded]" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={services[5].image}
+                    src={serviceImages[5]}
                     alt={services[5].name}
                     style={{
                       width: "calc(100% + 4rem)",
@@ -874,12 +878,14 @@ function Services({
             )}
 
             {/* Extra services beyond 6 */}
-            {content.slice(6).map((s, i) => (
+            {content.slice(6).map((s, i) => {
+              const svcImg = serviceImages?.[i + 6];
+              return (
               <div key={`extra-${i}`} className="dp2-bento-card" style={{ minHeight: "180px" }}>
-                {s.image && s.image !== "[uploaded]" && (
+                {svcImg && svcImg !== "[uploaded]" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={s.image}
+                    src={svcImg}
                     alt={s.name}
                     style={{
                       width: "calc(100% + 4rem)",
@@ -907,7 +913,8 @@ function Services({
                   {s.description || `Professional ${s.name.toLowerCase()} services.`}
                 </p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </ScrollAnimator>
       </div>
@@ -1476,7 +1483,7 @@ function Footer({ site, primaryColor, navLinks }: {
 
 // ── Root layout ────────────────────────────────────────────────────────────────
 export function DarkPremiumLayout({
-  site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing,
+  site, content, primaryColor, heroImageUrl, aboutImageUrl, serviceImages, theme, isEditing,
 }: TemplateProps) {
   const BG   = theme?.background ?? "#080808";
   const CARD = theme?.surface    ?? "#0c0c0e";

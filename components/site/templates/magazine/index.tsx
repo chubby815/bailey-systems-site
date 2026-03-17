@@ -9,13 +9,14 @@ import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  primaryColor:   string;
-  heroImageUrl?:  string;
-  aboutImageUrl?: string;
-  theme?:         ThemeConfig;
-  isEditing?:     boolean;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  primaryColor:    string;
+  heroImageUrl?:   string;
+  aboutImageUrl?:  string;
+  serviceImages?:  Record<number, string>;
+  theme?:          ThemeConfig;
+  isEditing?:      boolean;
 };
 
 const BLACK  = "#1a1a1a";
@@ -271,11 +272,12 @@ function Hero({ content, heroImageUrl, primaryColor, location, industry }: {
 }
 
 // ── Services (editorial card grid with image overlays) ────────────────────────
-function Services({ content, primaryColor, location, bg }: {
+function Services({ content, primaryColor, location, bg, serviceImages }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
   bg: string;
+  serviceImages?: Record<number, string>;
 }) {
   return (
     <section id="services" style={{ background: bg, padding: "7rem clamp(1rem, 5vw, 3rem)", position: "relative" }}>
@@ -305,13 +307,15 @@ function Services({ content, primaryColor, location, bg }: {
         <div className="mg-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.25rem",
         }}>
-          {content.map((s, i) => (
+          {content.map((s, i) => {
+            const svcImg = serviceImages?.[i];
+            return (
             <div key={i} className="mg-service-card">
               {/* Image area — top 65% */}
               <div className="mg-svc-img-area">
-                {s.image && s.image !== "[uploaded]" ? (
+                {svcImg && svcImg !== "[uploaded]" ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={s.image} alt={s.name} className="mg-svc-img-inner" />
+                  <img src={svcImg} alt={s.name} className="mg-svc-img-inner" />
                 ) : (
                   <div style={{
                     width: "100%", height: "100%",
@@ -347,7 +351,8 @@ function Services({ content, primaryColor, location, bg }: {
                 </p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         </ScrollAnimator>
       </div>
@@ -604,7 +609,7 @@ function Footer({ site, primaryColor }: { site: SiteRecord; primaryColor: string
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
+export function MagazineLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, serviceImages, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#fafaf8";
   const SURFACE = theme?.surface ?? "#fafaf8";
   const btnRadius =
@@ -622,7 +627,7 @@ export function MagazineLayout({ site, content, primaryColor, heroImageUrl, abou
           location={site.location}
           industry={site.industry}
         />
-        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} serviceImages={serviceImages} />
         <About content={content.about} site={site} primaryColor={primaryColor} bg="#fff" aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} />
         <CTA

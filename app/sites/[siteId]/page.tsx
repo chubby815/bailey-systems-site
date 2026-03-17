@@ -153,6 +153,22 @@ export default async function SitePage({
       : "starter";
   } catch { viewerPlan = "starter"; }
 
+  // ── Full HTML generated site (new pipeline) ──────────────────────────────
+  if (site.generatedHTML) {
+    return (
+      <div
+        dangerouslySetInnerHTML={{
+          __html: site.generatedHTML
+        }}
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: '100vh',
+        }}
+      />
+    )
+  }
+
   const c = site.generatedContent;
 
   // ── New structured format ─────────────────────────────────────────────────

@@ -9,13 +9,14 @@ import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 import { HeroReveal } from "@/components/site/HeroReveal";
 
 export type TemplateProps = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  primaryColor:   string;
-  heroImageUrl?:  string;
-  aboutImageUrl?: string;
-  theme?:         ThemeConfig;
-  isEditing?:     boolean;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  primaryColor:    string;
+  heroImageUrl?:   string;
+  aboutImageUrl?:  string;
+  serviceImages?:  Record<number, string>;
+  theme?:          ThemeConfig;
+  isEditing?:      boolean;
 };
 
 const FF      = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
@@ -268,11 +269,12 @@ function TrustStrip({ location }: { location: string }) {
 }
 
 // ── Services ───────────────────────────────────────────────────────────────────
-function Services({ content, primaryColor, location, bg }: {
+function Services({ content, primaryColor, location, bg, serviceImages }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
   bg: string;
+  serviceImages?: Record<number, string>;
 }) {
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
@@ -296,12 +298,14 @@ function Services({ content, primaryColor, location, bg }: {
           gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: "1.5rem",
         }}>
-          {content.map((s, i) => (
+          {content.map((s, i) => {
+            const svcImg = serviceImages?.[i];
+            return (
             <div key={i} className="mn-svc-card">
-              {s.image && s.image !== "[uploaded]" && (
+              {svcImg && svcImg !== "[uploaded]" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={s.image}
+                  src={svcImg}
                   alt={s.name}
                   style={{
                     height: "200px",
@@ -329,7 +333,8 @@ function Services({ content, primaryColor, location, bg }: {
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
         </ScrollAnimator>
       </div>
@@ -546,7 +551,7 @@ function Footer({ site, primaryColor, bg }: { site: SiteRecord; primaryColor: st
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
+export function MinimalLayout({ site, content, primaryColor, heroImageUrl, aboutImageUrl, serviceImages, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#ffffff";
   const SURFACE = theme?.surface ?? "#ffffff";
   const btnRadius =
@@ -559,7 +564,7 @@ export function MinimalLayout({ site, content, primaryColor, heroImageUrl, about
         <Navbar businessName={site.businessName} primaryColor={primaryColor} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} primaryColor={primaryColor} location={site.location} bg={BG} heroImageUrl={heroImageUrl} />
         <TrustStrip location={site.location} />
-        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} />
+        <Services content={content.services} primaryColor={primaryColor} location={site.location} bg={BG} serviceImages={serviceImages} />
         <About content={content.about} site={site} primaryColor={primaryColor} bg={OFF_BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} primaryColor={primaryColor} bg={BG} />
         <CTA content={content.cta} primaryColor={primaryColor} contactEmail={site.contactEmail} contactPhone={site.contactPhone} bg={OFF_BG} businessName={site.businessName} siteId={site.siteId} btnRadius={btnRadius} />

@@ -10,13 +10,14 @@ import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 import { StatCounter } from "@/components/site/StatCounter";
 
 export type TemplateProps = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  primaryColor:   string;
-  heroImageUrl?:  string;
-  aboutImageUrl?: string;
-  theme?:         ThemeConfig;
-  isEditing?:     boolean;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  primaryColor:    string;
+  heroImageUrl?:   string;
+  aboutImageUrl?:  string;
+  serviceImages?:  Record<number, string>;
+  theme?:          ThemeConfig;
+  isEditing?:      boolean;
 };
 
 const NAVY   = "#1a2744";
@@ -304,7 +305,7 @@ function Hero({ content, heroImageUrl, location }: {
 }
 
 // ── Services (3-col icon grid) ─────────────────────────────────────────────────
-function Services({ content, location, bg }: { content: StructuredSiteContent["services"]; location: string; bg: string }) {
+function Services({ content, location, bg, serviceImages }: { content: StructuredSiteContent["services"]; location: string; bg: string; serviceImages?: Record<number, string> }) {
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -326,13 +327,15 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
         <div className="cb-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.25rem",
         }}>
-          {content.map((s, i) => (
+          {content.map((s, i) => {
+            const svcImg = serviceImages?.[i];
+            return (
             <div key={i} className="cb-service-card">
-              {s.image && s.image !== "[uploaded]" && (
+              {svcImg && svcImg !== "[uploaded]" && (
                 <div style={{ position: "relative", margin: "-2rem -2rem 1.5rem -2rem" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={s.image}
+                    src={svcImg}
                     alt={s.name}
                     style={{
                       width: "100%", height: "180px", objectFit: "cover",
@@ -360,7 +363,8 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
         </ScrollAnimator>
       </div>
@@ -633,7 +637,7 @@ function Footer({ site }: { site: SiteRecord }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
+export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, serviceImages, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#f8f9fa";
   const SURFACE = theme?.surface ?? `linear-gradient(90deg, ${NAVY} 0%, ${NAVY2} 100%)`;
   const btnRadius =
@@ -645,7 +649,7 @@ export function ClassicLayout({ site, content, heroImageUrl, aboutImageUrl, them
       <div className="cb-root" style={{ fontFamily: FF_SAN, background: BG, color: TEXT, overflowX: "clip" }}>
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} contactPhone={site.contactPhone} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} />
-        <Services content={content.services} location={site.location} bg={BG} />
+        <Services content={content.services} location={site.location} bg={BG} serviceImages={serviceImages} />
         <About content={content.about} site={site} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} bg={BG} />
         <CTA content={content.cta} contactEmail={site.contactEmail} contactPhone={site.contactPhone} businessName={site.businessName} siteId={site.siteId} btnRadius={btnRadius} />

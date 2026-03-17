@@ -238,106 +238,41 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Claude API
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI service not configured" }, { status: 500 });
+  // Generate full HTML site with Grok images + Anthropic layout
+  let generatedHTML: string;
+  try {
+    const { generateSiteHTML } = await import("@/lib/generate-site-html");
+    generatedHTML = await generateSiteHTML({
+      businessName:  cleanName,
+      industry:      cleanInd,
+      location:      cleanLoc,
+      services:      cleanSvc,
+      tone:          cleanTone,
+      primaryColor:  primaryColor as string,
+      fontStyle:     cleanFontStyle,
+      heroStyle:     cleanHeroStyle,
+      layoutStyle:   cleanLayoutStyle,
+      tagline:       cleanTag,
+      description:   cleanDesc,
+      contactEmail:  cleanEmail,
+      contactPhone:  cleanPhone,
+      businessHours: cleanHours,
+      facebookUrl:   cleanFB,
+      instagramUrl:  cleanIG,
+      enableChat:    enableChat === true,
+    });
+  } catch (genErr) {
+    console.error("[generate] HTML generation failed:", genErr);
+    return NextResponse.json(
+      { error: "Generation failed" },
+      { status: 500 }
+    );
   }
 
-  const context = [
-    cleanTag    && `Tagline hint: ${cleanTag}`,
-    cleanDesc   && `About the business: ${cleanDesc}`,
-    cleanYears  && `Years in business: ${cleanYears}`,
-    cleanArea   && `Service area: ${cleanArea}`,
-  ].filter(Boolean).join("\n");
-
-  const userPrompt = `Generate complete website content for this local business:
-
-Business: ${cleanName}
-Industry: ${cleanInd}
-Location: ${cleanLoc}
-Services: ${cleanSvc}
-Tone: ${cleanTone}
-${context ? `\nContext:\n${context}` : ""}
-
-IMPORTANT: Return ONLY a raw JSON object. No markdown. No backticks. No explanation. Just the JSON.
-
-Required JSON structure:
-{
-  "hero": {
-    "headline": "punchy max-8-word headline",
-    "subheadline": "1-2 sentences about what they do and who they serve",
-    "ctaText": "button text max 4 words",
-    "badge": "location or tagline for the hero badge"
-  },
-  "services": [
-    { "name": "Service Name", "description": "1-sentence description", "icon": "relevant emoji" },
-    { "name": "Service Name", "description": "1-sentence description", "icon": "relevant emoji" },
-    { "name": "Service Name", "description": "1-sentence description", "icon": "relevant emoji" },
-    { "name": "Service Name", "description": "1-sentence description", "icon": "relevant emoji" },
-    { "name": "Service Name", "description": "1-sentence description", "icon": "relevant emoji" }
-  ],
-  "about": {
-    "title": "short tagline-style title for the about section",
-    "body": "2-3 sentences about the business history and values",
-    "stats": [
-      { "label": "stat label", "value": "number or short text" },
-      { "label": "stat label", "value": "number or short text" },
-      { "label": "stat label", "value": "number or short text" }
-    ]
-  },
-  "testimonials": [
-    { "name": "Customer Name", "role": "Homeowner", "quote": "2-sentence authentic review", "rating": 5 },
-    { "name": "Customer Name", "role": "Business Owner", "quote": "2-sentence authentic review", "rating": 5 },
-    { "name": "Customer Name", "role": "Property Manager", "quote": "2-sentence authentic review", "rating": 4 }
-  ],
-  "cta": {
-    "headline": "compelling CTA headline",
-    "subtext": "1 sentence reinforcing the call to action",
-    "buttonText": "button text max 5 words"
-  },
-  "seo": {
-    "title": "SEO page title",
-    "description": "SEO meta description 150-160 characters"
-  },
-  "theme": {
-    "primaryColor": "${primaryColor}",
-    "fontStyle": "${cleanFontStyle}",
-    "heroStyle": "${cleanHeroStyle}",
-    "layoutStyle": "${cleanLayoutStyle}"
-  }
-}`;
-
-  const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:      "claude-sonnet-4-5",
-      max_tokens: 2048,
-      system:
-        "You are a professional website copywriter for local businesses. Return ONLY a raw JSON object — no markdown, no backticks, no code fences, no explanation, nothing before or after the JSON.",
-      messages: [{ role: "user", content: userPrompt }],
-    }),
-  });
-
-  if (!anthropicRes.ok) {
-    const errBody = await anthropicRes.text().catch(() => "unknown");
-    console.error("[sites/generate] Anthropic error:", anthropicRes.status, errBody);
-    return NextResponse.json({ error: "Content generation failed" }, { status: 500 });
-  }
-
-  const anthropicData = await anthropicRes.json();
-  const rawText: string = anthropicData.content?.[0]?.text ?? "";
-
-  let generatedContent: StructuredSiteContent = extractJSON(rawText) ??
-    (() => {
-      console.error("[sites/generate] JSON parse failed. Raw output:", rawText.slice(0, 500));
-      return buildFallback(cleanName, cleanInd, cleanLoc, cleanSvc, cleanTag, cleanDesc);
-    })();
+  // Stub structured content for backward-compatible SiteRecord shape
+  const generatedContent: StructuredSiteContent = buildFallback(
+    cleanName, cleanInd, cleanLoc, cleanSvc, cleanTag, cleanDesc
+  );
 
   // Determine siteId and subdomainSlug
   const baseSlug = slugify(cleanName).slice(0, 60); // DNS label max 63 chars
@@ -391,6 +326,7 @@ Required JSON structure:
     heroStyle:         cleanHeroStyle,
     layoutStyle:       cleanLayoutStyle,
     generatedContent,
+    generatedHTML,
     createdAt:         new Date().toISOString(),
     subdomainSlug,
     enableChat:        enableChat === true,

@@ -8,13 +8,14 @@ import { ScrollAnimator } from "@/components/site/ScrollAnimator";
 import { ContactFormBlock } from "@/components/site/ContactFormBlock";
 
 export type TemplateProps = {
-  site:           SiteRecord;
-  content:        StructuredSiteContent;
-  primaryColor:   string;
-  heroImageUrl?:  string;
-  aboutImageUrl?: string;
-  theme?:         ThemeConfig;
-  isEditing?:     boolean;
+  site:            SiteRecord;
+  content:         StructuredSiteContent;
+  primaryColor:    string;
+  heroImageUrl?:   string;
+  aboutImageUrl?:  string;
+  serviceImages?:  Record<number, string>;
+  theme?:          ThemeConfig;
+  isEditing?:      boolean;
 };
 
 const BLACK   = "#0a0a0a";
@@ -317,7 +318,7 @@ function Hero({ content, heroImageUrl, location, bg, btnRadius }: {
 }
 
 // ── Services ───────────────────────────────────────────────────────────────────
-function Services({ content, location, bg }: { content: StructuredSiteContent["services"]; location: string; bg: string }) {
+function Services({ content, location, bg, serviceImages }: { content: StructuredSiteContent["services"]; location: string; bg: string; serviceImages?: Record<number, string> }) {
   return (
     <section id="services" style={{ background: bg, padding: "6rem clamp(1rem, 5vw, 3rem)", borderBottom: `3px solid ${BLACK}` }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
@@ -337,15 +338,17 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
         <div className="nb-services-grid" style={{
           display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem",
         }}>
-          {content.map((s, i) => (
+          {content.map((s, i) => {
+            const svcImg = serviceImages?.[i];
+            return (
             <div key={i} className="nb-card" style={{
               background: i % 3 === 1 ? P : i % 3 === 0 ? bg : "#fff",
               padding: "2rem",
             }}>
-              {s.image && s.image !== "[uploaded]" && (
+              {svcImg && svcImg !== "[uploaded]" && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={s.image}
+                  src={svcImg}
                   alt={s.name}
                   style={{
                     width: "calc(100% + 4rem)",
@@ -375,7 +378,8 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
                 color: C_HEADING, display: "flex", alignItems: "center", gap: "4px",
               }}>Learn More →</div>
             </div>
-          ))}
+            );
+          })}
         </div>
         </ScrollAnimator>
       </div>
@@ -675,7 +679,7 @@ function Footer({ site, surface }: { site: SiteRecord; surface: string }) {
 }
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
-export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, theme, isEditing }: TemplateProps) {
+export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl, serviceImages, theme, isEditing }: TemplateProps) {
   const BG      = theme?.background ?? "#fffef7";
   const SURFACE = theme?.surface ?? "#0a0a0a";
   const PRIMARY = theme?.primaryColor ?? "#FFE500";
@@ -698,7 +702,7 @@ export function NeoBrutalismLayout({ site, content, heroImageUrl, aboutImageUrl,
         <Ticker />
         <Navbar businessName={site.businessName} ctaText={content.hero.ctaText} surface={SURFACE} navLinks={content.nav?.links} isEditing={isEditing} />
         <Hero content={content.hero} heroImageUrl={heroImageUrl} location={site.location} bg={BG} btnRadius={btnRadius} />
-        <Services content={content.services} location={site.location} bg={BG} />
+        <Services content={content.services} location={site.location} bg={BG} serviceImages={serviceImages} />
         <FeaturedWork heroImageUrl={heroImageUrl} businessName={site.businessName} surface={SURFACE} />
         <About content={content.about} site={site} bg={BG} aboutImageUrl={aboutImageUrl} />
         <Testimonials content={content.testimonials} surface={SURFACE} bg={BG} />

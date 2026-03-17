@@ -376,21 +376,24 @@ function ContentPanel({
   siteId,
   heroImageUrl, aboutImageUrl,
   onHeroImageChange, onAboutImageChange,
+  serviceImages, onServiceImagesChange,
   industry,
   onScrollToSection,
 }: {
-  content:            StructuredSiteContent;
-  onChange:           (c: StructuredSiteContent) => void;
-  theme:              ThemeConfig;
-  onThemeChange:      (t: ThemeConfig) => void;
-  businessName?:      string;
-  siteId:             string;
-  heroImageUrl:       string | null;
-  aboutImageUrl:      string | null;
-  onHeroImageChange:  (url: string | null) => void;
-  onAboutImageChange: (url: string | null) => void;
-  industry:           string;
-  onScrollToSection:  (anchor: string) => void;
+  content:                StructuredSiteContent;
+  onChange:               (c: StructuredSiteContent) => void;
+  theme:                  ThemeConfig;
+  onThemeChange:          (t: ThemeConfig) => void;
+  businessName?:          string;
+  siteId:                 string;
+  heroImageUrl:           string | null;
+  aboutImageUrl:          string | null;
+  onHeroImageChange:      (url: string | null) => void;
+  onAboutImageChange:     (url: string | null) => void;
+  serviceImages:          Record<number, string>;
+  onServiceImagesChange:  (idx: number, url: string | undefined) => void;
+  industry:               string;
+  onScrollToSection:      (anchor: string) => void;
 }) {
   const [activeTab, setActiveTab]           = useState<ContentSection>("hero");
   const [uploading, setUploading]           = useState(false);
@@ -492,16 +495,13 @@ function ContentPanel({
     await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: "about", image: null }) });
     onAboutImageChange(null);
   }
-  function setServiceImage(i: number, url: string | undefined) {
-    onChange({ ...content, services: content.services.map((s, idx) => idx === i ? { ...s, image: url } : s) });
-  }
   function handleServiceFileChange(i: number, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
     void uploadImage(
       file,
       `service-${i}`,
       (url) => {
-        setServiceImage(i, url);
+        onServiceImagesChange(i, url);
         setSvcSuccess(prev => ({ ...prev, [i]: true }));
         setTimeout(() => setSvcSuccess(prev => ({ ...prev, [i]: false })), 2500);
       },
@@ -512,7 +512,7 @@ function ContentPanel({
   }
   async function handleRemoveServiceImage(i: number) {
     await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: `service-${i}`, image: null }) });
-    setServiceImage(i, undefined);
+    onServiceImagesChange(i, undefined);
   }
 
   const navLinks = content.nav?.links ?? ["Services", "About", "Contact"];
@@ -667,10 +667,10 @@ function ContentPanel({
                 {/* Service card photo */}
                 <div>
                   <label className={LABEL}>Card Photo</label>
-                  {svc.image && svc.image !== "[uploaded]" && (
+                  {serviceImages[i] && serviceImages[i] !== "[uploaded]" && (
                     <div className="rounded-lg overflow-hidden border border-white/[0.07] mb-2" style={{ aspectRatio: "16/9" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={svc.image} alt={svc.name} className="w-full h-full object-cover" />
+                      <img src={serviceImages[i]} alt={svc.name} className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="flex gap-2">
@@ -681,7 +681,7 @@ function ContentPanel({
                     >
                       {svcUploading[i] ? "Uploading…" : "📷 Add Photo"}
                     </button>
-                    {svc.image && svc.image !== "[uploaded]" && (
+                    {serviceImages[i] && serviceImages[i] !== "[uploaded]" && (
                       <button
                         onClick={() => handleRemoveServiceImage(i)}
                         className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
@@ -954,6 +954,13 @@ export function SiteEditor({
   const [aboutImageUrl, setAboutImageUrl]     = useState<string | null>(
     (site.aboutImage && site.aboutImage !== "[uploaded]") ? site.aboutImage : null
   );
+  const [serviceImages, setServiceImages]     = useState<Record<number, string>>(
+    Object.fromEntries(
+      Object.entries(site.serviceImages ?? {})
+        .filter(([, v]) => v && v !== "[uploaded]")
+        .map(([k, v]) => [Number(k), v as string])
+    )
+  );
   const [isSaving, setIsSaving]               = useState(false);
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
   const [saveError, setSaveError]             = useState(false);
@@ -1024,6 +1031,18 @@ export function SiteEditor({
 
   function handleAboutImageChange(url: string | null) {
     setAboutImageUrl(url);
+  }
+
+  function handleServiceImagesChange(idx: number, url: string | undefined) {
+    setServiceImages((prev) => {
+      const updated = { ...prev };
+      if (url === undefined) {
+        delete updated[idx];
+      } else {
+        updated[idx] = url;
+      }
+      return updated;
+    });
   }
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -1224,6 +1243,8 @@ export function SiteEditor({
                 aboutImageUrl={aboutImageUrl}
                 onHeroImageChange={handleHeroImageChange}
                 onAboutImageChange={handleAboutImageChange}
+                serviceImages={serviceImages}
+                onServiceImagesChange={handleServiceImagesChange}
                 industry={site.industry ?? "Other"}
                 onScrollToSection={scrollToSection}
               />
@@ -1239,7 +1260,7 @@ export function SiteEditor({
           minWidth:   0,
         }}>
           <TemplateRenderer
-            site={{ ...site, template: currentTemplate }}
+            site={{ ...site, template: currentTemplate, serviceImages }}
             content={currentContent}
             theme={currentTheme}
             heroImageUrl={heroImageUrl}

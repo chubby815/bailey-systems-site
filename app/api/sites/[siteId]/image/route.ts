@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getSite, saveSite } from "@/lib/kv";
-import { isStructuredContent } from "@/lib/site-theme";
 
 const MAX_BYTES = 2.8 * 1024 * 1024; // ~2 MB after base64 overhead
 
@@ -47,22 +46,12 @@ export async function POST(
     if (idx < 0 || idx > 7) {
       return NextResponse.json({ error: "Service index out of range (0-7)" }, { status: 400 });
     }
-    const content = site.generatedContent;
-    if (!isStructuredContent(content)) {
-      return NextResponse.json({ error: "Site uses legacy content format" }, { status: 400 });
-    }
-    const services = content.services ? [...content.services] : [];
-    if (!services[idx]) {
-      return NextResponse.json({ error: "Service not found at that index" }, { status: 404 });
-    }
+    if (!updated.serviceImages) updated.serviceImages = {};
     if (image === null) {
-      const { image: _removed, ...rest } = services[idx];
-      void _removed;
-      services[idx] = rest;
+      delete updated.serviceImages[idx];
     } else {
-      services[idx] = { ...services[idx], image };
+      updated.serviceImages[idx] = image;
     }
-    updated.generatedContent = { ...content, services };
   } else if (rawSection === "about") {
     if (image === null) delete updated.aboutImage;
     else updated.aboutImage = image;

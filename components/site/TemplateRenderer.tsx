@@ -37,7 +37,7 @@ export function TemplateRenderer({ site, content, theme, themeOverride, heroImag
   const primaryColor = resolvedTheme.primaryColor ?? COLOR_MAP[site.primaryColor] ?? "#10b981";
   const template = site.template ?? "darkpremium";
 
-  const sharedProps = { site, content, primaryColor, heroImageUrl, aboutImageUrl, theme: resolvedTheme, isEditing };
+  const sharedProps = { site, content, primaryColor, heroImageUrl, aboutImageUrl, serviceImages: site.serviceImages ?? {}, theme: resolvedTheme, isEditing };
 
   // Build CSS variable object — text color overrides + typography scale.
   // These cascade to all template child elements via the wrapper div.

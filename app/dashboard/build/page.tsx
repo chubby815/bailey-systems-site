@@ -254,8 +254,7 @@ function BuildForm() {
             {isEditMode ? "Regenerating your site..." : "Building your site..."}
           </h2>
           <p className="text-[#6b7280] text-sm max-w-xs mx-auto leading-relaxed">
-            Our AI is writing your headlines, crafting your copy, and structuring your pages.
-            This takes about 10–15 seconds.
+            Generating custom AI images and building your site. This takes about 45–60 seconds.
           </p>
         </div>
         <div className="flex gap-2">
@@ -588,7 +587,7 @@ function BuildForm() {
                 : (isEditMode ? "Regenerate Site →" : "Generate My Site →")}
             </button>
             <p className="text-center text-xs text-[#4b5563] mt-3">
-              Takes about 10–15 seconds · Powered by AI
+              Takes about 45–60 seconds · Powered by AI
             </p>
           </div>
 
