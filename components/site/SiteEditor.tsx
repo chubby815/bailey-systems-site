@@ -1555,11 +1555,7 @@ export function SiteEditor({
           {isHTMLSite ? (
             <iframe
               key={iframeKey}
-              src={
-                site.subdomainSlug
-                  ? `https://${site.subdomainSlug}.baileyagents.com`
-                  : `/sites/${siteId}`
-              }
+              src={`/sites/${siteId}`}
               style={{ width: "100%", height: "100%", border: "none" }}
               title={site.businessName}
             />

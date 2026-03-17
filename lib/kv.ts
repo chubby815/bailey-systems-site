@@ -115,7 +115,9 @@ export type SiteRecord = {
 /** Save a generated site to Redis.
  *  generatedHTML is stored under a separate key (html:{siteId}) because
  *  the full HTML + embedded base64 images can exceed 1 MB — Upstash's
- *  per-command limit — causing the entire save to fail silently. */
+ *  per-command limit — causing the entire save to fail silently.
+ *  Always writes the slug reverse-lookup key so subdomain routing works
+ *  regardless of which code path triggered the save. */
 export async function saveSite(siteId: string, data: SiteRecord): Promise<void> {
   try {
     // Separate the large HTML blob so the main record stays small
@@ -126,6 +128,12 @@ export async function saveSite(siteId: string, data: SiteRecord): Promise<void> 
     if (htmlToStore && htmlToStore !== "[generated]") {
       await kv.set(`html:${siteId}`, htmlToStore);
       console.log(`[saveSite] html:${siteId} saved — ${htmlToStore.length} chars`);
+    }
+
+    // Always keep the slug reverse-lookup key in sync so
+    // slug:{subdomainSlug} → siteId is never missing.
+    if (data.subdomainSlug) {
+      await kv.set(`slug:${data.subdomainSlug}`, siteId);
     }
   } catch (err) {
     console.error("[saveSite] Redis error:", err);
