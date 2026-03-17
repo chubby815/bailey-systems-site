@@ -17,11 +17,16 @@ const VALID_INDUSTRIES = new Set([
   "Restaurant", "Consulting", "Real Estate", "Fitness",
   "Auto & Mechanic", "Cleaning", "Other",
 ]);
-const VALID_TONES         = new Set(["Professional", "Friendly", "Bold", "Luxury", "Minimal"]);
+const VALID_TONES         = new Set([
+  "Professional", "Friendly", "Bold", "Luxury", "Minimal",
+  "Cyberpunk", "Retro", "Magazine", "Cinematic",
+]);
 const VALID_COLORS        = new Set([
   "Emerald Green", "Electric Blue", "Sunset Orange", "Royal Purple", "Fire Red",
   "Midnight Black", "Golden Yellow", "Hot Pink", "Cyan", "Slate Gray",
   "Rose Gold", "Deep Navy",
+  "Neon Blue", "Neon Green", "Neon Pink", "Neon Yellow", "Neon Purple",
+  "Burgundy", "Coral", "Champagne",
 ]);
 const VALID_FONT_STYLES   = new Set(["Modern", "Classic & Elegant", "Bold & Strong", "Clean & Minimal"]);
 const VALID_HERO_STYLES   = new Set(["Photo Background", "Gradient Background", "Solid Color"]);

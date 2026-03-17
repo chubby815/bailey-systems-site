@@ -973,6 +973,7 @@ export function SiteEditor({
     services:     site.services      ?? "",
     contactPhone: site.contactPhone  ?? "",
     contactEmail: site.contactEmail  ?? "",
+    primaryColor: site.primaryColor  ?? "",
   });
   const hasChanges                            = useRef(false);
 
@@ -1066,6 +1067,38 @@ export function SiteEditor({
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Live-patch the iframe's CSS for instant color/bg preview without regenerating
+  function applyColorToSite(color: string) {
+    const iframe = document.querySelector("iframe") as HTMLIFrameElement | null;
+    if (!iframe?.contentDocument) return;
+    let s = iframe.contentDocument.getElementById("bailey-color-override") as HTMLStyleElement | null;
+    if (!s) {
+      s = iframe.contentDocument.createElement("style");
+      s.id = "bailey-color-override";
+      iframe.contentDocument.head.appendChild(s);
+    }
+    s.textContent = `
+      :root { --primary: ${color} !important; --accent: ${color} !important; --primary-dark: ${color}cc !important; }
+      .btn-primary, [class*="btn-primary"], a[class*="cta"], button[class*="cta"], nav a[class*="cta"] {
+        background: ${color} !important; color: #000 !important;
+      }
+    `;
+    setRegenForm(prev => ({ ...prev, primaryColor: color }));
+  }
+
+  function applyBgToSite(bg: string) {
+    const iframe = document.querySelector("iframe") as HTMLIFrameElement | null;
+    if (!iframe?.contentDocument) return;
+    let s = iframe.contentDocument.getElementById("bailey-bg-override") as HTMLStyleElement | null;
+    if (!s) {
+      s = iframe.contentDocument.createElement("style");
+      s.id = "bailey-bg-override";
+      iframe.contentDocument.head.appendChild(s);
+    }
+    const text = bg === "#ffffff" || bg === "#fdf6e3" ? "#1a1a1a" : "#f0f0f0";
+    s.textContent = `:root { --bg: ${bg} !important; --text: ${text} !important; } body { background: ${bg} !important; color: ${text} !important; }`;
+  }
+
   // Re-generate the HTML site using the stored form data + current siteId as editSiteId.
   // After success, bump iframeKey so the preview iframe reloads.
   async function handleRegenerate() {
@@ -1082,7 +1115,7 @@ export function SiteEditor({
           location:      site.location,
           services:      regenForm.services,
           tone:          site.tone,
-          primaryColor:  site.primaryColor,
+          primaryColor:  regenForm.primaryColor || site.primaryColor,
           fontStyle:     site.fontStyle     ?? "Modern",
           heroStyle:     site.heroStyle     ?? "Photo Background",
           layoutStyle:   site.layoutStyle   ?? "Standard",
@@ -1370,6 +1403,53 @@ export function SiteEditor({
                       onChange={e => setRegenForm(p => ({ ...p, contactEmail: e.target.value }))}
                       style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                     />
+                  </div>
+
+                  {/* Quick Style Controls */}
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "1rem" }}>
+                    <p style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", margin: "0 0 0.75rem" }}>
+                      Quick Style
+                    </p>
+                    <label style={{ color: "#6b7280", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Accent Color</label>
+                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                      {[
+                        { color: "#00e5a0", name: "Mint"         },
+                        { color: "#ec4899", name: "Pink"         },
+                        { color: "#ef4444", name: "Red"          },
+                        { color: "#f97316", name: "Orange"       },
+                        { color: "#eab308", name: "Gold"         },
+                        { color: "#3b82f6", name: "Blue"         },
+                        { color: "#7c3aed", name: "Purple"       },
+                        { color: "#06b6d4", name: "Cyan"         },
+                        { color: "#00d4ff", name: "Neon Blue"    },
+                        { color: "#00ff9f", name: "Neon Green"   },
+                        { color: "#ff0080", name: "Neon Pink"    },
+                        { color: "#ffff00", name: "Neon Yellow"  },
+                        { color: "#bf00ff", name: "Neon Purple"  },
+                        { color: "#c8a96e", name: "Luxury Gold"  },
+                      ].map(({ color, name }) => (
+                        <button
+                          key={color}
+                          title={name}
+                          onClick={() => applyColorToSite(color)}
+                          style={{ width: "26px", height: "26px", borderRadius: "50%", background: color, border: "2px solid transparent", cursor: "pointer", flexShrink: 0 }}
+                        />
+                      ))}
+                    </div>
+                    <label style={{ color: "#6b7280", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Background</label>
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      {[
+                        { label: "🌑 Dark",  bg: "#080810" },
+                        { label: "⬜ Light", bg: "#ffffff" },
+                        { label: "🟤 Warm",  bg: "#fdf6e3" },
+                      ].map(({ label, bg }) => (
+                        <button
+                          key={bg}
+                          onClick={() => applyBgToSite(bg)}
+                          style={{ padding: "0.35rem 0.6rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#f0f0f0", fontSize: "0.7rem", cursor: "pointer" }}
+                        >{label}</button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Error */}

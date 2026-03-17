@@ -26,6 +26,14 @@ const COLOR_MAP: Record<string, string> = {
   'Slate Gray':     '#64748b',
   'Rose Gold':      '#fb7185',
   'Deep Navy':      '#1e3a5f',
+  'Neon Blue':      '#00d4ff',
+  'Neon Green':     '#00ff9f',
+  'Neon Pink':      '#ff0080',
+  'Neon Yellow':    '#ffff00',
+  'Neon Purple':    '#bf00ff',
+  'Burgundy':       '#800020',
+  'Coral':          '#ff6b6b',
+  'Champagne':      '#f7e7ce',
 }
 
 const FONT_MAP: Record<string, string> = {
@@ -42,8 +50,9 @@ function getStyleInstructions(
 ): string {
   const hex   = COLOR_MAP[primaryColor]  ?? '#10b981'
   const fonts = FONT_MAP[fontStyle]      ?? 'Inter + DM Sans'
+  const t     = tone.toLowerCase()
 
-  if (tone === 'Bold') {
+  if (t === 'bold') {
     return `
 DESIGN STYLE: NEO BRUTALISM — raw, loud, unapologetic
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -69,7 +78,7 @@ Rules — EVERY element follows these:
 `
   }
 
-  if (tone === 'Luxury') {
+  if (t === 'luxury') {
     return `
 DESIGN STYLE: DARK LUXURY — cinematic, editorial, premium
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -100,7 +109,7 @@ Rules:
 `
   }
 
-  if (tone === 'Minimal') {
+  if (t === 'minimal') {
     return `
 DESIGN STYLE: LUXURY MINIMAL — Apple meets Bottega Veneta
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -128,7 +137,7 @@ Rules:
 `
   }
 
-  if (tone === 'Friendly') {
+  if (t === 'friendly') {
     return `
 DESIGN STYLE: WARM MODERN — approachable, energetic, local
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -152,6 +161,121 @@ Rules:
 • Cards: white bg, subtle shadow, border-top 3px solid ${hex}
 • Testimonials: speech bubble style
 • CTA section: ${hex} background with white text
+`
+  }
+
+  if (t === 'cyberpunk') {
+    return `
+DESIGN STYLE: CYBERPUNK NEON — dystopian, electric, futuristic
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Colors:
+  --bg:      #020208  (near-black)
+  --surface: #0a0a14
+  --card:    #0e0e1c
+  --border:  ${hex}44
+  --text:    #e0e0ff
+  --muted:   #6b7280
+  --accent:  ${hex}
+
+Typography: Orbitron (headings) + Share Tech Mono (body/labels)
+Load via: @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap')
+
+Rules:
+• Background: near-black #020208 — no compromise
+• Neon glow on headlines: text-shadow: 0 0 10px ${hex}, 0 0 40px ${hex}80
+• Neon glow on borders: box-shadow: 0 0 12px ${hex}60, inset 0 0 12px ${hex}20
+• Grid lines background: repeating-linear-gradient overlay, 1px lines, ${hex}08
+• Hero: scanline animation overlay + glitch keyframe on headline
+• Scrolling ticker bar with neon text
+• Monospace or Orbitron for EVERYTHING
+• CTA buttons: ${hex} border + glow, transparent bg, hover: fill ${hex}
+• Cards: dark surface, neon border glow
+• Stats: giant Orbitron numbers in ${hex}
+`
+  }
+
+  if (t === 'retro') {
+    return `
+DESIGN STYLE: RETRO VINTAGE — aged, warm, classic authority
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Colors:
+  --bg:      #fdf6e3  (warm aged paper)
+  --surface: #f5ead0
+  --ink:     #2c1810
+  --muted:   #7a5c40
+  --border:  #c8a96e
+  --accent:  ${hex}
+
+Typography: Playfair Display (headings) + DM Serif Display (subheadings) + Lora (body)
+Load via: @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Serif+Display&family=Lora:wght@400;600&display=swap')
+
+Rules:
+• Aged paper background — warm creamy tones throughout
+• Decorative borders: double borders, ornamental corners
+• Vintage badge/stamp elements as design accents
+• Serif typography everywhere — never sans-serif
+• Old newspaper-style multi-column layout in about section
+• Texture overlay: subtle grain/noise CSS filter on sections
+• Pull quotes in large italic serif
+• Footer: dark ink background, reversed text
+• Buttons: outlined, stamp-style with serif text
+`
+  }
+
+  if (t === 'magazine') {
+    return `
+DESIGN STYLE: BOLD MAGAZINE — editorial, typographic, high-fashion
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Colors:
+  --bg:      #ffffff
+  --surface: #f8f8f8
+  --ink:     #0a0a0a
+  --muted:   #666666
+  --accent:  ${hex}
+
+Typography: Space Grotesk (headlines) + Fraunces (display/pull quotes) + Inter (body)
+Load via: @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&family=Fraunces:wght@400;700;900&family=Inter:wght@400;500&display=swap')
+
+Rules:
+• White background — content-forward, editorial clarity
+• Oversized headlines: clamp(5rem,14vw,14rem), tight letter-spacing -0.04em
+• Strong typographic hierarchy — size contrast is the design
+• Asymmetric grid — overlapping text and image zones like Vogue/Wired
+• ${hex} used as a single bold editorial accent
+• Hero: massive type over full-bleed image, minimal overlay
+• Pull quotes: 3-5rem italic Fraunces, ${hex} left border
+• Stats bar: bold numbers in oversized Space Grotesk
+• Image captions in uppercase monospace
+`
+  }
+
+  if (t === 'cinematic') {
+    return `
+DESIGN STYLE: CINEMATIC DARK — film noir, dramatic, prestige
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Colors:
+  --bg:      #050508  (ultra-dark, almost pitch)
+  --surface: #0c0c12
+  --card:    #111118
+  --border:  rgba(255,255,255,0.06)
+  --text:    #e8e8e8
+  --muted:   #6b7280
+  --accent:  ${hex}
+
+Typography: Cormorant Garamond (headlines) + Inter Light (body)
+Load via: @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Inter:wght@300;400;500&display=swap')
+
+Rules:
+• Ultra-dark background — darker than Luxury, like a cinema screen
+• Full-bleed hero section as a movie title card: big centered serif heading
+• Letterboxing effect: thin horizontal bars top/bottom of hero (10vh each, black)
+• Film grain texture: CSS noise overlay on hero section
+• Thin elegant Cormorant headlines — NOT bold, use weight 300-600
+• Italic subheadings for dramatic effect
+• Slow hover transitions: 0.6s cubic-bezier(0.22,1,0.36,1)
+• High contrast: near-white text on near-black
+• ${hex} used sparingly — only the single most important CTA
+• Horizontal rule dividers: 1px solid rgba(255,255,255,0.05)
 `
   }
 

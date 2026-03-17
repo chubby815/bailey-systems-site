@@ -10,7 +10,17 @@ const INDUSTRIES = [
   "Auto & Mechanic", "Cleaning", "Other",
 ];
 
-const TONES = ["Professional", "Friendly", "Bold", "Luxury", "Minimal"];
+const TONES = [
+  { value: "Professional", label: "Professional",  desc: "Clean dark modern"      },
+  { value: "Luxury",       label: "Luxury",         desc: "Dark gold premium"      },
+  { value: "Bold",         label: "Neo Brutalism",  desc: "Raw bold borders"       },
+  { value: "Minimal",      label: "Minimalist",     desc: "Clean white space"      },
+  { value: "Friendly",     label: "Friendly",       desc: "Warm approachable"      },
+  { value: "Cyberpunk",    label: "Cyberpunk",      desc: "Neon dark futuristic"   },
+  { value: "Retro",        label: "Retro Vintage",  desc: "Warm aged classic"      },
+  { value: "Magazine",     label: "Bold Magazine",  desc: "Editorial layout"       },
+  { value: "Cinematic",    label: "Cinematic",      desc: "Film dark dramatic"     },
+];
 
 const YEARS_OPTIONS = [
   "Less than 1 year", "1-3 years", "3-5 years", "5-10 years", "10+ years",
@@ -48,6 +58,14 @@ const COLORS = [
   { label: "Slate Gray",     value: "Slate Gray",     hex: "#64748b" },
   { label: "Rose Gold",      value: "Rose Gold",      hex: "#fb7185" },
   { label: "Deep Navy",      value: "Deep Navy",      hex: "#1e3a5f" },
+  { label: "Neon Blue",      value: "Neon Blue",      hex: "#00d4ff" },
+  { label: "Neon Green",     value: "Neon Green",     hex: "#00ff9f" },
+  { label: "Neon Pink",      value: "Neon Pink",      hex: "#ff0080" },
+  { label: "Neon Yellow",    value: "Neon Yellow",    hex: "#ffff00" },
+  { label: "Neon Purple",    value: "Neon Purple",    hex: "#bf00ff" },
+  { label: "Burgundy",       value: "Burgundy",       hex: "#800020" },
+  { label: "Coral",          value: "Coral",          hex: "#ff6b6b" },
+  { label: "Champagne",      value: "Champagne",      hex: "#f7e7ce" },
 ];
 
 type FormData = {
@@ -438,13 +456,14 @@ function BuildForm() {
             <Field num={5} label="Brand Tone">
               <div className="flex flex-wrap gap-2">
                 {TONES.map((t) => (
-                  <button key={t} type="button" onClick={() => set("tone", t)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                      form.tone === t
+                  <button key={t.value} type="button" onClick={() => set("tone", t.value)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all text-left ${
+                      form.tone === t.value
                         ? "bg-[#00e5a0] text-black border-[#00e5a0]"
                         : "bg-[#111214] text-[#6b7280] border-white/[0.07] hover:border-white/20"
                     }`}>
-                    {t}
+                    <span className="block font-semibold">{t.label}</span>
+                    <span className={`block text-[10px] mt-0.5 ${form.tone === t.value ? "text-black/60" : "text-[#4b5563]"}`}>{t.desc}</span>
                   </button>
                 ))}
               </div>
