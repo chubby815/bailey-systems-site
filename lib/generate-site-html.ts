@@ -217,7 +217,12 @@ function buildImagePrompts(
     `Premium workout equipment close-up, polished metal, rubber flooring, reflective surfaces, ${mood}, ${quality}`,
   ]
 
-  if (ind.includes('beauty') || ind.includes('salon') || ind.includes('spa') || ind.includes('barber')) return [
+  if (ind.includes('barber') || ind.includes('barbershop')) return [
+    `Classic barbershop interior leather chairs mirrors vintage decor dramatic lighting, ${mood}, ${quality}`,
+    `Professional barber giving precise haircut to client, close up hands scissors comb, ${mood}, ${quality}`,
+  ]
+
+  if (ind.includes('beauty') || ind.includes('salon') || ind.includes('spa')) return [
     `Luxury salon interior, marble counters, soft lighting, immaculate styling stations, premium aesthetic, ${mood}, ${quality}`,
     `Close-up of skilled hands working with hair, precision, luxury tools, soft bokeh, ${mood}, ${quality}`,
     `Serene spa treatment room, candles, towels, zen atmosphere, natural materials, ${mood}, ${quality}`,
