@@ -807,6 +807,12 @@ OUTPUT RULES
     html = html.replace('</body>', chatWidget + '\n</body>')
   }
 
+  // Inject framing meta tag so the editor iframe can embed the live site
+  html = html.replace(
+    '<head>',
+    '<head>\n<meta http-equiv="X-Frame-Options" content="ALLOW-FROM https://www.baileyagents.com">\n<meta http-equiv="Content-Security-Policy" content="frame-ancestors \'self\' https://*.baileyagents.com https://baileyagents.com">',
+  )
+
   // Force all content visible — override any scroll-reveal hidden states
   html = html.replace(
     '</style>',
