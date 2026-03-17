@@ -122,6 +122,20 @@ function buildFallback(
   };
 }
 
+/** Return a subdomain slug that isn't already registered in Redis. */
+async function getUniqueSlug(baseSlug: string): Promise<string> {
+  const existing = await kv.get(`slug:${baseSlug}`);
+  if (!existing) return baseSlug;
+
+  for (let i = 2; i <= 99; i++) {
+    const candidate = `${baseSlug}-${i}`;
+    const taken = await kv.get(`slug:${candidate}`);
+    if (!taken) return candidate;
+  }
+
+  return `${baseSlug}-${randomSuffix()}`;
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   // Auth
@@ -300,7 +314,8 @@ export async function POST(req: NextRequest) {
     }
     siteId = editSiteId.trim();
   } else {
-    siteId = `${baseSlug}-${randomSuffix()}`;
+    subdomainSlug = await getUniqueSlug(baseSlug);
+    siteId        = `${subdomainSlug}-${randomSuffix()}`;
   }
 
   const siteData: SiteRecord = {

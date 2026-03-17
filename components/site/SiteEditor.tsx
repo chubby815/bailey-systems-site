@@ -967,6 +967,13 @@ export function SiteEditor({
   const [iframeKey, setIframeKey]             = useState(0);
   const [isRegenerating, setIsRegenerating]   = useState(false);
   const [regenError, setRegenError]           = useState<string | null>(null);
+  const [regenForm, setRegenForm]             = useState({
+    businessName: site.businessName  ?? "",
+    tagline:      site.tagline       ?? "",
+    services:     site.services      ?? "",
+    contactPhone: site.contactPhone  ?? "",
+    contactEmail: site.contactEmail  ?? "",
+  });
   const hasChanges                            = useRef(false);
 
   // True when the site was built by the HTML generation pipeline (not the JSON template system)
@@ -1069,24 +1076,24 @@ export function SiteEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          editSiteId:   siteId,
-          businessName: site.businessName,
-          industry:     site.industry,
-          location:     site.location,
-          services:     site.services,
-          tone:         site.tone,
-          primaryColor: site.primaryColor,
-          fontStyle:    site.fontStyle    ?? "Modern",
-          heroStyle:    site.heroStyle    ?? "Photo Background",
-          layoutStyle:  site.layoutStyle  ?? "Standard",
-          tagline:      site.tagline      ?? "",
-          description:  site.description  ?? "",
-          contactEmail: site.contactEmail ?? "",
-          contactPhone: site.contactPhone ?? "",
-          businessHours:site.businessHours ?? "",
-          facebookUrl:  site.facebookUrl  ?? "",
-          instagramUrl: site.instagramUrl ?? "",
-          enableChat:   site.enableChat   ?? false,
+          editSiteId:    siteId,
+          businessName:  regenForm.businessName,
+          industry:      site.industry,
+          location:      site.location,
+          services:      regenForm.services,
+          tone:          site.tone,
+          primaryColor:  site.primaryColor,
+          fontStyle:     site.fontStyle     ?? "Modern",
+          heroStyle:     site.heroStyle     ?? "Photo Background",
+          layoutStyle:   site.layoutStyle   ?? "Standard",
+          tagline:       regenForm.tagline,
+          description:   site.description   ?? "",
+          contactEmail:  regenForm.contactEmail,
+          contactPhone:  regenForm.contactPhone,
+          businessHours: site.businessHours  ?? "",
+          facebookUrl:   site.facebookUrl    ?? "",
+          instagramUrl:  site.instagramUrl   ?? "",
+          enableChat:    site.enableChat     ?? false,
         }),
       });
       if (!res.ok) {
@@ -1284,47 +1291,140 @@ export function SiteEditor({
               </div>
             )}
             {activePanel === "content" && isHTMLSite && (
-              <div style={{
-                padding: "12px 16px",
-                borderBottom: "1px solid rgba(255,255,255,0.07)",
-                flexShrink: 0,
-                background: "#0d0e10",
-              }}>
-                <p style={{
-                  fontSize: "0.6875rem",
-                  color: "#6b7280",
-                  lineHeight: 1.55,
-                  marginBottom: "10px",
-                }}>
-                  This site was built with AI HTML generation. Click Regenerate to rebuild it with new AI images and layout.
-                </p>
-                <button
-                  onClick={handleRegenerate}
-                  disabled={isRegenerating}
-                  style={{
-                    width: "100%",
-                    background: isRegenerating ? "rgba(0,229,160,0.12)" : "#00e5a0",
-                    color: isRegenerating ? "#00e5a0" : "#000",
-                    border: isRegenerating ? "1px solid rgba(0,229,160,0.3)" : "none",
-                    fontWeight: 700,
-                    fontSize: "0.8125rem",
-                    padding: "9px 0",
-                    borderRadius: "10px",
-                    cursor: isRegenerating ? "not-allowed" : "pointer",
-                    transition: "all 0.15s",
-                    opacity: isRegenerating ? 0.75 : 1,
-                  }}
-                >
-                  {isRegenerating ? "Regenerating… (45–60s)" : "🔄 Regenerate Site"}
-                </button>
-                {regenError && (
-                  <p style={{ fontSize: "0.625rem", color: "#f87171", marginTop: "6px" }}>
-                    {regenError}
-                  </p>
-                )}
+              <div style={{ overflowY: "auto", flex: 1 }}>
+                <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+                  {/* Header */}
+                  <div>
+                    <h3 style={{ color: "#f0f0f0", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem", margin: "0 0 0.25rem" }}>
+                      ✏️ Edit Your Site
+                    </h3>
+                    <p style={{ color: "#6b7280", fontSize: "0.8rem", lineHeight: 1.5, margin: 0 }}>
+                      Update your info and regenerate to rebuild with new content
+                    </p>
+                  </div>
+
+                  {/* Business Name */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Business Name
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={regenForm.businessName}
+                      onChange={e => setRegenForm(p => ({ ...p, businessName: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Tagline */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Tagline
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={regenForm.tagline}
+                      placeholder="e.g. Where Vegas Comes Alive"
+                      onChange={e => setRegenForm(p => ({ ...p, tagline: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Services */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Services
+                    </label>
+                    <textarea
+                      defaultValue={regenForm.services}
+                      rows={3}
+                      onChange={e => setRegenForm(p => ({ ...p, services: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", resize: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Phone
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={regenForm.contactPhone}
+                      placeholder="(312) 555-0192"
+                      onChange={e => setRegenForm(p => ({ ...p, contactPhone: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.4rem" }}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      defaultValue={regenForm.contactEmail}
+                      placeholder="hello@yourbusiness.com"
+                      onChange={e => setRegenForm(p => ({ ...p, contactEmail: e.target.value }))}
+                      style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* Error */}
+                  {regenError && (
+                    <p style={{ color: "#ef4444", fontSize: "0.8rem", margin: 0 }}>{regenError}</p>
+                  )}
+
+                  {/* Regenerate Button */}
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={isRegenerating}
+                    style={{
+                      width: "100%",
+                      padding: "0.85rem",
+                      background: isRegenerating ? "rgba(0,229,160,0.3)" : "#00e5a0",
+                      color: "#000",
+                      fontWeight: 700,
+                      fontSize: "0.875rem",
+                      border: "none",
+                      borderRadius: "10px",
+                      cursor: isRegenerating ? "not-allowed" : "pointer",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {isRegenerating ? "⚡ Rebuilding… (45–60s)" : "🔄 Regenerate Site"}
+                  </button>
+
+                  {/* View Live */}
+                  <a
+                    href={`https://${site.subdomainSlug}.baileyagents.com`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "0.75rem",
+                      background: "transparent",
+                      color: "#f0f0f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      textAlign: "center",
+                      textDecoration: "none",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    🌐 View Live Site ↗
+                  </a>
+
+                </div>
               </div>
             )}
-            {activePanel === "content" && (
+            {activePanel === "content" && !isHTMLSite && (
               <ContentPanel
                 content={currentContent}
                 onChange={handleContentChange}

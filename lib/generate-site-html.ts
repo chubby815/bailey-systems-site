@@ -369,10 +369,9 @@ export async function generateSiteHTML(params: {
   const styleInstructions = getStyleInstructions(tone, primaryColor, fontStyle)
 
   console.log('[BUILD] Generating Grok images…')
-  const images  = await generateGrokImages(businessName, industry, tone, 3)
+  const images   = await generateGrokImages(businessName, industry, tone, 2)
   const heroImg  = images[0] ?? null
   const aboutImg = images[1] ?? null
-  const svcImg   = images[2] ?? null
 
   const hex = COLOR_MAP[primaryColor] ?? '#10b981'
 
@@ -380,20 +379,16 @@ export async function generateSiteHTML(params: {
 REAL CDN IMAGES — embed exactly as shown (these are real URLs, not placeholders):
   Hero background image URL:  HERO_IMG_PLACEHOLDER
   About section image URL:    ABOUT_IMG_PLACEHOLDER
-  Service/feature image URL:  SERVICE_IMG_PLACEHOLDER
 
 How to use each:
   HERO: as CSS background-image on the hero section div, always with a dark overlay rgba(0,0,0,0.5) on top
   ABOUT: as <img> tag in the about section, object-fit cover, max-height 600px, border-radius per design style
-  SERVICE: as <img> tag inside a service/feature card, object-fit cover
 
 Rules:
   ✅ HERO_IMG_PLACEHOLDER — hero background-image, full viewport cover
   ✅ ABOUT_IMG_PLACEHOLDER — about section photo, displayed as <img>
-  ✅ SERVICE_IMG_PLACEHOLDER — featured service card image
   ✅ ALL images use object-fit: cover
   ✅ Hero MUST have a dark overlay for text legibility
-  ❌ NEVER swap or skip these images
   ❌ NEVER use emoji as image replacements
   ❌ NEVER leave an img src empty
 ` : `
@@ -480,7 +475,7 @@ REQUIRED SECTIONS (all 8, in this order)
 
 4. SERVICES GRID
    • 3-column grid (responsive)
-   • ABOUT_IMG_PLACEHOLDER or SERVICE_IMG_PLACEHOLDER in featured card
+   • Featured card uses ABOUT_IMG_PLACEHOLDER as a background accent if available; otherwise CSS gradient
    • Each card: icon, name, description
    • Hover effects per design style
 
@@ -552,7 +547,6 @@ OUTPUT RULES
 • Use exactly these placeholder strings in the HTML:
     HERO_IMG_PLACEHOLDER
     ABOUT_IMG_PLACEHOLDER
-    SERVICE_IMG_PLACEHOLDER
 • They will be replaced with real CDN image URLs after generation`
 
   console.log('[BUILD] Generating premium HTML…')
@@ -571,7 +565,14 @@ OUTPUT RULES
   // Inject real image URLs
   if (heroImg)  html = html.replace(/HERO_IMG_PLACEHOLDER/g, heroImg)
   if (aboutImg) html = html.replace(/ABOUT_IMG_PLACEHOLDER/g, aboutImg)
-  if (svcImg)   html = html.replace(/SERVICE_IMG_PLACEHOLDER/g, svcImg)
+
+  // Strip any remaining unreplaced placeholders (failed generation) so they
+  // never appear as literal text or broken src attributes in the final page
+  for (const ph of ['HERO_IMG_PLACEHOLDER', 'ABOUT_IMG_PLACEHOLDER', 'SERVICE_IMG_PLACEHOLDER']) {
+    html = html.replace(new RegExp(`background-image:\\s*url\\(['"]?${ph}['"]?\\)`, 'g'), 'background-image: none')
+    html = html.replace(new RegExp(`src=['"]?${ph}['"]?`, 'g'), 'src=""')
+    html = html.replace(new RegExp(ph, 'g'), '')
+  }
 
   // Ensure document closes properly
   if (!html.includes('</body>')) html += '\n</body>\n</html>'
