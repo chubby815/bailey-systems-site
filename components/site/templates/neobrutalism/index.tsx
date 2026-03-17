@@ -342,6 +342,23 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
               background: i % 3 === 1 ? P : i % 3 === 0 ? bg : "#fff",
               padding: "2rem",
             }}>
+              {s.image && s.image !== "[uploaded]" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={s.image}
+                  alt={s.name}
+                  style={{
+                    width: "calc(100% + 4rem)",
+                    height: "180px",
+                    objectFit: "cover",
+                    borderRadius: "0",
+                    margin: "-2rem -2rem 1.5rem -2rem",
+                    display: "block",
+                    borderTop: "3px solid #000",
+                    borderBottom: "3px solid #000",
+                  }}
+                />
+              )}
               <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{s.icon || "◆"}</div>
               <h3 style={{
                 fontFamily: FF, fontWeight: 900,

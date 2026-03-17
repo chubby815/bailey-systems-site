@@ -605,6 +605,22 @@ function Services({
                 className="dp2-bento-card dp2-bento-card-featured dp2-bento-featured"
                 style={{ gridColumn: "span 2", minHeight: "320px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}
               >
+                {services[0].image && services[0].image !== "[uploaded]" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={services[0].image}
+                    alt={services[0].name}
+                    style={{
+                      width: "calc(100% + 4rem)",
+                      height: "220px",
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                      margin: "-2rem -2rem 1.5rem -2rem",
+                      display: "block",
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
                 {/* Top */}
                 <div>
                   <div style={{
@@ -694,6 +710,22 @@ function Services({
             {/* ── Card 1: Standard right column ── */}
             {services[1] && (
               <div className="dp2-bento-card" style={{ minHeight: "320px", display: "flex", flexDirection: "column" }}>
+                {services[1].image && services[1].image !== "[uploaded]" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={services[1].image}
+                    alt={services[1].name}
+                    style={{
+                      width: "calc(100% + 4rem)",
+                      height: "160px",
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                      margin: "-2rem -2rem 1.5rem -2rem",
+                      display: "block",
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
                 <div style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   width: "44px", height: "44px", borderRadius: "13px",
@@ -732,6 +764,22 @@ function Services({
                 className="dp2-bento-card"
                 style={{ minHeight: "220px", display: "flex", flexDirection: "column" }}
               >
+                {s.image && s.image !== "[uploaded]" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    style={{
+                      width: "calc(100% + 4rem)",
+                      height: "160px",
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                      margin: "-2rem -2rem 1.5rem -2rem",
+                      display: "block",
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
                 {/* Large index number — editorial accent */}
                 <div style={{
                   fontFamily: FF_DISPLAY,
@@ -776,6 +824,22 @@ function Services({
                   flexWrap: "wrap",
                 }}
               >
+                {services[5].image && services[5].image !== "[uploaded]" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={services[5].image}
+                    alt={services[5].name}
+                    style={{
+                      width: "calc(100% + 4rem)",
+                      height: "160px",
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                      margin: "-2rem -2rem 1.5rem -2rem",
+                      display: "block",
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
                 <div>
                   <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>{services[5].icon || "✦"}</div>
                   <h3 style={{
@@ -812,6 +876,22 @@ function Services({
             {/* Extra services beyond 6 */}
             {content.slice(6).map((s, i) => (
               <div key={`extra-${i}`} className="dp2-bento-card" style={{ minHeight: "180px" }}>
+                {s.image && s.image !== "[uploaded]" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    style={{
+                      width: "calc(100% + 4rem)",
+                      height: "160px",
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0",
+                      margin: "-2rem -2rem 1.5rem -2rem",
+                      display: "block",
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
                 <div style={{ fontSize: "1.35rem", marginBottom: "1rem" }}>{s.icon || "◇"}</div>
                 <h3 style={{
                   fontFamily: FF_DISPLAY, fontWeight: 700,
