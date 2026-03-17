@@ -38,12 +38,18 @@ function Stars({ n, color }: { n: number; color: string }) {
 function Styles({ p, offBg, bg, btnRadius }: { p: string; offBg: string; bg: string; btnRadius: string }) {
   return (
     <style>{`
-      .mn-service-row {
-        display: flex; align-items: flex-start; gap: 2rem; padding: 1.75rem 0;
-        border-bottom: 1px solid ${LINE}; transition: background 0.15s;
-        cursor: default;
+      .mn-svc-card {
+        background: #ffffff; border: 1px solid #f0f0f0; border-radius: 16px;
+        padding: 2rem; position: relative; overflow: hidden; cursor: default;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, border-top-width 0.1s ease;
+        border-top: 1px solid #f0f0f0;
       }
-      .mn-service-row:hover { background: ${offBg}; margin: 0 -2rem; padding-left: 2rem; padding-right: 2rem; }
+      .mn-svc-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.10);
+        border-color: ${p}40;
+        border-top: 3px solid ${p};
+      }
       .mn-trust-pill {
         background: #f3f4f6; border: 1px solid ${LINE}; border-radius: 100px;
         padding: 8px 20px; white-space: nowrap;
@@ -285,23 +291,41 @@ function Services({ content, primaryColor, location, bg }: {
         </ScrollAnimator>
 
         <ScrollAnimator>
-        <div style={{ borderTop: `1px solid ${LINE}` }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          gap: "1.5rem",
+        }}>
           {content.map((s, i) => (
-            <div key={i} className="mn-service-row">
-              <span style={{
-                fontFamily: FF_MONO, fontSize: "0.75rem", fontWeight: 600,
-                color: `var(--accent-color, ${primaryColor})`, flexShrink: 0,
-                marginTop: "0.25rem", minWidth: "36px",
+            <div key={i} className="mn-svc-card">
+              {s.image && s.image !== "[uploaded]" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={s.image}
+                  alt={s.name}
+                  style={{
+                    height: "200px",
+                    width: "calc(100% + 4rem)",
+                    objectFit: "cover",
+                    borderRadius: "12px 12px 0 0",
+                    margin: "-2rem -2rem 1.5rem -2rem",
+                    display: "block",
+                  }}
+                />
+              )}
+              <div style={{
+                width: "48px", height: "48px", borderRadius: "50%",
+                background: `${primaryColor}15`,
+                border: `1px solid ${primaryColor}30`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "1.5rem", marginBottom: "1rem",
               }}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div style={{ flex: "0 0 200px" }}>
-                <div style={{ fontSize: "1.5rem", marginBottom: "0.375rem" }}>{s.icon || "○"}</div>
-                <h3 style={{ fontFamily: FF, fontWeight: 600, fontSize: "1rem", color: C_HEADING }}>
-                  {s.name}
-                </h3>
+                {s.icon || "○"}
               </div>
-              <p style={{ fontFamily: FF, fontSize: "0.9rem", color: C_BODY, lineHeight: 1.75, flex: 1 }}>
+              <h3 style={{ fontFamily: FF, fontWeight: 600, fontSize: "1.1rem", color: C_HEADING, marginBottom: "0.5rem" }}>
+                {s.name}
+              </h3>
+              <p style={{ fontFamily: FF, fontSize: "0.9rem", color: C_BODY, lineHeight: 1.6 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>

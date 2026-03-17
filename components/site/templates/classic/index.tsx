@@ -46,17 +46,25 @@ function Styles({ btnRadius }: { btnRadius: string }) {
   return (
     <style>{`
       .cb-service-card {
-        background: #fff; border: 1px solid ${LINE}; border-radius: 8px;
-        padding: 2rem 1.5rem; text-align: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, border-bottom-color 0.2s;
-        border-bottom: 3px solid transparent;
+        background: linear-gradient(135deg, #1a2744, #0f1a35);
+        border: 1px solid rgba(201,168,76,0.2); border-radius: 16px;
+        padding: 2rem; position: relative; overflow: hidden;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         cursor: default;
       }
-      .cb-service-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 36px rgba(26,39,68,0.10);
-        border-bottom-color: ${GOLD};
+      .cb-service-card::after {
+        content: '';
+        position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, ${GOLD}, ${GOLD_L});
+        transform: scaleX(0); transition: transform 0.3s ease;
+        transform-origin: left;
       }
+      .cb-service-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(201,168,76,0.5);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(201,168,76,0.10);
+      }
+      .cb-service-card:hover::after { transform: scaleX(1); }
       .cb-testimonial {
         background: #fff; border: 1px solid ${LINE};
         border-radius: 10px; padding: 1.75rem;
@@ -119,12 +127,8 @@ function Styles({ btnRadius }: { btnRadius: string }) {
         animation: cb-gold-underline 1.5s 0.4s cubic-bezier(0.77,0,0.18,1) forwards;
         margin-top: 1rem;
       }
-      /* Service card gold hover */
-      .cb-service-card:hover {
-        transform: translateY(-6px) !important;
-        box-shadow: 0 20px 40px rgba(201,168,76,0.20) !important;
-        border-bottom-color: ${GOLD} !important;
-      }
+      /* Service card gold accent line on hover */
+      .cb-service-card:hover::after { transform: scaleX(1); }
       /* Reduced-motion */
       @media (prefers-reduced-motion: reduce) {
         .cb-root { animation: none !important; }
@@ -320,22 +324,39 @@ function Services({ content, location, bg }: { content: StructuredSiteContent["s
 
         <ScrollAnimator>
         <div className="cb-services-grid" style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1.25rem",
+          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.25rem",
         }}>
           {content.map((s, i) => (
-            <div key={i} className={`cb-service-card card-hover${i === 0 ? " cb-service-featured" : ""}`}>
+            <div key={i} className="cb-service-card">
+              {s.image && s.image !== "[uploaded]" && (
+                <div style={{ position: "relative", margin: "-2rem -2rem 1.5rem -2rem" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    style={{
+                      width: "100%", height: "180px", objectFit: "cover",
+                      borderRadius: "12px 12px 0 0", display: "block",
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
+                    background: "linear-gradient(to top, rgba(15,26,53,0.8), transparent)",
+                  }} />
+                </div>
+              )}
               <div style={{
-                width: "60px", height: "60px", borderRadius: "50%",
-                background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`,
-                border: `2px solid ${GOLD}44`,
+                width: "56px", height: "56px", borderRadius: "12px",
+                background: "rgba(201,168,76,0.15)",
+                border: "1px solid rgba(201,168,76,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                margin: "0 auto 1.25rem", fontSize: "1.75rem",
+                fontSize: "1.75rem", marginBottom: "1.25rem",
               }}>{s.icon || "◆"}</div>
               <h3 style={{
-                fontFamily: FF, fontWeight: 700, fontSize: "1rem",
-                color: C_HEADING, marginBottom: "0.625rem",
+                fontFamily: FF, fontWeight: 600, fontSize: "1.1rem",
+                color: "#ffffff", marginBottom: "0.625rem",
               }}>{s.name}</h3>
-              <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: C_BODY, lineHeight: 1.7 }}>
+              <p style={{ fontFamily: FF_SAN, fontSize: "0.9rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.7 }}>
                 {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
               </p>
             </div>

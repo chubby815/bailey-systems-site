@@ -63,6 +63,7 @@ export type {
   LegacySiteContent,
   StructuredSiteContent,
 } from "./site-theme";
+import { isStructuredContent } from "./site-theme";
 
 export type SiteRecord = {
   siteId: string;
@@ -284,12 +285,30 @@ export async function getUserSites(email: string): Promise<SiteRecord[]> {
         (s): s is SiteRecord =>
           s !== null && s.userId?.toLowerCase() === email.toLowerCase()
       )
-      .map((s) => ({
-        ...s,
-        // Strip large base64 blobs from the list view
-        heroImage:  s.heroImage  ? "[uploaded]" : undefined,
-        aboutImage: s.aboutImage ? "[uploaded]" : undefined,
-      }))
+      .map((s) => {
+        // Strip large base64 blobs from the list view to stay under Redis mget limit
+        const stripped: SiteRecord = {
+          ...s,
+          heroImage:  s.heroImage  ? "[uploaded]" : undefined,
+          aboutImage: s.aboutImage ? "[uploaded]" : undefined,
+        };
+        // Also strip per-service images nested in generatedContent
+        if (stripped.generatedContent && isStructuredContent(stripped.generatedContent)) {
+          const hasServiceImages = stripped.generatedContent.services?.some(
+            (svc) => svc.image && svc.image !== "[uploaded]"
+          );
+          if (hasServiceImages) {
+            stripped.generatedContent = {
+              ...stripped.generatedContent,
+              services: stripped.generatedContent.services.map((svc) => ({
+                ...svc,
+                image: svc.image ? "[uploaded]" : undefined,
+              })),
+            };
+          }
+        }
+        return stripped;
+      })
       .sort(
         (a, b) =>
           new Date(b.createdAt ?? 0).getTime() -

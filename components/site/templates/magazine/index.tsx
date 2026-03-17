@@ -38,22 +38,35 @@ function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
   return (
     <style>{`
       .mg-service-card {
-        overflow: hidden; background: #fff; border: 1px solid ${LINE};
+        position: relative; border-radius: 16px; overflow: hidden;
+        aspect-ratio: 3/4; background: #1a1a1a; cursor: pointer;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
-        cursor: default;
       }
       .mg-service-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.30);
       }
-      .mg-service-img {
-        aspect-ratio: 4/3; overflow: hidden; position: relative;
+      .mg-svc-img-area {
+        height: 65%; overflow: hidden; position: relative;
       }
-      .mg-service-img-inner {
+      .mg-svc-img-inner {
         width: 100%; height: 100%; object-fit: cover;
         transition: transform 0.5s ease;
       }
-      .mg-service-card:hover .mg-service-img-inner { transform: scale(1.04); }
+      .mg-service-card:hover .mg-svc-img-inner { transform: scale(1.06); }
+      .mg-svc-bottom {
+        height: 35%; background: #111; padding: 1.25rem;
+        display: flex; flex-direction: column; justify-content: center;
+        transition: transform 0.25s ease;
+      }
+      .mg-service-card:hover .mg-svc-bottom { transform: translateY(-4px); }
+      .mg-svc-name {
+        font-size: 1rem; font-weight: 700; color: #ffffff;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        margin-bottom: 0.375rem;
+        transition: color 0.25s ease;
+      }
+      .mg-service-card:hover .mg-svc-name { color: ${p}; }
       .mg-btn-filled {
         background: ${p}; color: ${C_BTN};
         font-family: ${FF_SAN}; font-weight: 600; font-size: 0.875rem;
@@ -108,16 +121,7 @@ function Styles({ p, btnRadius }: { p: string; btnRadius: string }) {
         opacity: 0;
         animation: mg-slide-left 0.8s 0.3s ease-out forwards;
       }
-      /* Editorial card reveal */
-      .mg-service-card {
-        overflow: hidden; background: #fff; border: 1px solid ${LINE};
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        cursor: default;
-      }
-      .mg-service-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.08);
-      }
+      /* Editorial card — hover name color handled by .mg-svc-name above */
       /* Reduced-motion */
       @media (prefers-reduced-motion: reduce) {
         .mg-root { animation: none !important; }
@@ -299,45 +303,47 @@ function Services({ content, primaryColor, location, bg }: {
 
         <ScrollAnimator>
         <div className="mg-services-grid" style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem",
+          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.25rem",
         }}>
           {content.map((s, i) => (
-            <div key={i} className="mg-service-card card-hover">
-              {/* Image / color placeholder */}
-              <div className="mg-service-img" style={{
-                backgroundImage: `linear-gradient(135deg, ${primaryColor}${i % 2 === 0 ? "cc" : "88"}, ${primaryColor}22)`,
-              }}>
+            <div key={i} className="mg-service-card">
+              {/* Image area — top 65% */}
+              <div className="mg-svc-img-area">
+                {s.image && s.image !== "[uploaded]" ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={s.image} alt={s.name} className="mg-svc-img-inner" />
+                ) : (
+                  <div style={{
+                    width: "100%", height: "100%",
+                    backgroundImage: `linear-gradient(135deg, ${primaryColor}${i % 2 === 0 ? "cc" : "88"}, ${primaryColor}22)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ fontSize: "3rem", opacity: 0.8, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}>
+                      {s.icon || "◆"}
+                    </span>
+                  </div>
+                )}
+                {/* Bottom gradient overlay */}
                 <div style={{
-                  width: "100%", height: "100%",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <span style={{ fontSize: "3.5rem", opacity: 0.8, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}>
-                    {s.icon || "◆"}
-                  </span>
-                </div>
-                {/* Bottom overlay */}
-                <div style={{
-                  position: "absolute", bottom: 0, left: 0, right: 0,
-                  backgroundImage: "linear-gradient(to top, rgba(0,0,0,0.55), transparent)",
-                  height: "60%", pointerEvents: "none",
+                  position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
+                  backgroundImage: "linear-gradient(to top, rgba(17,17,17,0.9), transparent)",
+                  pointerEvents: "none",
                 }} />
-                <div style={{
-                  position: "absolute", bottom: "1rem", left: "1rem",
-                  fontFamily: FF_SAN, fontSize: "0.68rem", fontWeight: 700,
-                  textTransform: "uppercase", letterSpacing: "0.1em", color: "#fff",
-                }}>
-                  {`0${i + 1}`}
-                </div>
               </div>
-              {/* Text */}
-              <div style={{ padding: "1.25rem 1.5rem" }}>
-                <h3 style={{
-                  fontFamily: FF_SAN, fontWeight: 600, fontSize: "0.975rem",
-                  color: C_HEADING, marginBottom: "0.5rem",
-                  textTransform: "uppercase", letterSpacing: "0.04em",
-                }}>{s.name}</h3>
-                <p style={{ fontFamily: FF_SAN, fontSize: "0.85rem", color: C_BODY, lineHeight: 1.7 }}>
-                  {s.description || `Professional ${s.name.toLowerCase()} services in ${location}.`}
+              {/* Bottom content — 35% */}
+              <div className="mg-svc-bottom">
+                <div style={{
+                  fontFamily: FF_SAN, fontSize: "0.65rem", letterSpacing: "0.15em",
+                  color: `var(--accent-color, ${primaryColor})`, textTransform: "uppercase",
+                  marginBottom: "0.375rem",
+                }}>
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <h3 className="mg-svc-name" style={{ fontFamily: FF_SAN }}>
+                  {s.name}
+                </h3>
+                <p style={{ fontFamily: FF_SAN, fontSize: "0.8rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.5, margin: 0 }}>
+                  {s.description || `Professional ${s.name.toLowerCase()} services.`}
                 </p>
               </div>
             </div>

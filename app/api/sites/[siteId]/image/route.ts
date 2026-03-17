@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getSite, saveSite } from "@/lib/kv";
+import { isStructuredContent } from "@/lib/site-theme";
 
 const MAX_BYTES = 2.8 * 1024 * 1024; // ~2 MB after base64 overhead
 
@@ -17,8 +18,8 @@ export async function POST(
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const section = body.section === "about" ? "about" : "hero";
-  const image   = body.image === null ? null : typeof body.image === "string" ? body.image : undefined;
+  const rawSection = typeof body.section === "string" ? body.section : "hero";
+  const image      = body.image === null ? null : typeof body.image === "string" ? body.image : undefined;
 
   if (image === undefined) {
     return NextResponse.json({ error: "image must be a string or null" }, { status: 400 });
@@ -38,12 +39,36 @@ export async function POST(
   if (site.userId !== session.email) return NextResponse.json({ error: "Forbidden" },  { status: 403 });
 
   const updated = { ...site };
-  if (section === "hero") {
-    if (image === null) delete updated.heroImage;
-    else updated.heroImage = image;
-  } else {
+
+  // Handle service-N sections (service-0 … service-7)
+  const serviceMatch = rawSection.match(/^service-(\d+)$/);
+  if (serviceMatch) {
+    const idx = parseInt(serviceMatch[1], 10);
+    if (idx < 0 || idx > 7) {
+      return NextResponse.json({ error: "Service index out of range (0-7)" }, { status: 400 });
+    }
+    const content = site.generatedContent;
+    if (!isStructuredContent(content)) {
+      return NextResponse.json({ error: "Site uses legacy content format" }, { status: 400 });
+    }
+    const services = content.services ? [...content.services] : [];
+    if (!services[idx]) {
+      return NextResponse.json({ error: "Service not found at that index" }, { status: 404 });
+    }
+    if (image === null) {
+      const { image: _removed, ...rest } = services[idx];
+      void _removed;
+      services[idx] = rest;
+    } else {
+      services[idx] = { ...services[idx], image };
+    }
+    updated.generatedContent = { ...content, services };
+  } else if (rawSection === "about") {
     if (image === null) delete updated.aboutImage;
     else updated.aboutImage = image;
+  } else {
+    if (image === null) delete updated.heroImage;
+    else updated.heroImage = image;
   }
 
   await saveSite(siteId, updated);

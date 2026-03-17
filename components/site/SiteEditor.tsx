@@ -401,6 +401,10 @@ function ContentPanel({
   const [aboutSuccess, setAboutSuccess]     = useState(false);
   const fileRef      = useRef<HTMLInputElement>(null);
   const aboutFileRef = useRef<HTMLInputElement>(null);
+  const [svcUploading, setSvcUploading] = useState<Record<number, boolean>>({});
+  const [svcError, setSvcError]         = useState<Record<number, string | null>>({});
+  const [svcSuccess, setSvcSuccess]     = useState<Record<number, boolean>>({});
+  const svcFileRefs                     = useRef<Array<HTMLInputElement | null>>([]);
 
   // ── Content helpers ─────────────────────────────────────────────────────────
   function setHero(field: keyof StructuredSiteContent["hero"], value: string) {
@@ -449,7 +453,7 @@ function ContentPanel({
 
   // ── Image upload helpers ────────────────────────────────────────────────────
   async function uploadImage(
-    file: File, section: "hero" | "about",
+    file: File, section: string,
     onSuccess: (url: string) => void,
     setErr: (e: string | null) => void,
     setLoading: (v: boolean) => void,
@@ -487,6 +491,28 @@ function ContentPanel({
   async function handleRemoveAboutImage() {
     await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: "about", image: null }) });
     onAboutImageChange(null);
+  }
+  function setServiceImage(i: number, url: string | undefined) {
+    onChange({ ...content, services: content.services.map((s, idx) => idx === i ? { ...s, image: url } : s) });
+  }
+  function handleServiceFileChange(i: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return;
+    void uploadImage(
+      file,
+      `service-${i}`,
+      (url) => {
+        setServiceImage(i, url);
+        setSvcSuccess(prev => ({ ...prev, [i]: true }));
+        setTimeout(() => setSvcSuccess(prev => ({ ...prev, [i]: false })), 2500);
+      },
+      (err) => setSvcError(prev => ({ ...prev, [i]: err })),
+      (loading) => setSvcUploading(prev => ({ ...prev, [i]: loading })),
+      () => {},
+    );
+  }
+  async function handleRemoveServiceImage(i: number) {
+    await fetch(`/api/sites/${siteId}/image`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section: `service-${i}`, image: null }) });
+    setServiceImage(i, undefined);
   }
 
   const navLinks = content.nav?.links ?? ["Services", "About", "Contact"];
@@ -637,6 +663,42 @@ function ContentPanel({
                 <div>
                   <label className={LABEL}>Description</label>
                   <textarea className={INPUT} rows={2} value={svc.description} onChange={(e) => setService(i, "description", e.target.value)} />
+                </div>
+                {/* Service card photo */}
+                <div>
+                  <label className={LABEL}>Card Photo</label>
+                  {svc.image && svc.image !== "[uploaded]" && (
+                    <div className="rounded-lg overflow-hidden border border-white/[0.07] mb-2" style={{ aspectRatio: "16/9" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={svc.image} alt={svc.name} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => svcFileRefs.current[i]?.click()}
+                      disabled={!!svcUploading[i]}
+                      className="flex-1 text-xs font-bold py-2 rounded-lg bg-white/[0.06] border border-white/[0.10] text-[#f0f0f0] hover:bg-white/[0.10] transition-colors disabled:opacity-50"
+                    >
+                      {svcUploading[i] ? "Uploading…" : "📷 Add Photo"}
+                    </button>
+                    {svc.image && svc.image !== "[uploaded]" && (
+                      <button
+                        onClick={() => handleRemoveServiceImage(i)}
+                        className="text-xs font-bold py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {svcSuccess[i] && <p className="text-[10px] text-[#00e5a0] mt-1.5">✅ Photo updated!</p>}
+                  {svcError[i] && <p className="text-[10px] text-red-400 mt-1.5">{svcError[i]}</p>}
+                  <input
+                    ref={(el) => { svcFileRefs.current[i] = el; }}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => handleServiceFileChange(i, e)}
+                  />
                 </div>
               </div>
             ))}
