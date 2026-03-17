@@ -487,12 +487,13 @@ export async function generateSiteHTML(params: {
   facebookUrl?:  string
   instagramUrl?: string
   enableChat?:   boolean
+  websiteVibe?:  string
 }): Promise<string> {
   const {
     businessName, industry, location, services,
     tone, primaryColor, fontStyle, heroStyle, layoutStyle,
     tagline, description, contactEmail, contactPhone,
-    businessHours, facebookUrl, instagramUrl, enableChat,
+    businessHours, facebookUrl, instagramUrl, enableChat, websiteVibe,
   } = params
 
   const styleInstructions = getStyleInstructions(tone, primaryColor, fontStyle)
@@ -554,6 +555,17 @@ ${tagline      ? `Tagline:   ${tagline}`     : ''}
 ${description  ? `About:     ${description}` : ''}
 ${contactBlock ? `Contact:\n${contactBlock}` : ''}
 
+${websiteVibe ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WEBSITE VIBE — THIS IS CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The client described their ideal site as:
+"${websiteVibe}"
+
+Match the design, copy, typography, and feel to this description EXACTLY.
+If they mention a style like "cyberpunk", "neo brutalism", "NEON MATRIX", or any
+reference to a known aesthetic — build THAT exact style with full commitment.
+This overrides the default design system below when there is a conflict.
+` : ''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DESIGN SYSTEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -629,10 +641,7 @@ REQUIRED SECTIONS (all 8, in this order)
    • Nav links, contact info, social links if provided
    • Copyright line with current year via JS
    ${enableChat ? `
-9. AI CHAT WIDGET
-   • Floating button bottom-right
-   • Opens slide-up panel
-   • Matches site design exactly
+9. (Chat widget will be injected automatically — do NOT add one)
    ` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -705,6 +714,73 @@ OUTPUT RULES
 
   // Ensure document closes properly
   if (!html.includes('</body>')) html += '\n</body>\n</html>'
+
+  // Inject AI chat widget for sites that have it enabled
+  if (enableChat) {
+    const escapedName     = businessName.replace(/'/g, "\\'").replace(/`/g, '\\`')
+    const escapedLocation = location.replace(/'/g, "\\'").replace(/`/g, '\\`')
+    const escapedServices = services.replace(/'/g, "\\'").replace(/`/g, '\\`')
+    const escapedDesc     = (description ?? '').replace(/'/g, "\\'").replace(/`/g, '\\`')
+
+    const chatWidget = `
+<div id="bailey-chat" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;font-family:Inter,sans-serif;">
+  <button id="bailey-chat-btn" onclick="toggleBaileyChat()" style="width:56px;height:56px;border-radius:50%;background:var(--primary,#00e5a0);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.3);font-size:1.4rem;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💬</button>
+  <div id="bailey-chat-panel" style="display:none;position:absolute;bottom:70px;right:0;width:320px;background:#111214;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:1rem 1.2rem;background:var(--primary,#00e5a0);display:flex;align-items:center;gap:0.75rem;">
+      <div style="width:8px;height:8px;background:#000;border-radius:50%;"></div>
+      <span style="font-weight:700;color:#000;font-size:0.9rem;">Chat with ${escapedName}</span>
+    </div>
+    <div id="bailey-messages" style="height:260px;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+      <div style="background:rgba(255,255,255,0.06);border-radius:12px 12px 12px 0;padding:0.75rem 1rem;color:#f0f0f0;font-size:0.85rem;line-height:1.5;max-width:85%;">
+        Hi! I'm the AI assistant for ${escapedName}. How can I help you today? 👋
+      </div>
+    </div>
+    <div style="padding:0.75rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:0.5rem;">
+      <input id="bailey-input" type="text" placeholder="Ask anything..." onkeypress="if(event.key==='Enter')sendBaileyMsg()" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.6rem 0.8rem;color:#f0f0f0;font-size:0.85rem;outline:none;" />
+      <button onclick="sendBaileyMsg()" style="padding:0.6rem 0.9rem;background:var(--primary,#00e5a0);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;">→</button>
+    </div>
+  </div>
+</div>
+<script>
+  const BAILEY_CONTEXT = 'Business: ${escapedName}\\nLocation: ${escapedLocation}\\nServices: ${escapedServices}${escapedDesc ? `\\nAbout: ${escapedDesc}` : ''}';
+  function toggleBaileyChat() {
+    const p = document.getElementById('bailey-chat-panel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') document.getElementById('bailey-input').focus();
+  }
+  async function sendBaileyMsg() {
+    const input = document.getElementById('bailey-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    addBaileyMessage(msg, 'user');
+    addBaileyMessage('Thinking...', 'bot', 'bailey-thinking');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, context: BAILEY_CONTEXT, businessName: '${escapedName}' })
+      });
+      const data = await res.json();
+      removeBaileyThinking();
+      addBaileyMessage(data.reply || 'Sorry, try again.', 'bot');
+    } catch { removeBaileyThinking(); addBaileyMessage('Sorry, try again.', 'bot'); }
+  }
+  function addBaileyMessage(text, role, id) {
+    const msgs = document.getElementById('bailey-messages');
+    const div = document.createElement('div');
+    if (id) div.id = id;
+    div.style.cssText = role === 'user'
+      ? 'background:var(--primary,#00e5a0);color:#000;border-radius:12px 12px 0 12px;padding:0.75rem 1rem;font-size:0.85rem;line-height:1.5;max-width:85%;align-self:flex-end;margin-left:auto;'
+      : 'background:rgba(255,255,255,0.06);color:#f0f0f0;border-radius:12px 12px 12px 0;padding:0.75rem 1rem;font-size:0.85rem;line-height:1.5;max-width:85%;';
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+  function removeBaileyThinking() { const el = document.getElementById('bailey-thinking'); if (el) el.remove(); }
+</script>`
+    html = html.replace('</body>', chatWidget + '\n</body>')
+  }
 
   // Force all content visible — override any scroll-reveal hidden states
   html = html.replace(

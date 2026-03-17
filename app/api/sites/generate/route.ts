@@ -196,7 +196,7 @@ export async function POST(req: NextRequest) {
     facebookUrl, instagramUrl, googleBusinessUrl,
     businessHours, serviceArea,
     fontStyle, heroStyle, layoutStyle,
-    enableChat,
+    enableChat, websiteVibe,
   } = body;
 
   // Required field checks
@@ -242,6 +242,7 @@ export async function POST(req: NextRequest) {
   const cleanIG      = optStr(instagramUrl, 300);
   const cleanGoogle  = optStr(googleBusinessUrl, 300);
   const cleanHours   = optStr(businessHours, 200);
+  const cleanVibe    = optStr(websiteVibe, 300);
 
   // Monthly run limit — checked AFTER validation, BEFORE calling Claude
   const usageCheck = await checkAndIncrementUsage(session.email, plan);
@@ -279,6 +280,7 @@ export async function POST(req: NextRequest) {
       facebookUrl:   cleanFB,
       instagramUrl:  cleanIG,
       enableChat:    enableChat === true,
+      websiteVibe:   cleanVibe,
     });
   } catch (genErr) {
     console.error("[generate] HTML generation failed:", genErr);

@@ -73,6 +73,7 @@ type FormData = {
   businessName: string;
   industry: string;
   location: string;
+  websiteVibe: string;
   services: string;
   tone: string;
   primaryColor: string;
@@ -99,6 +100,7 @@ const INITIAL: FormData = {
   businessName: "",
   industry: "Landscaping",
   location: "",
+  websiteVibe: "",
   services: "",
   tone: "Professional",
   primaryColor: "Emerald Green",
@@ -188,6 +190,7 @@ function BuildForm() {
             googleBusinessUrl:site.googleBusinessUrl ?? "",
             businessHours:    site.businessHours   ?? "",
             serviceArea:      site.serviceArea     ?? "",
+            websiteVibe:      "",
             fontStyle:        site.fontStyle       ?? "Modern",
             heroStyle:        site.heroStyle       ?? "Photo Background",
             layoutStyle:      site.layoutStyle     ?? "Standard",
@@ -374,6 +377,45 @@ function BuildForm() {
             <Field num={3} label="Location" required>
               <input type="text" value={form.location} onChange={(e) => set("location", e.target.value)}
                 placeholder="e.g. Chicago, IL" required className={INPUT_CLS} />
+            </Field>
+
+            <Field num="3b" label="Website Vibe" hint="optional but recommended">
+              <textarea
+                value={form.websiteVibe}
+                onChange={(e) => set("websiteVibe", e.target.value)}
+                placeholder="e.g. Dark luxury like a high-end Vegas nightclub, Bold and energetic like Nike, Cyberpunk neon underground..."
+                rows={3}
+                className={`${INPUT_CLS} resize-none`}
+              />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
+                {[
+                  "Dark luxury high-end feel",
+                  "Bold and energetic like Nike",
+                  "Clean minimal like Apple",
+                  "Warm friendly neighborhood vibe",
+                  "Cyberpunk neon nightlife",
+                  "Retro vintage classic",
+                  "Editorial magazine style",
+                  "Cinematic like a movie poster",
+                ].map((example) => (
+                  <button
+                    key={example}
+                    type="button"
+                    onClick={() => set("websiteVibe", example)}
+                    style={{
+                      padding: "0.3rem 0.75rem",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "100px",
+                      color: "#6b7280",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
             </Field>
 
             <Field num={4} label="Services Offered" required hint="comma separated">

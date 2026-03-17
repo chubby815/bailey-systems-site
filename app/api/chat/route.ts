@@ -16,12 +16,51 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { messages?: unknown; systemPrompt?: unknown };
+  let body: { messages?: unknown; systemPrompt?: unknown; message?: unknown; context?: unknown; businessName?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  // ── Simple widget format: { message, context, businessName } ─────────────
+  // Used by the embedded AI chat widget on generated customer sites.
+  if (typeof body.message === "string") {
+    const message      = body.message.trim().slice(0, 500);
+    const context      = typeof body.context      === "string" ? body.context.slice(0, 1000)      : "";
+    const businessName = typeof body.businessName === "string" ? body.businessName.slice(0, 100) : "this business";
+
+    if (!message) {
+      return NextResponse.json({ error: "Invalid message" }, { status: 400 });
+    }
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return NextResponse.json({ reply: "Sorry, try again in a moment." });
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model:      "claude-haiku-4-5",
+          max_tokens: 300,
+          system:     `You are a helpful AI assistant for ${businessName}. Answer questions based on: ${context}. Rules: Keep replies under 3 sentences. Be friendly. If unsure say "Contact us directly for that." Never make up info.`,
+          messages:   [{ role: "user", content: message }],
+        }),
+      });
+      const data = await res.json() as { content?: Array<{ type: string; text?: string }> };
+      const reply = data.content?.[0]?.text ?? "Sorry, try again in a moment.";
+      return NextResponse.json({ reply });
+    } catch (err) {
+      console.error("[chat] widget error:", err);
+      return NextResponse.json({ reply: "Sorry, try again in a moment." });
+    }
+  }
+  // ── End simple widget format ──────────────────────────────────────────────
 
   const { messages, systemPrompt } = body;
 
