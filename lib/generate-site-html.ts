@@ -577,16 +577,19 @@ OUTPUT RULES
   // Ensure document closes properly
   if (!html.includes('</body>')) html += '\n</body>\n</html>'
 
-  // Guarantee scroll-reveal elements start visible (prevent invisible sections)
-  html = html.replace(
-    /\.reveal\s*\{([^}]*?)opacity\s*:\s*0/g,
-    '.reveal {$1opacity: 1',
-  )
+  // Force all content visible — override any scroll-reveal hidden states
   html = html.replace(
     '</style>',
-    `  .reveal { opacity: 1 !important; }
-  .reveal.hidden  { opacity: 0 !important; transform: translateY(40px) !important; }
-  .reveal.visible { opacity: 1 !important; transform: translateY(0)    !important; }
+    `  /* Force all content visible */
+  * { opacity: 1 !important; }
+  [class*="reveal"],
+  [class*="fade"],
+  [class*="hidden"],
+  [class*="animate"] {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
 </style>`,
   )
 
