@@ -1,61 +1,16 @@
-import { HeroInput } from "@/components/HeroInput";
 import { AgentCards } from "@/components/AgentCards";
-import HeroHeadline from "@/components/HeroHeadline";
 import TemplatePreviews from "@/components/TemplatePreviews";
 import TeamHeading from "@/components/TeamHeading";
 import TeamCards from "@/components/TeamCards";
 import AIAgentsHeading from "@/components/AIAgentsHeading";
+import HeroSection from "@/components/HeroSection";
 
 export default function Home() {
   return (
     <div className="bg-[#08090a] text-[#f0f0f0] overflow-x-hidden">
 
       {/* ── SECTION 1: HERO ─────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
-        {/* Background glows */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[#00e5a0]/8 rounded-full blur-[140px]" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[500px] bg-blue-600/5 rounded-full blur-[140px]" />
-          {/* Grid */}
-          <div
-            className="absolute inset-0 opacity-[0.025]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
-            }}
-          />
-          {/* Fade edges */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#08090a] via-transparent to-[#08090a]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#08090a] via-transparent to-[#08090a]" />
-        </div>
-
-        <div className="relative z-10 max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#111214] border border-white/10 rounded-full px-4 py-2 mb-8">
-            <span className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse" />
-            <span className="text-sm text-[#9ca3af] font-medium">AI-Powered Business Platform</span>
-          </div>
-
-          {/* H1 */}
-          <HeroHeadline />
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-[#6b7280] max-w-2xl mx-auto mb-10 leading-relaxed">
-            Generate a complete website, find leads, and create content — all powered by AI.
-            No code. No designers. Just results.
-          </p>
-
-          {/* AI Input */}
-          <HeroInput />
-
-          {/* Social proof */}
-          <p className="text-sm text-[#4b5563] mt-4">
-            Trusted by 2,400+ businesses · Sites live in under 3 minutes
-          </p>
-          <p className="text-xs text-[#374151] mt-1">Cancel anytime · No questions asked</p>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* ── STATS ROW ───────────────────────────────────────────────── */}
       <section className="border-y border-white/[0.05] bg-[#0d0e10] py-5 px-6">
