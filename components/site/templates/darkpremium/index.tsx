@@ -549,13 +549,14 @@ function Hero({
 
 // ── Services — Rich Bento Grid ─────────────────────────────────────────────────
 function Services({
-  content, primaryColor, location, bg, card,
+  content, primaryColor, location, bg, card, serviceImages,
 }: {
   content: StructuredSiteContent["services"];
   primaryColor: string;
   location: string;
   bg: string;
   card: string;
+  serviceImages?: Record<number, string>;
 }) {
   const pRgba = (a: number) => hexToRgba(primaryColor, a);
 
@@ -1519,6 +1520,7 @@ export function DarkPremiumLayout({
           location={site.location}
           bg={BG}
           card={CARD}
+          serviceImages={serviceImages}
         />
         <About
           content={content.about}
