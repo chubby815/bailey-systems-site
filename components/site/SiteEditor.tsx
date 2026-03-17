@@ -964,7 +964,13 @@ export function SiteEditor({
   const [isSaving, setIsSaving]               = useState(false);
   const [lastSaved, setLastSaved]             = useState<Date | null>(null);
   const [saveError, setSaveError]             = useState(false);
+  const [iframeKey, setIframeKey]             = useState(0);
+  const [isRegenerating, setIsRegenerating]   = useState(false);
+  const [regenError, setRegenError]           = useState<string | null>(null);
   const hasChanges                            = useRef(false);
+
+  // True when the site was built by the HTML generation pipeline (not the JSON template system)
+  const isHTMLSite = !!site.generatedHTML && site.generatedHTML !== "[generated]";
 
   // ── Save function (must be declared before any early return per React rules) ──
   const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig, tmpl: string) => {
@@ -1053,6 +1059,50 @@ export function SiteEditor({
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Re-generate the HTML site using the stored form data + current siteId as editSiteId.
+  // After success, bump iframeKey so the preview iframe reloads.
+  async function handleRegenerate() {
+    setIsRegenerating(true);
+    setRegenError(null);
+    try {
+      const res = await fetch("/api/sites/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          editSiteId:   siteId,
+          businessName: site.businessName,
+          industry:     site.industry,
+          location:     site.location,
+          services:     site.services,
+          tone:         site.tone,
+          primaryColor: site.primaryColor,
+          fontStyle:    site.fontStyle    ?? "Modern",
+          heroStyle:    site.heroStyle    ?? "Photo Background",
+          layoutStyle:  site.layoutStyle  ?? "Standard",
+          tagline:      site.tagline      ?? "",
+          description:  site.description  ?? "",
+          contactEmail: site.contactEmail ?? "",
+          contactPhone: site.contactPhone ?? "",
+          businessHours:site.businessHours ?? "",
+          facebookUrl:  site.facebookUrl  ?? "",
+          instagramUrl: site.instagramUrl ?? "",
+          enableChat:   site.enableChat   ?? false,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        setRegenError(data.error ?? "Regeneration failed");
+      } else {
+        // Reload the iframe to show the freshly generated site
+        setIframeKey((k) => k + 1);
+      }
+    } catch {
+      setRegenError("Regeneration failed");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }
+
   const panelOpen = activePanel !== null;
   const BAR_H     = 52;
   const SIDEBAR_W = 320;
@@ -1099,7 +1149,9 @@ export function SiteEditor({
 
         {/* Center tabs */}
         <div style={{ display: "flex", gap: "0.25rem", background: "#161718", borderRadius: "12px", padding: "4px" }}>
-          {(["themes", "content"] as const).map((tab) => {
+          {(["themes", "content"] as const)
+            .filter((tab) => !isHTMLSite || tab !== "themes")
+            .map((tab) => {
             const labels = { themes: "🎨 Themes", content: "✏️ Edit" };
             const active = activePanel === tab;
             return (
@@ -1221,7 +1273,7 @@ export function SiteEditor({
             flexDirection:  "column",
             overflow:       "hidden",
           }}>
-            {activePanel === "themes" && (
+            {activePanel === "themes" && !isHTMLSite && (
               <div style={{ overflowY: "auto", flex: 1 }}>
                 <ThemesPanel
                   currentThemeKey={currentThemeKey}
@@ -1229,6 +1281,47 @@ export function SiteEditor({
                   currentTemplate={currentTemplate}
                   onSelectTemplate={handleSelectTemplate}
                 />
+              </div>
+            )}
+            {activePanel === "content" && isHTMLSite && (
+              <div style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                flexShrink: 0,
+                background: "#0d0e10",
+              }}>
+                <p style={{
+                  fontSize: "0.6875rem",
+                  color: "#6b7280",
+                  lineHeight: 1.55,
+                  marginBottom: "10px",
+                }}>
+                  This site was built with AI HTML generation. Click Regenerate to rebuild it with new AI images and layout.
+                </p>
+                <button
+                  onClick={handleRegenerate}
+                  disabled={isRegenerating}
+                  style={{
+                    width: "100%",
+                    background: isRegenerating ? "rgba(0,229,160,0.12)" : "#00e5a0",
+                    color: isRegenerating ? "#00e5a0" : "#000",
+                    border: isRegenerating ? "1px solid rgba(0,229,160,0.3)" : "none",
+                    fontWeight: 700,
+                    fontSize: "0.8125rem",
+                    padding: "9px 0",
+                    borderRadius: "10px",
+                    cursor: isRegenerating ? "not-allowed" : "pointer",
+                    transition: "all 0.15s",
+                    opacity: isRegenerating ? 0.75 : 1,
+                  }}
+                >
+                  {isRegenerating ? "Regenerating… (45–60s)" : "🔄 Regenerate Site"}
+                </button>
+                {regenError && (
+                  <p style={{ fontSize: "0.625rem", color: "#f87171", marginTop: "6px" }}>
+                    {regenError}
+                  </p>
+                )}
               </div>
             )}
             {activePanel === "content" && (
@@ -1256,17 +1349,30 @@ export function SiteEditor({
         <div ref={scrollContainerRef} style={{
           flex:      1,
           height:    "100%",
-          overflowY: "auto",
+          overflowY: isHTMLSite ? "hidden" : "auto",
           minWidth:   0,
         }}>
-          <TemplateRenderer
-            site={{ ...site, template: currentTemplate, serviceImages }}
-            content={currentContent}
-            theme={currentTheme}
-            heroImageUrl={heroImageUrl}
-            aboutImageUrl={aboutImageUrl}
-            isEditing={true}
-          />
+          {isHTMLSite ? (
+            <iframe
+              key={iframeKey}
+              src={
+                site.subdomainSlug
+                  ? `https://${site.subdomainSlug}.baileyagents.com`
+                  : `/sites/${siteId}`
+              }
+              style={{ width: "100%", height: "100%", border: "none" }}
+              title={site.businessName}
+            />
+          ) : (
+            <TemplateRenderer
+              site={{ ...site, template: currentTemplate, serviceImages }}
+              content={currentContent}
+              theme={currentTheme}
+              heroImageUrl={heroImageUrl}
+              aboutImageUrl={aboutImageUrl}
+              isEditing={true}
+            />
+          )}
         </div>
 
         {/* ── RIGHT PANEL — Ask Bailey ──────────────────────────────────────── */}
