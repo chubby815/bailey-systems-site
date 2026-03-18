@@ -41,6 +41,7 @@ export default function DealBanner() {
       padding: '1rem',
       textAlign: 'center',
       position: 'relative',
+      zIndex: 9999,
       overflow: 'hidden',
     }}>
       {/* Animated glow */}
