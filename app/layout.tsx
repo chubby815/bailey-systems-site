@@ -3,6 +3,7 @@ import { Syne, DM_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import DealBanner from "@/components/DealBanner";
 import { Footer } from "@/components/Footer";
 import { BaileyChat } from "@/components/BaileyChat";
 import { verifySession } from "@/lib/auth";
@@ -53,6 +54,7 @@ export default async function RootLayout({
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head />
       <body>
+        {!isCustomerSite && <DealBanner />}
         {!isCustomerSite && <Navbar initialLoggedIn={isLoggedIn} />}
         {children}
         {!isCustomerSite && <Footer />}
