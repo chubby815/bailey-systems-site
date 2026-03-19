@@ -41,6 +41,11 @@ export default async function RootLayout({
   // which would incorrectly hide the navbar/footer everywhere.
   const pathname = headersList.get("x-pathname") ?? "";
   const isCustomerSite = pathname.startsWith("/sites/");
+  const isWorkflowEditor =
+    pathname.startsWith("/dashboard/workflows/new") ||
+    (pathname.startsWith("/dashboard/workflows/") &&
+      pathname !== "/dashboard/workflows");
+  const hideNav = isCustomerSite || isWorkflowEditor;
 
   // Parse auth-token directly from the raw cookie header — more reliable on Vercel
   // than cookies() from next/headers, which can silently return null in root layouts.
@@ -53,10 +58,10 @@ export default async function RootLayout({
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head />
       <body>
-        {!isCustomerSite && <Navbar initialLoggedIn={isLoggedIn} />}
+        {!hideNav && <Navbar initialLoggedIn={isLoggedIn} />}
         {children}
-        {!isCustomerSite && <Footer />}
-        {!isCustomerSite && <BaileyChat />}
+        {!hideNav && <Footer />}
+        {!hideNav && <BaileyChat />}
       </body>
     </html>
   );
