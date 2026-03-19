@@ -17,6 +17,10 @@ export async function GET(req: NextRequest) {
   const redirectUri = `${BASE_URL}/api/auth/facebook/callback`
   const scope = 'pages_manage_posts,pages_read_engagement,pages_show_list'
 
+  console.log('[FB OAuth] BASE_URL:', BASE_URL)
+  console.log('[FB OAuth] appId:', appId)
+  console.log('[FB OAuth] redirectUri:', redirectUri)
+
   const oauthUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth')
   oauthUrl.searchParams.set('client_id', appId)
   oauthUrl.searchParams.set('redirect_uri', redirectUri)
