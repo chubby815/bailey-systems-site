@@ -132,7 +132,7 @@ async function executeNode(
       const rawBody = (d.body as string) || ''
       const html = rawBody.includes('{{')
         ? resolveVars(rawBody, ctx)
-        : ctx['aiText'] ?? rawBody
+        : ctx['aiText'] ?? ctx['aiOutput'] ?? rawBody
 
       if (!to) return 'No recipient — skipped'
       await resend.emails.send({

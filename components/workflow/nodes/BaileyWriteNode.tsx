@@ -37,9 +37,10 @@ export function BaileyWriteNode({ id, data, selected }: NodeProps<BaileyWriteNod
         />
         <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.2rem' }}>Output variable</label>
         <input
-          value={data.outputVar || 'aiOutput'}
+          value={data.outputVar || 'aiText'}
           onChange={e => update({ outputVar: e.target.value })}
           className="nodrag nopan"
+          placeholder="aiText"
           style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
         />
       </div>
