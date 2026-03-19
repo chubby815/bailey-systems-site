@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,6 +10,7 @@ interface ConnectionStatus {
   slack:     { connected: boolean; webhookUrl?: string }
   whatsapp:  { connected: boolean; provider?: string }
   facebook:  { connected: boolean; pageName?: string }
+  instagram: { connected: boolean; username?: string; accountName?: string }
   google:    { connected: boolean }
 }
 
@@ -36,6 +38,17 @@ const NAV = [
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const ERROR_MESSAGES: Record<string, string> = {
+  oauth_denied:   'Connection cancelled.',
+  config:         'OAuth not configured — contact support.',
+  token_exchange: 'Token exchange failed — please try again.',
+  no_token:       'No access token returned — please try again.',
+  pages_fetch:    'Could not fetch your pages — please try again.',
+  no_pages:       'No Facebook pages found. Make sure you manage at least one page.',
+  no_instagram:   'No Instagram Business Account found. Connect one to your Facebook page first.',
+  server:         'Server error — please try again.',
+}
+
 export default function ConnectionsPage() {
   const [statuses, setStatuses]   = useState<ConnectionStatus | null>(null)
   const [expanded, setExpanded]   = useState<ConnectionId | null>(null)
@@ -54,11 +67,36 @@ export default function ConnectionsPage() {
   const [waMetaToken, setWaMetaToken]     = useState('')
   const [waPhoneId, setWaPhoneId]         = useState('')
 
+  const searchParams = useSearchParams()
+
   useEffect(() => {
     void fetch('/api/connections/status')
       .then(r => r.json())
       .then((d: ConnectionStatus) => setStatuses(d))
-      .catch(() => setStatuses({ telegram: { connected: false }, slack: { connected: false }, whatsapp: { connected: false }, facebook: { connected: false }, google: { connected: false } }))
+      .catch(() => setStatuses({
+        telegram:  { connected: false },
+        slack:     { connected: false },
+        whatsapp:  { connected: false },
+        facebook:  { connected: false },
+        instagram: { connected: false },
+        google:    { connected: false },
+      }))
+  }, [])
+
+  // Flash success/error from OAuth redirects
+  useEffect(() => {
+    const connected = searchParams.get('connected')
+    const error     = searchParams.get('error')
+    if (connected === 'facebook') {
+      flash('facebook', '✓ Facebook page connected!')
+    } else if (connected === 'instagram') {
+      flash('instagram', '✓ Instagram account connected!')
+    } else if (error) {
+      const msg = ERROR_MESSAGES[error] ?? 'Connection failed — please try again.'
+      // Show under whichever card is most likely — use generic top-level flash
+      flash('facebook', msg)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function flash(id: string, msg: string) {
@@ -317,6 +355,34 @@ export default function ConnectionsPage() {
                   className="inline-block bg-[#1877F2] text-white font-bold px-5 py-2 rounded-lg text-sm hover:bg-[#1565d8] transition-colors"
                 >
                   Connect Facebook →
+                </a>
+              </div>
+            </ConnectionCard>
+
+            {/* ── Instagram ── */}
+            <ConnectionCard
+              id="instagram"
+              icon="📸"
+              name="Instagram"
+              color="#E1306C"
+              description="Post images and captions to your Instagram Business account"
+              connected={statuses?.instagram.connected ?? false}
+              detail={statuses?.instagram.username ? `@${statuses.instagram.username}` : undefined}
+              expanded={expanded === 'instagram'}
+              onToggle={() => setExpanded(expanded === 'instagram' ? null : 'instagram')}
+              saveMsg={saveMsg['instagram']}
+            >
+              <div className="pt-2 flex flex-col gap-3">
+                <p className="text-xs text-gray-500">
+                  Requires an Instagram Business or Creator account connected to a Facebook page.
+                  Make sure your Instagram account is linked to your Facebook page before connecting.
+                </p>
+                <a
+                  href="/api/auth/instagram"
+                  className="inline-block text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors self-start"
+                  style={{ background: 'linear-gradient(135deg, #E1306C, #833AB4)' }}
+                >
+                  Connect Instagram →
                 </a>
               </div>
             </ConnectionCard>

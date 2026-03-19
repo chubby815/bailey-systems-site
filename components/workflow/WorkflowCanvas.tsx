@@ -34,6 +34,7 @@ import { IfConditionNode }     from './nodes/IfConditionNode'
 import { DelayNode }           from './nodes/DelayNode'
 import { TelegramNode }        from './nodes/TelegramNode'
 import { SlackNode }           from './nodes/SlackNode'
+import { InstagramPostNode }   from './nodes/InstagramPostNode'
 
 // ── HOC: wraps any node with a hoverable ✕ delete button ──────────────────
 type AnyComp = React.ComponentType<Record<string, unknown>>
@@ -96,6 +97,7 @@ const nodeTypes: NodeTypes = {
   delay:           withDelete(DelayNode           as AnyComp) as NodeTypes[string],
   telegram:        withDelete(TelegramNode        as AnyComp) as NodeTypes[string],
   slack:           withDelete(SlackNode           as AnyComp) as NodeTypes[string],
+  instagramPost:   withDelete(InstagramPostNode   as AnyComp) as NodeTypes[string],
 }
 
 export interface WorkflowCanvasProps {

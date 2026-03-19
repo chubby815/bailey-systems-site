@@ -225,6 +225,40 @@ export async function getFacebookPage(
   }
 }
 
+// ── Instagram account record shape ────────────────────────────────────────────
+export type InstagramAccountRecord = {
+  accountId: string;
+  accountName: string;
+  username: string;
+  pageAccessToken: string;
+  pageId: string;
+  connectedAt: string;
+};
+
+/** Save a connected Instagram Business Account for a user */
+export async function saveInstagramAccount(
+  email: string,
+  data: InstagramAccountRecord
+): Promise<void> {
+  try {
+    await kv.set(`instagram:${email}`, data);
+  } catch (err) {
+    console.error("[saveInstagramAccount] Redis error:", err);
+  }
+}
+
+/** Get the connected Instagram Business Account for a user */
+export async function getInstagramAccount(
+  email: string
+): Promise<InstagramAccountRecord | null> {
+  try {
+    return await kv.get<InstagramAccountRecord>(`instagram:${email}`);
+  } catch (err) {
+    console.error("[getInstagramAccount] Redis error:", err);
+    return null;
+  }
+}
+
 // ── User record shape ─────────────────────────────────────────────────────────
 
 export interface UserRecord {

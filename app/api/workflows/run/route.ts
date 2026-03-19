@@ -47,6 +47,7 @@ const autoVarNames: Record<string, string> = {
   telegram:        'telegramResult',
   slack:           'slackResult',
   facebookPost:    'postResult',
+  instagramPost:   'instagramResult',
   schedule:        'trigger',
   manual:          'trigger',
   webhook:         'trigger',
@@ -71,6 +72,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   telegram:        2,
   slack:           2,
   facebookPost:    2,
+  instagramPost:   2,
   googleSheets:    2,
   ifCondition:     3,
   delay:           3,
@@ -277,13 +279,81 @@ async function executeNode(
         ? resolveVars(rawContent, ctx)
         : ctx['aiText'] ?? rawContent
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://baileyagents.com'}/api/facebook/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: content }),
-      })
-      if (!res.ok) return 'Facebook post failed'
-      return `Posted to Facebook: ${content.slice(0, 60)}…`
+      if (!content.trim()) return 'Facebook Post — no content — skipped'
+
+      const fbPage = await kv.get<{ pageId: string; pageAccessToken: string; pageName: string }>(
+        `facebook:${email}`
+      )
+      if (!fbPage) return 'Facebook not connected — connect in Settings → Connections'
+
+      const fbRes = await fetch(
+        `https://graph.facebook.com/v18.0/${fbPage.pageId}/feed`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: content, access_token: fbPage.pageAccessToken }),
+        }
+      )
+      if (!fbRes.ok) {
+        const fbErr = await fbRes.json() as { error?: { message: string } }
+        throw new Error(fbErr.error?.message ?? 'Facebook post failed')
+      }
+      return `Posted to Facebook page "${fbPage.pageName}": ${content.slice(0, 60)}…`
+    }
+
+    case 'instagramPost': {
+      // Auto-chain: if caption is empty or has no {{vars}}, use aiText
+      const rawCaption = (d.caption as string) || ''
+      const caption = rawCaption.includes('{{')
+        ? resolveVars(rawCaption, ctx)
+        : ctx['aiText'] ?? rawCaption
+
+      const imageUrl = resolveVars((d.imageUrl as string) || '', ctx)
+
+      if (!imageUrl.trim()) return 'Instagram Post — imageUrl is required — skipped'
+
+      const igAccount = await kv.get<{ accountId: string; pageAccessToken: string; username: string }>(
+        `instagram:${email}`
+      )
+      if (!igAccount) return 'Instagram not connected — connect in Settings → Connections'
+
+      // Step 1: Create media container
+      const containerRes = await fetch(
+        `https://graph.facebook.com/v18.0/${igAccount.accountId}/media`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url:    imageUrl,
+            caption:      caption,
+            access_token: igAccount.pageAccessToken,
+          }),
+        }
+      )
+      if (!containerRes.ok) {
+        const containerErr = await containerRes.json() as { error?: { message: string } }
+        throw new Error(containerErr.error?.message ?? 'Instagram media container creation failed')
+      }
+      const containerData = await containerRes.json() as { id?: string }
+      if (!containerData.id) throw new Error('Instagram container ID missing')
+
+      // Step 2: Publish the container
+      const publishRes = await fetch(
+        `https://graph.facebook.com/v18.0/${igAccount.accountId}/media_publish`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creation_id:  containerData.id,
+            access_token: igAccount.pageAccessToken,
+          }),
+        }
+      )
+      if (!publishRes.ok) {
+        const publishErr = await publishRes.json() as { error?: { message: string } }
+        throw new Error(publishErr.error?.message ?? 'Instagram publish failed')
+      }
+      return `Posted to Instagram @${igAccount.username}: ${caption.slice(0, 60)}…`
     }
 
     case 'telegram': {

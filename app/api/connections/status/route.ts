@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { kv } from '@/lib/kv'
-import type { FacebookPageRecord } from '@/lib/kv'
+import type { FacebookPageRecord, InstagramAccountRecord } from '@/lib/kv'
 
 export async function GET(req: NextRequest) {
   const session = await getSession(req)
@@ -11,11 +11,12 @@ export async function GET(req: NextRequest) {
 
   const email = session.email.toLowerCase()
 
-  const [telegramChatId, slackWebhook, whatsappConfig, facebookPage] = await Promise.all([
+  const [telegramChatId, slackWebhook, whatsappConfig, facebookPage, instagramAccount] = await Promise.all([
     kv.get<string>(`telegram-chatid:${email}`),
     kv.get<string>(`slack-webhook:${email}`),
     kv.get<{ provider: string }>(`whatsapp-config:${email}`),
     kv.get<FacebookPageRecord>(`facebook:${email}`),
+    kv.get<InstagramAccountRecord>(`instagram:${email}`),
   ])
 
   return NextResponse.json({
@@ -30,6 +31,9 @@ export async function GET(req: NextRequest) {
       : { connected: false },
     facebook: facebookPage
       ? { connected: true,  pageName:    facebookPage.pageName }
+      : { connected: false },
+    instagram: instagramAccount
+      ? { connected: true,  username:    instagramAccount.username, accountName: instagramAccount.accountName }
       : { connected: false },
     google: { connected: false },
   })
