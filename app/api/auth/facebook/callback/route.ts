@@ -22,6 +22,11 @@ export async function GET(req: NextRequest) {
 
   const redirectUri = `${BASE_URL}/api/auth/facebook/callback`
 
+  console.log('[FB Callback] BASE_URL:', BASE_URL)
+  console.log('[FB Callback] appId:', appId?.slice(0, 6))
+  console.log('[FB Callback] redirectUri:', redirectUri)
+  console.log('[FB Callback] code:', code?.slice(0, 20))
+
   try {
     // Exchange code for user access token
     const tokenUrl = new URL('https://graph.facebook.com/v18.0/oauth/access_token')
@@ -32,7 +37,8 @@ export async function GET(req: NextRequest) {
 
     const tokenRes = await fetch(tokenUrl.toString())
     if (!tokenRes.ok) {
-      console.error('[auth/facebook/callback] token exchange failed:', await tokenRes.text())
+      const errorText = await tokenRes.text()
+      console.error('[FB Callback] token error:', errorText)
       return NextResponse.redirect(`${BASE_URL}/dashboard/connections?error=token_exchange`)
     }
 
