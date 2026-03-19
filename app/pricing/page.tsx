@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PRICING_PLANS, TRUST_ITEMS } from "@/utils/constants";
 
 export default function PricingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const reason = searchParams.get("reason");
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +59,29 @@ export default function PricingPage() {
           card required, you won&apos;t be charged until day 7.
         </p>
       </section>
+
+      {/* ── Trial / subscription banners ── */}
+      {reason === "trial_expired" && (
+        <div className="max-w-2xl mx-auto mb-8 px-4">
+          <div className="bg-orange-500/10 border border-orange-500/40 rounded-xl px-6 py-4 text-center text-orange-400 font-semibold">
+            ⏳ Your free trial has ended. Choose a plan to continue using BaileyAgents.
+          </div>
+        </div>
+      )}
+      {reason === "subscription_required" && (
+        <div className="max-w-2xl mx-auto mb-8 px-4">
+          <div className="bg-orange-500/10 border border-orange-500/40 rounded-xl px-6 py-4 text-center text-orange-400 font-semibold">
+            🔒 You need an active plan to access BaileyAgents. Choose a plan below.
+          </div>
+        </div>
+      )}
+      {reason === "past_due" && (
+        <div className="max-w-2xl mx-auto mb-8 px-4">
+          <div className="bg-red-500/10 border border-red-500/40 rounded-xl px-6 py-4 text-center text-red-400 font-semibold">
+            ⚠️ Your payment failed. Update your payment method to restore access.
+          </div>
+        </div>
+      )}
 
       {/* ── Error ── */}
       {error && (

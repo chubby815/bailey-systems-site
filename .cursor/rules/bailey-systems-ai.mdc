@@ -1,0 +1,183 @@
+---
+description: Full project context for Bailey Systems AI — what to touch, what never to touch, architecture, patterns
+alwaysApply: true
+---
+
+# Bailey Systems AI — Project Rules
+
+## ABSOLUTE RULES — NEVER BREAK
+
+1. **NEVER touch `middleware.ts`** — handles auth routing for all protected pages
+2. **NEVER touch `lib/email.ts`** — transactional email (Resend), used site-wide
+3. **NEVER touch `lib/stripe.ts` or `lib/stripe-links.ts`** — Stripe billing logic
+4. **NEVER touch `app/api/stripe/webhook/route.ts`** — processes live Stripe payments
+5. **NEVER touch `app/page.tsx`** — homepage, do not modify layout or assets
+6. **NEVER touch `public/` images or videos** — live homepage assets
+7. **NEVER push without user approval** — always show changes first
+8. **ALWAYS 0 TypeScript errors** — run `npm run build` before approving push
+
+---
+
+## Auth Patterns
+
+- **API routes**: use `getSession(req)` from `@/lib/auth` — returns `{ email, name, ... } | null`
+- **Server pages**: use `getSessionFromCookies()` from `@/lib/auth` — then `redirect('/login')` if null
+- **Client pages**: fetch `/api/connections/status` or similar and handle 401
+
+```typescript
+// API route
+const session = await getSession(req)
+if (!session?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+// Server page
+const session = await getSessionFromCookies()
+if (!session) redirect('/login')
+```
+
+---
+
+## Redis / KV Patterns
+
+Use `kv` from `@/lib/kv` (Upstash Redis / Vercel KV).
+
+### Key patterns in use — never conflict with these:
+| Key | Value | Purpose |
+|-----|-------|---------|
+| `sub:{email}` | `{ plan, status, trialEnd }` | User subscription |
+| `workflow:{id}` | `WorkflowRecord` | Saved workflow |
+| `workflows:{email}` | list of IDs | User's workflow index |
+| `workflow-runs:{email}` | number | Trial run counter |
+| `telegram-chatid:{email}` | string | Saved Telegram chat ID |
+| `telegram-verify:{code}` | string (chatId) | Temp verification code (10min TTL) |
+| `slack-webhook:{email}` | string | Saved Slack webhook URL |
+| `whatsapp-config:{email}` | JSON string | Twilio or Meta credentials |
+| `slug:{slug}` | siteId | Site slug index |
+| `site:{id}` | SiteRecord | Generated site |
+| `sites:{email}` | list of IDs | User's sites index |
+
+```typescript
+import { kv } from '@/lib/kv'
+const val = await kv.get<MyType>('key')
+await kv.set('key', value)
+await kv.del('key')
+```
+
+---
+
+## Plan Enforcement
+
+Plans: `trial` (trialing), `starter`, `growth`, `pro`
+
+- **Pro** = full access to everything
+- **Trialing** = limited access (e.g. 3 workflow runs, site generation limits)
+- **Starter / Growth** = no workflow access; site limits apply
+
+Check plan in API routes:
+```typescript
+const sub = await kv.get<{ plan: string; status: string }>(`sub:${session.email}`)
+const plan = sub?.plan ?? 'trial'
+const status = sub?.status ?? 'trialing'
+const isPro = plan === 'pro'
+const isTrialing = status === 'trialing'
+```
+
+---
+
+## Workflow System
+
+### Pages
+- `app/dashboard/workflows/page.tsx` — list all workflows (server, uses `getSessionFromCookies`)
+- `app/dashboard/workflows/new/page.tsx` — blank canvas
+- `app/dashboard/workflows/[id]/page.tsx` — load existing workflow
+
+### Components
+- `components/workflow/WorkflowCanvas.tsx` — main React Flow canvas, auto-save (1s debounce), beforeunload warning
+- `components/workflow/NodeSidebar.tsx` — draggable node palette
+- `components/workflow/ExecutionLog.tsx` — run log display
+- `components/workflow/WorkflowCard.tsx` — list page card with run/rename/duplicate/delete
+
+### Node components (`components/workflow/nodes/`)
+| File | Type | Color |
+|------|------|-------|
+| `ManualNode.tsx` | manual | #6366f1 |
+| `ScheduleNode.tsx` | schedule | #6366f1 |
+| `WebhookNode.tsx` | webhook | #6366f1 |
+| `BaileyWriteNode.tsx` | baileyWrite | #8b5cf6 — outputVar defaults to `aiText` |
+| `BaileyFindLeadsNode.tsx` | baileyFindLeads | #8b5cf6 — outputVar defaults to `leads` |
+| `BaileyBuildSiteNode.tsx` | baileyBuildSite | #8b5cf6 |
+| `SendEmailNode.tsx` | sendEmail | #f59e0b |
+| `WhatsAppNode.tsx` | whatsApp | #25D366 — provider: twilio/meta |
+| `TelegramNode.tsx` | telegram | #229ED9 |
+| `SlackNode.tsx` | slack | #4A154B |
+| `FacebookPostNode.tsx` | facebookPost | #1877F2 |
+| `GoogleSheetsNode.tsx` | googleSheets | #0F9D58 (placeholder UI) |
+| `IfConditionNode.tsx` | ifCondition | #64748b |
+| `DelayNode.tsx` | delay | #64748b |
+
+### API routes
+- `app/api/workflows/save/route.ts` — POST (create/update/duplicate), DELETE
+- `app/api/workflows/run/route.ts` — POST, executes nodes in topological order
+- `app/api/workflows/list/route.ts` — GET
+
+### Execution engine (`run/route.ts`) key rules
+- **Execution order**: topological sort with `TYPE_PRIORITY` fallback (triggers=0, AI=1, actions=2, logic=3)
+- **Auto var names**: `baileyWrite→aiText`, `baileyFindLeads→leads`, `baileyBuildSite→siteUrl`
+- **Auto-chaining**: if a node's input is blank or has no `{{vars}}`, it auto-uses `ctx['aiText'] ?? ctx['leads']`
+- **`resolveVars`**: replaces `{{varName}}` in strings from `context` map
+- **Anthropic client**: instantiated inside POST handler (not module level)
+- **`maxDuration = 60`**: set at top of file for Vercel
+
+### Connections (`app/dashboard/connections/page.tsx`)
+Manages Telegram, Slack, WhatsApp, Facebook, Google Sheets credentials.
+Related API routes in `app/api/connections/`.
+
+---
+
+## Layout Rules
+
+- `app/layout.tsx` — controls global Navbar/Footer visibility
+  - Hidden on `/sites/*` (customer sites)
+  - Hidden on `/dashboard/workflows/new` and `/dashboard/workflows/[id]` (workflow editor needs full viewport)
+  - **Do not change** hide logic without checking both `isCustomerSite` and `isWorkflowEditor`
+
+- `app/dashboard/page.tsx` — dashboard sidebar nav array (around line 73)
+  - Current order: My Sites, Workflows, Connections, Build, Leads, Email, Copywriter, Content, Facebook, Sales, Support, Roast, Billing, Usage
+
+---
+
+## Site Generation System
+
+- `app/api/sites/generate/route.ts` — main site builder, DO NOT MODIFY plan checks here
+- `lib/generate-site-html.ts` — HTML generator
+- `components/site/` — all site rendering components
+- `app/sites/[siteId]/page.tsx` — public site viewer
+
+---
+
+## External APIs in use
+
+| Service | Env var | Used in |
+|---------|---------|---------|
+| Anthropic (Claude) | `ANTHROPIC_API_KEY` | workflows/run, bailey-chat, leads, etc. |
+| Resend | `RESEND_API_KEY` | lib/email.ts, workflows/run sendEmail |
+| Stripe | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | lib/stripe.ts, stripe webhook |
+| Twilio | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER` | workflows/run whatsApp |
+| Meta WhatsApp | `META_WHATSAPP_TOKEN`, `META_WHATSAPP_PHONE_ID` | workflows/run whatsApp |
+| Telegram Bot | `TELEGRAM_BOT_TOKEN` | workflows/run telegram, api/telegram/webhook |
+| Facebook | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET` | api/facebook/* |
+
+From address for all emails: `Bailey Agents <noreply@baileyagents.com>`
+
+---
+
+## What We Are Building
+
+BaileyAgents.com — an AI-powered business platform for small businesses.
+
+**Core products:**
+1. **AI Site Builder** — generate full websites from a prompt
+2. **Workflow Builder** — visual no-code automation (Bailey Write → Send Email / Telegram / Slack / WhatsApp)
+3. **Dashboard tools** — leads, email, copywriter, content, Facebook, sales, support, roast
+4. **Connections** — manage integrations (Telegram, Slack, WhatsApp, Facebook)
+
+**Stack:** Next.js App Router, TypeScript, Tailwind CSS, Upstash Redis, Vercel

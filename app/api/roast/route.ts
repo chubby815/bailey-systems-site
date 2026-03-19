@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getSession, getActivePlan } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 
 function extractTag(html: string, tag: string): string {
@@ -54,6 +54,15 @@ export async function POST(req: NextRequest) {
   const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Plan check
+  const plan = await getActivePlan(session.email);
+  if (!plan) {
+    return NextResponse.json(
+      { error: "Active subscription required. Upgrade at baileyagents.com/pricing" },
+      { status: 403 }
+    );
   }
 
   // Rate limit: 5 roasts/hour per user
