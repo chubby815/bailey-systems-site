@@ -37,6 +37,19 @@ interface LogEntry {
   timestamp: string
 }
 
+// Predictable context variable names per node type
+const autoVarNames: Record<string, string> = {
+  baileyWrite:     'aiText',
+  baileyFindLeads: 'leads',
+  baileyBuildSite: 'siteUrl',
+  sendEmail:       'emailResult',
+  whatsApp:        'whatsAppResult',
+  facebookPost:    'postResult',
+  schedule:        'trigger',
+  manual:          'trigger',
+  webhook:         'trigger',
+}
+
 // Resolve {{variableName}} in a string from the context map
 function resolveVars(template: string, ctx: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => ctx[key] ?? `{{${key}}}`)
@@ -112,12 +125,18 @@ async function executeNode(
     }
 
     case 'sendEmail': {
-      const to = resolveVars((d.toEmail as string) || '', ctx)
-      const subject = resolveVars((d.subject as string) || 'Message', ctx)
-      const html = resolveVars((d.body as string) || '', ctx)
+      const to      = resolveVars((d.toEmail as string) || '', ctx)
+      const subject = resolveVars((d.subject as string) || 'Message from Bailey', ctx)
+
+      // Auto-chain: if body is empty or has no {{vars}}, use aiText from context
+      const rawBody = (d.body as string) || ''
+      const html = rawBody.includes('{{')
+        ? resolveVars(rawBody, ctx)
+        : ctx['aiText'] ?? rawBody
+
       if (!to) return 'No recipient — skipped'
       await resend.emails.send({
-        from: 'BaileyAgents <noreply@baileyagents.com>',
+        from: 'Bailey Agents <noreply@baileyagents.com>',
         to,
         subject,
         html: html.replace(/\n/g, '<br>'),
@@ -129,8 +148,14 @@ async function executeNode(
       const accountSid = process.env.TWILIO_ACCOUNT_SID
       const authToken  = process.env.TWILIO_AUTH_TOKEN
       const from       = process.env.TWILIO_WHATSAPP_FROM ?? 'whatsapp:+14155238886'
-      const toRaw = resolveVars((d.toPhone as string) || '', ctx)
-      const message = resolveVars((d.message as string) || '', ctx)
+      const toRaw      = resolveVars((d.toPhone as string) || '', ctx)
+
+      // Auto-chain: if message is empty or has no {{vars}}, use aiText or leads
+      const rawMsg  = (d.message as string) || ''
+      const message = rawMsg.includes('{{')
+        ? resolveVars(rawMsg, ctx)
+        : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
+
       if (!toRaw || !accountSid || !authToken) return 'WhatsApp not configured — skipped'
 
       const to = toRaw.startsWith('whatsapp:') ? toRaw : `whatsapp:${toRaw}`
@@ -150,7 +175,12 @@ async function executeNode(
     }
 
     case 'facebookPost': {
-      const content = resolveVars((d.content as string) || '', ctx)
+      // Auto-chain: if content is empty or has no {{vars}}, use aiText
+      const rawContent = (d.content as string) || ''
+      const content = rawContent.includes('{{')
+        ? resolveVars(rawContent, ctx)
+        : ctx['aiText'] ?? rawContent
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://baileyagents.com'}/api/facebook/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,8 +279,13 @@ export async function POST(req: NextRequest) {
         const output = await executeNode(node, context, anthropic)
         const durationMs = Date.now() - start
 
-        const varName = (node.data.outputVar as string) || node.id
+        // Store under predictable auto name (e.g. "aiText") and always also under node ID
+        const autoName = autoVarNames[node.type ?? '']
+        const userVar  = (node.data.outputVar as string) || ''
+        const varName  = userVar || autoName || node.id
         context[varName] = output
+        // Also store under node ID so {{nodeId}} references always work
+        if (varName !== node.id) context[node.id] = output
 
         logs[logs.length - 1] = {
           nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
