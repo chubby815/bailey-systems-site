@@ -12,6 +12,25 @@ const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 // Reading from the actual price ID (not subscription metadata) ensures portal
 // upgrades/downgrades are reflected correctly — metadata is only set during our
 // checkout flow and won't be updated if the user changes plan via Stripe portal.
+// Resolve email from Redis index, falling back to Stripe customer lookup.
+// Saves the result to Redis so future lookups succeed.
+async function resolveEmail(customerId: string): Promise<string | null> {
+  let email = await kv.get<string>(`sub:cust:${customerId}`);
+  if (!email) {
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (!customer.deleted && customer.email) {
+        email = customer.email.toLowerCase();
+        await kv.set(`sub:cust:${customerId}`, email);
+        console.log(`[webhook] resolved + cached email for ${customerId}: ${email}`);
+      }
+    } catch {
+      // Non-fatal — customer lookup failed
+    }
+  }
+  return email ?? null;
+}
+
 function planFromPriceId(priceId: string | undefined | null): "starter" | "growth" | "pro" {
   if (priceId && priceId === process.env.STRIPE_PRICE_PRO_MONTHLY)    return "pro";
   if (priceId && priceId === process.env.STRIPE_PRICE_GROWTH_MONTHLY) return "growth";
@@ -55,17 +74,22 @@ export async function POST(req: NextRequest) {
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
 
-        // Resolve the plan from the actual price ID on the subscription.
-        // Fall back to session metadata for cases where the subscription
-        // hasn't expanded line items (e.g. some older API versions).
+        // Resolve plan and actual status from the Stripe subscription object.
+        // Fall back to session metadata if retrieval fails.
         let plan: string = session.metadata?.plan ?? "starter";
+        let actualStatus: string = "active";
+        let trialEnd: string | null = null;
         if (subscriptionId) {
           try {
-            const sub = await stripe.subscriptions.retrieve(subscriptionId);
-            const priceId = sub.items.data[0]?.price?.id;
+            const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+            const priceId = stripeSub.items.data[0]?.price?.id;
             plan = planFromPriceId(priceId);
+            actualStatus = stripeSub.status; // trialing | active | past_due | canceled
+            trialEnd = stripeSub.trial_end
+              ? new Date(stripeSub.trial_end * 1000).toISOString()
+              : null;
           } catch {
-            // Non-fatal — keep the metadata fallback
+            // Non-fatal — keep defaults
           }
         }
 
@@ -74,8 +98,9 @@ export async function POST(req: NextRequest) {
             plan,
             customerId,
             subscriptionId,
-            status: "active",
-            activatedAt: new Date().toISOString(),
+            status: actualStatus,
+            trialEnd,
+            updatedAt: new Date().toISOString(),
           });
           // Also index by Stripe customer ID for webhook lookups
           await kv.set(`sub:cust:${customerId}`, email);
@@ -92,7 +117,7 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
-        const email = await kv.get<string>(`sub:cust:${customerId}`);
+        const email = await resolveEmail(customerId);
         if (!email) break;
 
         // Read plan from the actual price ID — NOT metadata.
@@ -119,7 +144,7 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
-        const email = await kv.get<string>(`sub:cust:${customerId}`);
+        const email = await resolveEmail(customerId);
         if (!email) break;
 
         await kv.set(`sub:${email}`, {
@@ -139,7 +164,7 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
 
-        const email = await kv.get<string>(`sub:cust:${customerId}`);
+        const email = await resolveEmail(customerId);
         if (!email) break;
 
         const current = await kv.get<Record<string, unknown>>(`sub:${email}`);
@@ -161,7 +186,7 @@ export async function POST(req: NextRequest) {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        const email = await kv.get<string>(`sub:cust:${customerId}`);
+        const email = await resolveEmail(customerId);
         if (!email) break;
 
         const existing = await kv.get<Record<string, unknown>>(`sub:${email}`);
