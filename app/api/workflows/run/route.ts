@@ -389,6 +389,46 @@ export async function POST(req: NextRequest) {
     // Instantiate Anthropic inside handler so a missing key doesn't crash the module
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
+    // ── Plan enforcement ──────────────────────────────────────────────────────
+    const sub = await kv.get<{ plan: string; status: string; trialEnd?: string }>(
+      `sub:${session.email}`
+    )
+    const plan     = sub?.plan   ?? 'trial'
+    const status   = sub?.status ?? 'trialing'
+    const isTrialing = status === 'trialing'
+    const isPro      = plan === 'pro'
+
+    if (!isPro && !isTrialing) {
+      // starter, growth, or any unknown non-pro plan
+      return NextResponse.json({
+        logs: [{
+          nodeId: 'system', nodeType: 'system', nodeLabel: 'Upgrade Required',
+          status: 'error',
+          message: '🔒 Workflows are available on Pro plan only. Upgrade at baileyagents.com/pricing',
+          timestamp: new Date().toISOString(),
+        }],
+      }, { status: 403 })
+    }
+
+    if (isTrialing) {
+      const runsKey = `workflow-runs:${session.email}`
+      const runs    = await kv.get<number>(runsKey) ?? 0
+      if (runs >= 3) {
+        return NextResponse.json({
+          logs: [{
+            nodeId: 'system', nodeType: 'system', nodeLabel: 'Trial Limit Reached',
+            status: 'error',
+            message: '⏳ You have used all 3 free trial workflow runs. Upgrade to Pro ($149/mo) for unlimited workflows. baileyagents.com/pricing',
+            timestamp: new Date().toISOString(),
+          }],
+        }, { status: 403 })
+      }
+      await kv.set(runsKey, runs + 1)
+      console.log(`[workflows] trial run ${runs + 1}/3 for ${session.email}`)
+    }
+    // Pro = unlimited ✅
+    // ─────────────────────────────────────────────────────────────────────────
+
     let body: { workflowId?: string; nodes?: RFNode[]; edges?: RFEdge[] }
     try {
       body = await req.json() as typeof body
@@ -445,6 +485,9 @@ export async function POST(req: NextRequest) {
         context[varName] = output
         // Also store under node ID so {{nodeId}} references always work
         if (varName !== node.id) context[node.id] = output
+
+        console.log(`[WORKFLOW] node ${node.type} stored as "${varName}" = "${output.slice(0, 50)}..."`)
+        console.log(`[WORKFLOW] context keys:`, Object.keys(context))
 
         logs[logs.length - 1] = {
           nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
