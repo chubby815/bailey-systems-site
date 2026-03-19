@@ -268,9 +268,13 @@ async function executeNode(
       }
 
       const rawMsg  = (d.message as string) || ''
-      const message = rawMsg.includes('{{')
+      const message = (rawMsg && rawMsg.includes('{{'))
         ? resolveVars(rawMsg, ctx)
         : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
+
+      if (!message || message.trim() === '') {
+        return 'Telegram skipped — no message content'
+      }
 
       const token = process.env.TELEGRAM_BOT_TOKEN
       if (!token) return 'Telegram — TELEGRAM_BOT_TOKEN not configured — skipped'
