@@ -72,6 +72,7 @@ export default async function DashboardPage() {
           <div className="flex-1">
             {[
               { icon: "🌐", label: "My Sites", href: "/dashboard" },
+              { icon: "⚡", label: "Workflows", href: "/dashboard/workflows" },
               { icon: "🎯", label: "Lead Hunter", href: "/dashboard/leads" },
               { icon: "✍️", label: "Content Machine", href: "/dashboard/content" },
               { icon: "🔥", label: "Website Roast", href: "/dashboard/roast" },
