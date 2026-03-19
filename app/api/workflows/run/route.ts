@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
+
+export const maxDuration = 60
 import { kv } from '@/lib/kv'
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'

@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ReactFlow,
   Background,
@@ -14,6 +14,7 @@ import {
   type Edge,
   type Node,
   type NodeTypes,
+  type NodeProps,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -32,20 +33,65 @@ import { WhatsAppNode }        from './nodes/WhatsAppNode'
 import { IfConditionNode }     from './nodes/IfConditionNode'
 import { DelayNode }           from './nodes/DelayNode'
 
-// Defined outside component to avoid re-renders
+// ── HOC: wraps any node with a hoverable ✕ delete button ──────────────────
+type AnyComp = React.ComponentType<Record<string, unknown>>
+
+function withDelete(Comp: AnyComp): AnyComp {
+  function DeleteWrapper(props: NodeProps<Node> & Record<string, unknown>) {
+    const { deleteElements } = useReactFlow()
+    return (
+      <div style={{ position: 'relative', display: 'inline-block' }}>
+        <Comp {...props} />
+        <button
+          className="nodrag nopan"
+          title="Delete node"
+          onClick={e => {
+            e.stopPropagation()
+            void deleteElements({ nodes: [{ id: props.id }] })
+          }}
+          style={{
+            position: 'absolute', top: '6px', right: '6px', zIndex: 100,
+            width: '16px', height: '16px', borderRadius: '50%',
+            background: 'rgba(239,68,68,0)', color: 'rgba(239,68,68,0)',
+            border: '1px solid rgba(239,68,68,0)', cursor: 'pointer',
+            fontSize: '9px', lineHeight: 1, padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => {
+            const b = e.currentTarget
+            b.style.background = 'rgba(239,68,68,0.18)'
+            b.style.color = '#ef4444'
+            b.style.border = '1px solid rgba(239,68,68,0.35)'
+          }}
+          onMouseLeave={e => {
+            const b = e.currentTarget
+            b.style.background = 'rgba(239,68,68,0)'
+            b.style.color = 'rgba(239,68,68,0)'
+            b.style.border = '1px solid rgba(239,68,68,0)'
+          }}
+        >✕</button>
+      </div>
+    )
+  }
+  DeleteWrapper.displayName = `WithDelete(${Comp.displayName ?? Comp.name ?? 'Node'})`
+  return DeleteWrapper as AnyComp
+}
+
+// ── nodeTypes — defined outside component to avoid re-renders ─────────────
 const nodeTypes: NodeTypes = {
-  schedule:        ScheduleNode        as NodeTypes[string],
-  manual:          ManualNode          as NodeTypes[string],
-  webhook:         WebhookNode         as NodeTypes[string],
-  baileyWrite:     BaileyWriteNode     as NodeTypes[string],
-  baileyBuildSite: BaileyBuildSiteNode as NodeTypes[string],
-  baileyFindLeads: BaileyFindLeadsNode as NodeTypes[string],
-  sendEmail:       SendEmailNode       as NodeTypes[string],
-  googleSheets:    GoogleSheetsNode    as NodeTypes[string],
-  facebookPost:    FacebookPostNode    as NodeTypes[string],
-  whatsApp:        WhatsAppNode        as NodeTypes[string],
-  ifCondition:     IfConditionNode     as NodeTypes[string],
-  delay:           DelayNode           as NodeTypes[string],
+  schedule:        withDelete(ScheduleNode        as AnyComp) as NodeTypes[string],
+  manual:          withDelete(ManualNode          as AnyComp) as NodeTypes[string],
+  webhook:         withDelete(WebhookNode         as AnyComp) as NodeTypes[string],
+  baileyWrite:     withDelete(BaileyWriteNode     as AnyComp) as NodeTypes[string],
+  baileyBuildSite: withDelete(BaileyBuildSiteNode as AnyComp) as NodeTypes[string],
+  baileyFindLeads: withDelete(BaileyFindLeadsNode as AnyComp) as NodeTypes[string],
+  sendEmail:       withDelete(SendEmailNode       as AnyComp) as NodeTypes[string],
+  googleSheets:    withDelete(GoogleSheetsNode    as AnyComp) as NodeTypes[string],
+  facebookPost:    withDelete(FacebookPostNode    as AnyComp) as NodeTypes[string],
+  whatsApp:        withDelete(WhatsAppNode        as AnyComp) as NodeTypes[string],
+  ifCondition:     withDelete(IfConditionNode     as AnyComp) as NodeTypes[string],
+  delay:           withDelete(DelayNode           as AnyComp) as NodeTypes[string],
 }
 
 export interface WorkflowCanvasProps {
@@ -55,25 +101,86 @@ export interface WorkflowCanvasProps {
   initialEdges?: Edge[]
 }
 
-// Inner editor — must be inside ReactFlowProvider
+// ── Inner editor — must be inside ReactFlowProvider ───────────────────────
 function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }: WorkflowCanvasProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const { screenToFlowPosition } = useReactFlow()
+  const isInitialMount = useRef(true)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes ?? [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges ?? [])
   const [workflowName, setWorkflowName] = useState(initialName ?? 'Untitled Workflow')
-  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [logs, setLogs]         = useState<LogEntry[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
-  const [saveMsg, setSaveMsg] = useState('')
+  const [saveMsg, setSaveMsg]   = useState('')
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [isDirty, setIsDirty]   = useState(false)
+  // Track actual persisted workflow ID (may be created on first save)
+  const [currentId, setCurrentId] = useState<string | undefined>(workflowId)
 
+  // ── Mark dirty when nodes/edges change (skip initial mount) ───────────
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    setIsDirty(true)
+  }, [nodes, edges])
+
+  // ── Auto-save: 1s debounce, only fires when there are unsaved changes ──
+  useEffect(() => {
+    if (!workflowName || nodes.length === 0 || !isDirty) return
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/workflows/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workflowId: currentId ?? null,
+            name: workflowName,
+            nodes,
+            edges,
+          }),
+        })
+        const data = await res.json() as { id?: string }
+        if (res.ok) {
+          if (data.id && !currentId) {
+            setCurrentId(data.id)
+            window.history.replaceState(null, '', `/dashboard/workflows/${data.id}`)
+          }
+          setLastSaved(new Date())
+          setIsDirty(false)
+        }
+      } catch {
+        // silent auto-save failure — user can click Save manually
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, edges, workflowName, isDirty, currentId])
+
+  // ── Warn before leaving with unsaved changes ───────────────────────────
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  // ── Connections ────────────────────────────────────────────────────────
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge({ ...params, animated: true, style: { stroke: '#4b5563' } }, eds)),
     [setEdges],
   )
 
-  // Drag from sidebar
+  // ── Drag-and-drop from sidebar ─────────────────────────────────────────
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault()
     event.dataTransfer.dropEffect = 'move'
@@ -84,7 +191,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       event.preventDefault()
       const raw = event.dataTransfer.getData('application/reactflow')
       if (!raw) return
-      const nodeDef: NodeDef = JSON.parse(raw)
+      const nodeDef: NodeDef = JSON.parse(raw) as NodeDef
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY })
       const newNode: Node = {
         id: `${nodeDef.type}-${Date.now()}`,
@@ -102,6 +209,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
     e.dataTransfer.effectAllowed = 'move'
   }, [])
 
+  // ── Manual save ────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
     setIsSaving(true)
     setSaveMsg('')
@@ -109,15 +217,17 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       const res = await fetch('/api/workflows/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workflowId, name: workflowName, nodes, edges }),
+        body: JSON.stringify({ workflowId: currentId, name: workflowName, nodes, edges }),
       })
       const data = await res.json() as { id?: string; error?: string }
       if (res.ok) {
-        setSaveMsg('Saved ✓')
-        // Update URL to persisted ID without full reload
-        if (data.id && !workflowId) {
+        if (data.id && !currentId) {
+          setCurrentId(data.id)
           window.history.replaceState(null, '', `/dashboard/workflows/${data.id}`)
         }
+        setLastSaved(new Date())
+        setIsDirty(false)
+        setSaveMsg('Saved ✓')
       } else {
         setSaveMsg(data.error ?? 'Save failed')
       }
@@ -127,8 +237,9 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       setIsSaving(false)
       setTimeout(() => setSaveMsg(''), 3000)
     }
-  }, [workflowId, workflowName, nodes, edges])
+  }, [currentId, workflowName, nodes, edges])
 
+  // ── Run ────────────────────────────────────────────────────────────────
   const handleRun = useCallback(async () => {
     setIsRunning(true)
     setLogs([])
@@ -136,17 +247,42 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       const res = await fetch('/api/workflows/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workflowId, nodes, edges }),
+        body: JSON.stringify({
+          nodes: nodes,
+          edges: edges,
+          workflowId: currentId ?? null,
+        }),
       })
       const data = await res.json() as { logs?: LogEntry[]; error?: string }
-      if (data.logs) setLogs(data.logs)
-      else setLogs([{ nodeId: 'error', nodeType: 'system', nodeLabel: 'Error', status: 'error', message: data.error ?? 'Unknown error', timestamp: new Date().toISOString() }])
-    } catch (err) {
-      setLogs([{ nodeId: 'error', nodeType: 'system', nodeLabel: 'Network Error', status: 'error', message: String(err), timestamp: new Date().toISOString() }])
+
+      if (data.logs) {
+        setLogs(data.logs)
+      }
+
+      if (!res.ok) {
+        setLogs(prev => [...prev, {
+          nodeId: 'system', nodeType: 'system', nodeLabel: 'Error',
+          status: 'error' as const,
+          message: data.error ?? 'Run failed',
+          timestamp: new Date().toISOString(),
+        }])
+      }
+    } catch {
+      setLogs(prev => [...prev, {
+        nodeId: 'system', nodeType: 'system', nodeLabel: 'Network Error',
+        status: 'error' as const,
+        message: 'Network error — could not reach server',
+        timestamp: new Date().toISOString(),
+      }])
     } finally {
       setIsRunning(false)
     }
-  }, [workflowId, nodes, edges])
+  }, [currentId, nodes, edges])
+
+  // ── Save status label ──────────────────────────────────────────────────
+  const savedAtStr = lastSaved
+    ? lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#080810', fontFamily: 'Inter, sans-serif' }}>
@@ -155,7 +291,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
         height: '52px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '1rem',
         padding: '0 1rem', background: '#0a0b0d', borderBottom: '1px solid rgba(255,255,255,0.07)', zIndex: 20,
       }}>
-        <a href="/dashboard/workflows" style={{ color: '#6b7280', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+        <a href="/dashboard/workflows" style={{ color: '#6b7280', fontSize: '0.8rem', textDecoration: 'none' }}>
           ← Workflows
         </a>
         <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.08)' }} />
@@ -167,8 +303,25 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
             fontWeight: 600, outline: 'none', minWidth: '160px', maxWidth: '300px',
           }}
         />
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {saveMsg && <span style={{ color: saveMsg.includes('✓') ? '#00e5a0' : '#ef4444', fontSize: '0.8rem' }}>{saveMsg}</span>}
+
+        {/* ── Status indicators ── */}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Save message (errors / explicit saves) takes priority */}
+          {saveMsg ? (
+            <span style={{ color: saveMsg.includes('✓') ? '#00e5a0' : '#ef4444', fontSize: '0.78rem' }}>
+              {saveMsg}
+            </span>
+          ) : isDirty ? (
+            <span style={{ color: '#6b7280', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#eab308', display: 'inline-block' }} />
+              Unsaved changes
+            </span>
+          ) : savedAtStr ? (
+            <span style={{ color: '#00e5a0', fontSize: '0.75rem' }}>
+              Saved ✓ {savedAtStr}
+            </span>
+          ) : null}
+
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -196,10 +349,8 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
 
       {/* ── Main Area ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {/* Left sidebar */}
         <NodeSidebar onDragStart={handleDragStart} />
 
-        {/* Canvas */}
         <div ref={reactFlowWrapper} style={{ flex: 1, position: 'relative' }}>
           <ReactFlow
             nodes={nodes}
@@ -210,6 +361,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
             onDrop={onDrop}
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
+            deleteKeyCode={['Delete', 'Backspace']}
             fitView
             defaultEdgeOptions={{ animated: false, style: { stroke: '#374151', strokeWidth: 1.5 } }}
             style={{ background: '#080810' }}
@@ -229,12 +381,11 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
               <div style={{ textAlign: 'center', color: '#374151' }}>
                 <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⬡</p>
                 <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>Drag nodes from the left to build your workflow</p>
-                <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Connect them with edges · Click Run to execute</p>
+                <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Connect them · Select + Delete key to remove · Click Run to execute</p>
               </div>
             </div>
           )}
 
-          {/* Execution log */}
           <ExecutionLog logs={logs} isRunning={isRunning} />
         </div>
       </div>
@@ -242,7 +393,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
   )
 }
 
-// Public export wrapped in provider
+// ── Public export wrapped in provider ─────────────────────────────────────
 export function WorkflowCanvas(props: WorkflowCanvasProps) {
   return (
     <ReactFlowProvider>

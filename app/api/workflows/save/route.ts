@@ -25,19 +25,46 @@ export async function POST(req: NextRequest) {
   }
   const email = session.email.toLowerCase()
 
-  let body: { workflowId?: string; name?: string; nodes?: unknown[]; edges?: unknown[] }
+  let body: {
+    workflowId?: string | null
+    name?: string
+    nodes?: unknown[]
+    edges?: unknown[]
+    duplicateId?: string
+  }
   try {
     body = await req.json() as typeof body
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { workflowId, name, nodes = [], edges = [] } = body
   const now = new Date().toISOString()
 
   try {
+    // ── Duplicate workflow ────────────────────────────────────────────────
+    if (body.duplicateId) {
+      const original = await kv.get<WorkflowRecord>(`workflow:${body.duplicateId}`)
+      if (!original || original.userId !== email) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 })
+      }
+      const id = genId()
+      const copy: WorkflowRecord = {
+        ...original,
+        id,
+        name: `Copy of ${original.name}`,
+        createdAt: now,
+        updatedAt: now,
+        lastRun: undefined,
+      }
+      await kv.set(`workflow:${id}`, copy)
+      await kv.lpush(`workflows:${email}`, id)
+      return NextResponse.json({ id, success: true, workflow: copy })
+    }
+
+    const { workflowId, name, nodes = [], edges = [] } = body
+
+    // ── Update existing ───────────────────────────────────────────────────
     if (workflowId) {
-      // Update existing
       const existing = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
       if (!existing || existing.userId !== email) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -45,19 +72,52 @@ export async function POST(req: NextRequest) {
       const updated: WorkflowRecord = { ...existing, name: name ?? existing.name, nodes, edges, updatedAt: now }
       await kv.set(`workflow:${workflowId}`, updated)
       return NextResponse.json({ id: workflowId, success: true })
-    } else {
-      // Create new
-      const id = genId()
-      const record: WorkflowRecord = {
-        id, userId: email, name: name ?? 'Untitled Workflow',
-        nodes, edges, createdAt: now, updatedAt: now, status: 'active',
-      }
-      await kv.set(`workflow:${id}`, record)
-      await kv.lpush(`workflows:${email}`, id)
-      return NextResponse.json({ id, success: true })
     }
+
+    // ── Create new ────────────────────────────────────────────────────────
+    const id = genId()
+    const record: WorkflowRecord = {
+      id, userId: email, name: name ?? 'Untitled Workflow',
+      nodes, edges, createdAt: now, updatedAt: now, status: 'active',
+    }
+    await kv.set(`workflow:${id}`, record)
+    await kv.lpush(`workflows:${email}`, id)
+    return NextResponse.json({ id, success: true })
   } catch (err) {
     console.error('[workflows/save]', err)
     return NextResponse.json({ error: 'Save failed' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getSession(req)
+  if (!session?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const email = session.email.toLowerCase()
+
+  let body: { workflowId?: string }
+  try {
+    body = await req.json() as typeof body
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  const { workflowId } = body
+  if (!workflowId) {
+    return NextResponse.json({ error: 'Missing workflowId' }, { status: 400 })
+  }
+
+  try {
+    const existing = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
+    if (!existing || existing.userId !== email) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    await kv.del(`workflow:${workflowId}`)
+    await kv.lrem(`workflows:${email}`, 0, workflowId)
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[workflows/delete]', err)
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
   }
 }
