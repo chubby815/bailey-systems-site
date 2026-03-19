@@ -668,6 +668,27 @@ REQUIRED SECTIONS (all 8, in this order)
    ` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ICONS — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEVER use emojis as icons anywhere in the site. This is a strict rule.
+For service cards, features, stats, and any decorative icons use clean inline SVG ONLY.
+• Style: minimal line icons, 24×24px
+• stroke-width: 1.5, fill: none, stroke: currentColor
+• Color: white or var(--primary) as appropriate
+
+Example SVG icon (scissors — for a barbershop service card):
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+  <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+  <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+  <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+  <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+</svg>
+
+Generate an appropriate unique SVG line icon for EACH service card based on the industry and service name.
+Common icons: star, check-circle, arrow-right, zap, shield, clock, phone, mail, map-pin, users, bar-chart, settings, tool, truck, home, heart.
+NEVER use emoji. Ever.
+
 COPY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • ZERO Lorem Ipsum — every word is real, specific, compelling
