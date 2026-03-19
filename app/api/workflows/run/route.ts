@@ -57,13 +57,37 @@ function resolveVars(template: string, ctx: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => ctx[key] ?? `{{${key}}}`)
 }
 
+// Type priority for fallback ordering when edges are missing
+const TYPE_PRIORITY: Record<string, number> = {
+  manual:          0,
+  schedule:        0,
+  webhook:         0,
+  baileyWrite:     1,
+  baileyFindLeads: 1,
+  baileyBuildSite: 1,
+  aiAgent:         1,
+  sendEmail:       2,
+  whatsApp:        2,
+  telegram:        2,
+  slack:           2,
+  facebookPost:    2,
+  googleSheets:    2,
+  ifCondition:     3,
+  delay:           3,
+}
+
 // Build topological execution order (BFS from nodes with no incoming edges)
+// Falls back to TYPE_PRIORITY sort so Triggers → AI → Actions → Logic
+// even when edges are missing or incomplete
 function executionOrder(nodes: RFNode[], edges: RFEdge[]): RFNode[] {
   const incomingCount = new Map<string, number>()
   nodes.forEach(n => incomingCount.set(n.id, 0))
   edges.forEach(e => incomingCount.set(e.target, (incomingCount.get(e.target) ?? 0) + 1))
 
-  const queue = nodes.filter(n => (incomingCount.get(n.id) ?? 0) === 0)
+  const queue = nodes
+    .filter(n => (incomingCount.get(n.id) ?? 0) === 0)
+    .sort((a, b) => (TYPE_PRIORITY[a.type ?? ''] ?? 99) - (TYPE_PRIORITY[b.type ?? ''] ?? 99))
+
   const visited = new Set<string>()
   const order: RFNode[] = []
 
@@ -72,13 +96,16 @@ function executionOrder(nodes: RFNode[], edges: RFEdge[]): RFNode[] {
     if (visited.has(node.id)) continue
     visited.add(node.id)
     order.push(node)
-    edges
+
+    const nextNodes = edges
       .filter(e => e.source === node.id)
-      .forEach(e => {
-        const next = nodes.find(n => n.id === e.target)
-        if (next && !visited.has(next.id)) queue.push(next)
-      })
+      .map(e => nodes.find(n => n.id === e.target))
+      .filter((n): n is RFNode => !!n && !visited.has(n.id))
+      .sort((a, b) => (TYPE_PRIORITY[a.type ?? ''] ?? 99) - (TYPE_PRIORITY[b.type ?? ''] ?? 99))
+
+    queue.push(...nextNodes)
   }
+
   return order
 }
 
