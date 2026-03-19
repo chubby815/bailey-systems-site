@@ -33,7 +33,7 @@ export function BaileyWriteNode({ id, data, selected }: NodeProps<BaileyWriteNod
           className="nodrag nopan"
           rows={3}
           style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', resize: 'none', boxSizing: 'border-box', marginBottom: '0.4rem' }}
-          placeholder="Write a sales email for {{businessName}}..."
+          placeholder={`Write a personalized cold email to the business in {{leads}}.\nUse their actual business name.\nOffer [YOUR SERVICE] for [YOUR PRICE].\nNever use brackets or placeholders.\nSign as: [YOUR NAME]`}
         />
         <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.2rem' }}>Output variable</label>
         <input
