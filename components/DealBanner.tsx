@@ -36,93 +36,97 @@ export default function DealBanner() {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a00 50%, #0a0a0a 100%)',
-      borderBottom: '1px solid #ff6600',
-      padding: '1rem',
-      textAlign: 'center',
-      position: 'relative',
+      position: 'fixed',
+      left: '1.5rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
       zIndex: 9999,
-      overflow: 'hidden',
+      background: '#0a0a0a',
+      border: '2px solid #ff6600',
+      borderRadius: '16px',
+      padding: '1.25rem',
+      maxWidth: '220px',
+      boxShadow: '0 0 30px rgba(255,102,0,0.3)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.75rem',
+      textAlign: 'center',
     }}>
-      {/* Animated glow */}
+
+      {/* Glow */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(ellipse at center, rgba(255,102,0,0.1) 0%, transparent 70%)',
+        borderRadius: '16px',
+        background: 'radial-gradient(ellipse at center, rgba(255,102,0,0.08) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
+      {/* Badge */}
       <div style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.75rem',
+        background: 'rgba(255,102,0,0.15)',
+        border: '1px solid #ff6600',
+        borderRadius: '100px',
+        padding: '0.2rem 0.75rem',
+        fontSize: '0.65rem',
+        fontWeight: 700,
+        color: '#ff6600',
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase' as const,
         position: 'relative',
         zIndex: 1,
       }}>
+        🚨 Limited Time 🚨
+      </div>
 
-        {/* Badge */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          background: 'rgba(255,102,0,0.15)',
-          border: '1px solid #ff6600',
-          borderRadius: '100px',
-          padding: '0.25rem 1rem',
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          color: '#ff6600',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase' as const,
-        }}>
-          🚨 Limited Time Deal 🚨
-        </div>
+      {/* Main text */}
+      <p style={{
+        color: '#ffffff',
+        fontSize: '0.9rem',
+        fontWeight: 700,
+        margin: 0,
+        lineHeight: 1.4,
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        Buy 1 AI Website —{' '}
+        <span style={{ color: '#ff6600', fontWeight: 900 }}>Get 1 FREE</span>
+        {' '}for a friend
+      </p>
 
-        {/* Main text */}
-        <p style={{
-          color: '#ffffff',
-          fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
-          fontWeight: 600,
-          margin: 0,
-          lineHeight: 1.5,
-        }}>
-          Buy 1 AI Website — Get 1{' '}
-          <span style={{ color: '#ff6600', fontWeight: 900 }}>FREE</span>
-          {' '}for a friend.{' '}
-          <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '0.9em' }}>
-            No coding. No waiting. Built in seconds.
-          </span>
-        </p>
-
-        {/* Countdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>⏳ Ends in</span>
-
+      {/* Countdown */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.35rem',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        <span style={{ color: '#6b7280', fontSize: '0.7rem' }}>⏳ Ends in</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
           {[
-            { value: timeLeft.days,    label: 'days' },
-            { value: timeLeft.hours,   label: 'hrs' },
-            { value: timeLeft.minutes, label: 'min' },
-            { value: timeLeft.seconds, label: 'sec' },
+            { value: timeLeft.days,    label: 'd' },
+            { value: timeLeft.hours,   label: 'h' },
+            { value: timeLeft.minutes, label: 'm' },
+            { value: timeLeft.seconds, label: 's' },
           ].map(({ value, label }, i) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
               {i > 0 && (
-                <span style={{ color: '#ff6600', fontWeight: 700, fontSize: '1rem' }}>:</span>
+                <span style={{ color: '#ff6600', fontWeight: 700, fontSize: '0.9rem' }}>:</span>
               )}
               <div style={{
-                background: '#0a0a0a',
+                background: '#111214',
                 border: '1px solid #ff6600',
-                borderRadius: '6px',
-                padding: '0.25rem 0.5rem',
-                minWidth: '2.5rem',
+                borderRadius: '5px',
+                padding: '0.2rem 0.35rem',
                 textAlign: 'center',
               }}>
                 <div style={{
                   color: '#ff6600',
                   fontWeight: 900,
-                  fontSize: '1.1rem',
+                  fontSize: '0.95rem',
                   lineHeight: 1,
                   fontVariantNumeric: 'tabular-nums',
                 }}>
@@ -130,9 +134,9 @@ export default function DealBanner() {
                 </div>
                 <div style={{
                   color: '#4b5563',
-                  fontSize: '0.6rem',
+                  fontSize: '0.55rem',
                   textTransform: 'uppercase' as const,
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.04em',
                 }}>
                   {label}
                 </div>
@@ -140,27 +144,30 @@ export default function DealBanner() {
             </div>
           ))}
         </div>
-
-        {/* CTA */}
-        <a
-          href="/pricing"
-          style={{
-            background: '#ff6600',
-            color: '#000',
-            fontWeight: 800,
-            fontSize: '0.85rem',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '100px',
-            textDecoration: 'none',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase' as const,
-            boxShadow: '0 0 20px rgba(255,102,0,0.4)',
-          }}
-        >
-          Claim Deal →
-        </a>
-
       </div>
+
+      {/* CTA */}
+      <a
+        href="/pricing"
+        style={{
+          background: '#ff6600',
+          color: '#000',
+          fontWeight: 800,
+          fontSize: '0.75rem',
+          padding: '0.5rem 1.25rem',
+          borderRadius: '100px',
+          textDecoration: 'none',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase' as const,
+          boxShadow: '0 0 16px rgba(255,102,0,0.5)',
+          position: 'relative',
+          zIndex: 1,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Claim Deal →
+      </a>
+
     </div>
   )
 }

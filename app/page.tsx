@@ -1,9 +1,11 @@
 import TemplatePreviews from "@/components/TemplatePreviews";
 import HeroSection from "@/components/HeroSection";
+import DealBanner from "@/components/DealBanner";
 
 export default function Home() {
   return (
     <div className="bg-[#08090a] text-[#f0f0f0] overflow-x-hidden">
+      <DealBanner />
 
       {/* ── SECTION 1: HERO ─────────────────────────────────────────── */}
       <HeroSection />
