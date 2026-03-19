@@ -87,6 +87,7 @@ async function executeNode(
   node: RFNode,
   ctx: Record<string, string>,
   anthropic: Anthropic,
+  email: string,
 ): Promise<string> {
   const d = node.data
 
@@ -127,7 +128,19 @@ async function executeNode(
     }
 
     case 'sendEmail': {
-      const to      = resolveVars((d.toEmail as string) || '', ctx)
+      let to = resolveVars((d.toEmail as string) || '', ctx)
+
+      // Auto extract email from leads context if toEmail is empty
+      if (!to && ctx['leads']) {
+        try {
+          const leads: unknown = JSON.parse(ctx['leads'])
+          const first = Array.isArray(leads) ? (leads[0] as Record<string, string>) : (leads as Record<string, string>)
+          to = first?.email || first?.Email || ''
+        } catch {
+          // not JSON — skip
+        }
+      }
+
       const subject = resolveVars((d.subject as string) || 'Message from Bailey', ctx)
 
       // Auto-chain: if body is empty or has no {{vars}}, use aiText from context
@@ -136,7 +149,7 @@ async function executeNode(
         ? resolveVars(rawBody, ctx)
         : ctx['aiText'] ?? ctx['aiOutput'] ?? rawBody
 
-      if (!to) return 'No recipient — skipped'
+      if (!to) return 'No email address found — skipped'
       await resend.emails.send({
         from: 'Bailey Agents <noreply@baileyagents.com>',
         to,
@@ -147,9 +160,9 @@ async function executeNode(
     }
 
     case 'whatsApp': {
-      const provider = (d.provider as string) || 'twilio'
+      const nodeProvider = (d.provider as string) || ''
       // Support both old field name (toPhone) and new (to)
-      const toRaw = resolveVars((d.to as string) || (d.toPhone as string) || '', ctx)
+      const to = resolveVars((d.to as string) || (d.toPhone as string) || '', ctx)
 
       // Auto-chain: if message is empty or has no {{vars}}, use aiText or leads
       const rawMsg  = (d.message as string) || ''
@@ -157,16 +170,33 @@ async function executeNode(
         ? resolveVars(rawMsg, ctx)
         : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
 
-      if (!toRaw) return 'WhatsApp — no recipient — skipped'
+      if (!to) return 'WhatsApp — no recipient — skipped'
 
-      if (provider === 'twilio') {
-        const accountSid = process.env.TWILIO_ACCOUNT_SID
-        const authToken  = process.env.TWILIO_AUTH_TOKEN
-        const from       = process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_WHATSAPP_NUMBER ?? 'whatsapp:+14155238886'
-        if (!accountSid || !authToken) return 'WhatsApp (Twilio) not configured — skipped'
+      // Load saved user config from Redis (used when node fields are blank or env vars missing)
+      const savedWA = await kv.get<{
+        provider: string
+        accountSid?: string
+        authToken?: string
+        from?: string
+        token?: string
+        phoneId?: string
+      }>(`whatsapp-config:${email}`)
 
-        const to = toRaw.startsWith('whatsapp:') ? toRaw : `whatsapp:${toRaw}`
-        const fromFormatted = from.startsWith('whatsapp:') ? from : `whatsapp:${from}`
+      const resolvedProvider = nodeProvider || savedWA?.provider || 'twilio'
+
+      if (resolvedProvider === 'twilio' || savedWA?.provider === 'twilio') {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID ?? savedWA?.accountSid
+        const authToken  = process.env.TWILIO_AUTH_TOKEN  ?? savedWA?.authToken
+        const from       = process.env.TWILIO_WHATSAPP_FROM
+          ?? process.env.TWILIO_WHATSAPP_NUMBER
+          ?? savedWA?.from
+
+        if (!accountSid || !authToken || !from) {
+          return 'WhatsApp not configured — connect in Settings → Connections'
+        }
+
+        const fromFmt = from.startsWith('whatsapp:') ? from : `whatsapp:${from}`
+        const toFmt   = to.startsWith('whatsapp:')   ? to   : `whatsapp:${to}`
         const resp = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
           {
@@ -175,17 +205,20 @@ async function executeNode(
               Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
               'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({ From: fromFormatted, To: to, Body: message }),
+            body: new URLSearchParams({ From: fromFmt, To: toFmt, Body: message }),
           },
         )
         if (!resp.ok) throw new Error(await resp.text())
-        return `WhatsApp sent via Twilio to ${toRaw}`
+        return `WhatsApp sent via Twilio to ${to}`
       }
 
-      if (provider === 'meta') {
-        const token   = process.env.META_WHATSAPP_TOKEN
-        const phoneId = process.env.META_WHATSAPP_PHONE_ID
-        if (!token || !phoneId) return 'WhatsApp (Meta) not configured — skipped'
+      if (resolvedProvider === 'meta' || savedWA?.provider === 'meta') {
+        const token   = process.env.META_WHATSAPP_TOKEN    ?? savedWA?.token
+        const phoneId = process.env.META_WHATSAPP_PHONE_ID ?? savedWA?.phoneId
+
+        if (!token || !phoneId) {
+          return 'WhatsApp Meta not configured — connect in Settings → Connections'
+        }
 
         const resp = await fetch(
           `https://graph.facebook.com/v18.0/${phoneId}/messages`,
@@ -197,17 +230,17 @@ async function executeNode(
             },
             body: JSON.stringify({
               messaging_product: 'whatsapp',
-              to: toRaw.replace('+', ''),
+              to: to.replace('+', ''),
               type: 'text',
               text: { body: message },
             }),
           },
         )
         if (!resp.ok) throw new Error(await resp.text())
-        return `WhatsApp sent via Meta to ${toRaw}`
+        return `WhatsApp sent via Meta to ${to}`
       }
 
-      throw new Error('Unknown WhatsApp provider')
+      return 'WhatsApp not connected — go to Settings → Connections'
     }
 
     case 'facebookPost': {
@@ -227,7 +260,13 @@ async function executeNode(
     }
 
     case 'telegram': {
-      const chatId  = resolveVars((d.chatId as string) || '', ctx)
+      // Use node field first, then fall back to user's saved connection
+      let chatId = resolveVars((d.chatId as string) || '', ctx)
+      if (!chatId) {
+        const saved = await kv.get<string>(`telegram-chatid:${email}`)
+        if (saved) chatId = saved
+      }
+
       const rawMsg  = (d.message as string) || ''
       const message = rawMsg.includes('{{')
         ? resolveVars(rawMsg, ctx)
@@ -235,7 +274,7 @@ async function executeNode(
 
       const token = process.env.TELEGRAM_BOT_TOKEN
       if (!token) return 'Telegram — TELEGRAM_BOT_TOKEN not configured — skipped'
-      if (!chatId) return 'Telegram — no chat ID — skipped'
+      if (!chatId) return 'Telegram not connected — add a Chat ID or connect in dashboard/connections'
 
       const res = await fetch(
         `https://api.telegram.org/bot${token}/sendMessage`,
@@ -250,14 +289,20 @@ async function executeNode(
     }
 
     case 'slack': {
-      const webhookUrl = resolveVars((d.webhookUrl as string) || '', ctx)
+      // Use node field first, then fall back to user's saved connection
+      let webhookUrl = resolveVars((d.webhookUrl as string) || '', ctx)
+      if (!webhookUrl) {
+        const saved = await kv.get<string>(`slack-webhook:${email}`)
+        if (saved) webhookUrl = saved
+      }
+
       const channel    = resolveVars((d.channel as string) || '#general', ctx)
       const rawMsg     = (d.message as string) || ''
       const message    = rawMsg.includes('{{')
         ? resolveVars(rawMsg, ctx)
         : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
 
-      if (!webhookUrl) return 'Slack — no webhook URL — skipped'
+      if (!webhookUrl) return 'Slack not connected — paste a webhook URL or connect in dashboard/connections'
 
       const res = await fetch(webhookUrl, {
         method: 'POST',
@@ -359,7 +404,7 @@ export async function POST(req: NextRequest) {
       logs.push({ nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'running', timestamp: new Date().toISOString() })
 
       try {
-        const output = await executeNode(node, context, anthropic)
+        const output = await executeNode(node, context, anthropic, session.email.toLowerCase())
         const durationMs = Date.now() - start
 
         // Store under predictable auto name (e.g. "aiText") and always also under node ID

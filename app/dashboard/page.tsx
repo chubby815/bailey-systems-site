@@ -83,6 +83,7 @@ export default async function DashboardPage() {
               { icon: "🎧", label: "Customer Support", href: "/dashboard/support" },
               { icon: "📊", label: "Usage", href: "/dashboard/usage" },
               { icon: "💳", label: "Billing", href: "/dashboard/billing" },
+              { icon: "🔗", label: "Connections", href: "/dashboard/connections" },
             ].map((item, i) => (
               <Link
                 key={item.label}
