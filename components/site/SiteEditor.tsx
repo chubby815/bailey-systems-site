@@ -981,6 +981,12 @@ export function SiteEditor({
   // True when the site was built by the HTML generation pipeline (not the JSON template system)
   const isHTMLSite = !!site.generatedHTML && site.generatedHTML !== "[generated]";
 
+  // HTML site image upload state (separate from template-mode upload states)
+  const [htmlHeroUploading,  setHtmlHeroUploading]  = useState(false);
+  const [htmlHeroUploaded,   setHtmlHeroUploaded]   = useState(false);
+  const [htmlAboutUploading, setHtmlAboutUploading] = useState(false);
+  const [htmlAboutUploaded,  setHtmlAboutUploaded]  = useState(false);
+
   // ── Save function (must be declared before any early return per React rules) ──
   const doSave = useCallback(async (c: StructuredSiteContent, t: ThemeConfig, tmpl: string) => {
     setIsSaving(true);
@@ -1066,6 +1072,53 @@ export function SiteEditor({
     if (!anchor || !scrollContainerRef.current) return;
     const el = scrollContainerRef.current.querySelector(anchor);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Upload a custom image for the HTML site and inject the CDN URL into the saved HTML
+  async function handleImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+    section: "hero" | "about",
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
+      return;
+    }
+    if (section === "hero") setHtmlHeroUploading(true);
+    else setHtmlAboutUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("section", section);
+      formData.append("siteId", site.siteId);
+
+      const res = await fetch(`/api/sites/${site.siteId}/upload-image`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json() as { success?: boolean };
+
+      if (data.success) {
+        setIframeKey(k => k + 1);
+        if (section === "hero") {
+          setHtmlHeroUploaded(true);
+          setTimeout(() => setHtmlHeroUploaded(false), 3000);
+        } else {
+          setHtmlAboutUploaded(true);
+          setTimeout(() => setHtmlAboutUploaded(false), 3000);
+        }
+      } else {
+        alert("Upload failed. Try again.");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Upload failed. Try again.");
+    } finally {
+      if (section === "hero") setHtmlHeroUploading(false);
+      else setHtmlAboutUploading(false);
+    }
   }
 
   // Live-patch the iframe's CSS for instant color/bg preview without regenerating
@@ -1424,6 +1477,83 @@ export function SiteEditor({
                       onChange={e => setRegenForm(p => ({ ...p, businessHours: e.target.value }))}
                       style={{ width: "100%", background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "0.6rem 0.8rem", color: "#f0f0f0", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                     />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "1rem" }}>
+                    <p style={{ color: "#9ca3af", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 0.75rem" }}>
+                      Upload Images
+                    </p>
+
+                    {/* Hero upload */}
+                    <div style={{ marginBottom: "0.75rem" }}>
+                      <label style={{ color: "#6b7280", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>
+                        Hero Background
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="html-hero-upload"
+                        style={{ display: "none" }}
+                        onChange={e => void handleImageUpload(e, "hero")}
+                      />
+                      <label
+                        htmlFor="html-hero-upload"
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "0.6rem",
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px dashed rgba(255,255,255,0.15)",
+                          borderRadius: "8px",
+                          color: htmlHeroUploaded ? "#00e5a0" : "#6b7280",
+                          fontSize: "0.8rem",
+                          textAlign: "center",
+                          cursor: htmlHeroUploading ? "not-allowed" : "pointer",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        {htmlHeroUploading ? "⏳ Uploading..." : htmlHeroUploaded ? "✅ Hero Updated!" : "📷 Upload Hero Photo"}
+                      </label>
+                      <p style={{ color: "#4b5563", fontSize: "0.7rem", marginTop: "0.3rem", textAlign: "center" }}>
+                        JPG, PNG, WebP · Max 5MB · Recommended: 1920×1080
+                      </p>
+                    </div>
+
+                    {/* About upload */}
+                    <div>
+                      <label style={{ color: "#6b7280", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>
+                        About Section Photo
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="html-about-upload"
+                        style={{ display: "none" }}
+                        onChange={e => void handleImageUpload(e, "about")}
+                      />
+                      <label
+                        htmlFor="html-about-upload"
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "0.6rem",
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px dashed rgba(255,255,255,0.15)",
+                          borderRadius: "8px",
+                          color: htmlAboutUploaded ? "#00e5a0" : "#6b7280",
+                          fontSize: "0.8rem",
+                          textAlign: "center",
+                          cursor: htmlAboutUploading ? "not-allowed" : "pointer",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        {htmlAboutUploading ? "⏳ Uploading..." : htmlAboutUploaded ? "✅ About Updated!" : "📷 Upload About Photo"}
+                      </label>
+                      <p style={{ color: "#4b5563", fontSize: "0.7rem", marginTop: "0.3rem", textAlign: "center" }}>
+                        JPG, PNG, WebP · Max 5MB · Recommended: 800×600
+                      </p>
+                    </div>
                   </div>
 
                   {/* Quick Style Controls */}
