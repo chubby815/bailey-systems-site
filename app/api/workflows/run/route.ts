@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 
 export const maxDuration = 60
+
 import { kv } from '@/lib/kv'
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 interface RFNode {
@@ -71,6 +71,7 @@ function executionOrder(nodes: RFNode[], edges: RFEdge[]): RFNode[] {
 async function executeNode(
   node: RFNode,
   ctx: Record<string, string>,
+  anthropic: Anthropic,
 ): Promise<string> {
   const d = node.data
 
@@ -150,7 +151,6 @@ async function executeNode(
 
     case 'facebookPost': {
       const content = resolveVars((d.content as string) || '', ctx)
-      // Delegate to existing facebook post API
       const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://baileyagents.com'}/api/facebook/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -181,7 +181,6 @@ async function executeNode(
       const unit   = (d.unit as string) || 'seconds'
       const msMap: Record<string, number> = { seconds: 1000, minutes: 60000, hours: 3600000, days: 86400000 }
       const ms = amount * (msMap[unit] ?? 1000)
-      // Cap at 10s in workflow runner to avoid timeouts
       await new Promise(r => setTimeout(r, Math.min(ms, 10000)))
       return `Waited ${amount} ${unit}`
     }
@@ -192,69 +191,94 @@ async function executeNode(
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession(req)
-  if (!session?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  let body: { workflowId?: string; nodes?: RFNode[]; edges?: RFEdge[] }
   try {
-    body = await req.json() as typeof body
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-  }
-
-  const { workflowId, nodes: bodyNodes, edges: bodyEdges } = body
-  let nodes: RFNode[] = bodyNodes ?? []
-  let edges: RFEdge[] = bodyEdges ?? []
-
-  // Load from Redis if only ID provided
-  if (workflowId && nodes.length === 0) {
-    const wf = await kv.get<WorkflowRecord & { nodes: RFNode[]; edges: RFEdge[] }>(`workflow:${workflowId}`)
-    if (!wf || wf.userId !== session.email.toLowerCase()) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+    const session = await getSession(req)
+    if (!session?.email) {
+      return NextResponse.json({ error: 'Unauthorized', logs: [] }, { status: 401 })
     }
-    nodes = wf.nodes
-    edges = wf.edges
-  }
 
-  const order = executionOrder(nodes, edges)
-  const logs: LogEntry[] = []
-  const context: Record<string, string> = {}
+    // Instantiate Anthropic inside handler so a missing key doesn't crash the module
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-  for (const node of order) {
-    const start = Date.now()
-    const label = (node.data.label as string) || node.type || 'Node'
-    logs.push({ nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'running', timestamp: new Date().toISOString() })
-
+    let body: { workflowId?: string; nodes?: RFNode[]; edges?: RFEdge[] }
     try {
-      const output = await executeNode(node, context)
-      const durationMs = Date.now() - start
+      body = await req.json() as typeof body
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON', logs: [] }, { status: 400 })
+    }
 
-      // Store output in context under outputVar or nodeId
-      const varName = (node.data.outputVar as string) || node.id
-      context[varName] = output
+    const { workflowId, nodes: bodyNodes, edges: bodyEdges } = body
+    let nodes: RFNode[] = bodyNodes ?? []
+    let edges: RFEdge[] = bodyEdges ?? []
 
-      logs[logs.length - 1] = {
-        nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
-        status: 'success', output: output.slice(0, 500), durationMs,
-        timestamp: new Date().toISOString(),
+    // Load from Redis if only ID provided
+    if (workflowId && nodes.length === 0) {
+      const wf = await kv.get<WorkflowRecord & { nodes: RFNode[]; edges: RFEdge[] }>(`workflow:${workflowId}`)
+      if (!wf || wf.userId !== session.email.toLowerCase()) {
+        return NextResponse.json({ error: 'Workflow not found', logs: [] }, { status: 404 })
       }
-    } catch (err) {
-      const durationMs = Date.now() - start
-      logs[logs.length - 1] = {
-        nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
-        status: 'error', message: err instanceof Error ? err.message : String(err), durationMs,
-        timestamp: new Date().toISOString(),
+      nodes = wf.nodes
+      edges = wf.edges
+    }
+
+    // Guard: nothing to run
+    if (nodes.length === 0) {
+      return NextResponse.json({
+        logs: [{
+          nodeId: 'system',
+          nodeType: 'system',
+          nodeLabel: 'System',
+          status: 'error' as const,
+          message: 'No nodes found. Add nodes to your workflow first.',
+          timestamp: new Date().toISOString(),
+        }],
+        context: {},
+      })
+    }
+
+    const order = executionOrder(nodes, edges)
+    const logs: LogEntry[] = []
+    const context: Record<string, string> = {}
+
+    for (const node of order) {
+      const start = Date.now()
+      const label = (node.data.label as string) || node.type || 'Node'
+      logs.push({ nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'running', timestamp: new Date().toISOString() })
+
+      try {
+        const output = await executeNode(node, context, anthropic)
+        const durationMs = Date.now() - start
+
+        const varName = (node.data.outputVar as string) || node.id
+        context[varName] = output
+
+        logs[logs.length - 1] = {
+          nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
+          status: 'success', output: output.slice(0, 500), durationMs,
+          timestamp: new Date().toISOString(),
+        }
+      } catch (err) {
+        const durationMs = Date.now() - start
+        logs[logs.length - 1] = {
+          nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
+          status: 'error', message: err instanceof Error ? err.message : String(err), durationMs,
+          timestamp: new Date().toISOString(),
+        }
       }
     }
-  }
 
-  // Update lastRun
-  if (workflowId) {
-    const wf = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
-    if (wf) await kv.set(`workflow:${workflowId}`, { ...wf, lastRun: new Date().toISOString() })
-  }
+    // Update lastRun
+    if (workflowId) {
+      const wf = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
+      if (wf) await kv.set(`workflow:${workflowId}`, { ...wf, lastRun: new Date().toISOString() })
+    }
 
-  return NextResponse.json({ logs, context })
+    return NextResponse.json({ logs, context })
+  } catch (err) {
+    console.error('[workflow/run]', err)
+    return NextResponse.json(
+      { error: 'Internal server error', logs: [] },
+      { status: 500 },
+    )
+  }
 }
