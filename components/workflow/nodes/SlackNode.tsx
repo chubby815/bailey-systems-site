@@ -3,16 +3,15 @@ import { useCallback } from 'react'
 import { Handle, Position, useReactFlow } from '@xyflow/react'
 import type { Node, NodeProps } from '@xyflow/react'
 
-const COLOR = '#3b82f6'
+const COLOR = '#4A154B'
 
-type WhatsAppProvider = 'twilio' | 'meta'
-type WhatsAppData = { label: string; provider: WhatsAppProvider; to: string; message: string }
-type WhatsAppNodeType = Node<WhatsAppData, 'whatsApp'>
+type SlackData = { label: string; webhookUrl: string; channel: string; message: string }
+type SlackNodeType = Node<SlackData, 'slack'>
 
-export function WhatsAppNode({ id, data, selected }: NodeProps<WhatsAppNodeType>) {
+export function SlackNode({ id, data, selected }: NodeProps<SlackNodeType>) {
   const { updateNodeData } = useReactFlow()
   const update = useCallback(
-    (patch: Partial<WhatsAppData>) => updateNodeData(id, patch),
+    (patch: Partial<SlackData>) => updateNodeData(id, patch),
     [id, updateNodeData],
   )
   return (
@@ -28,24 +27,22 @@ export function WhatsAppNode({ id, data, selected }: NodeProps<WhatsAppNodeType>
       </div>
       <div style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
         <div>
-          <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.15rem' }}>Provider</label>
-          <select
-            value={data.provider || 'twilio'}
-            onChange={e => update({ provider: e.target.value as WhatsAppProvider })}
+          <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.15rem' }}>Webhook URL</label>
+          <input
+            value={data.webhookUrl || ''}
+            onChange={e => update({ webhookUrl: e.target.value })}
             className="nodrag nopan"
-            style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
-          >
-            <option value="twilio">Twilio</option>
-            <option value="meta">Meta Cloud API</option>
-          </select>
+            placeholder="https://hooks.slack.com/services/..."
+            style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
+          />
         </div>
         <div>
-          <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.15rem' }}>To (phone)</label>
+          <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.15rem' }}>Channel</label>
           <input
-            value={data.to || ''}
-            onChange={e => update({ to: e.target.value })}
+            value={data.channel || ''}
+            onChange={e => update({ channel: e.target.value })}
             className="nodrag nopan"
-            placeholder="+13125550100 or {{phone}}"
+            placeholder="#general"
             style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
           />
         </div>
@@ -56,20 +53,13 @@ export function WhatsAppNode({ id, data, selected }: NodeProps<WhatsAppNodeType>
             onChange={e => update({ message: e.target.value })}
             className="nodrag nopan"
             rows={2}
-            placeholder="Hello! {{aiText}}"
+            placeholder="{{aiText}} — or leave blank to auto-use AI output"
             style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
           />
         </div>
-        {(data.provider === 'meta' || !data.provider) && (
-          <p style={{ color: '#4b5563', fontSize: '0.68rem', margin: 0 }}>
-            Requires META_WHATSAPP_TOKEN + META_WHATSAPP_PHONE_ID in env
-          </p>
-        )}
-        {(data.provider === 'twilio' || !data.provider) && (
-          <p style={{ color: '#4b5563', fontSize: '0.68rem', margin: 0 }}>
-            Requires TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM in env
-          </p>
-        )}
+        <p style={{ color: '#4b5563', fontSize: '0.68rem', margin: 0 }}>
+          Paste a Slack Incoming Webhook URL above
+        </p>
       </div>
       <Handle type="source" position={Position.Right} style={{ background: COLOR, border: `2px solid ${COLOR}`, width: 8, height: 8 }} />
     </div>

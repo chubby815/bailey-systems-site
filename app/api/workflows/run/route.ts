@@ -44,6 +44,8 @@ const autoVarNames: Record<string, string> = {
   baileyBuildSite: 'siteUrl',
   sendEmail:       'emailResult',
   whatsApp:        'whatsAppResult',
+  telegram:        'telegramResult',
+  slack:           'slackResult',
   facebookPost:    'postResult',
   schedule:        'trigger',
   manual:          'trigger',
@@ -145,10 +147,9 @@ async function executeNode(
     }
 
     case 'whatsApp': {
-      const accountSid = process.env.TWILIO_ACCOUNT_SID
-      const authToken  = process.env.TWILIO_AUTH_TOKEN
-      const from       = process.env.TWILIO_WHATSAPP_FROM ?? 'whatsapp:+14155238886'
-      const toRaw      = resolveVars((d.toPhone as string) || '', ctx)
+      const provider = (d.provider as string) || 'twilio'
+      // Support both old field name (toPhone) and new (to)
+      const toRaw = resolveVars((d.to as string) || (d.toPhone as string) || '', ctx)
 
       // Auto-chain: if message is empty or has no {{vars}}, use aiText or leads
       const rawMsg  = (d.message as string) || ''
@@ -156,22 +157,57 @@ async function executeNode(
         ? resolveVars(rawMsg, ctx)
         : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
 
-      if (!toRaw || !accountSid || !authToken) return 'WhatsApp not configured — skipped'
+      if (!toRaw) return 'WhatsApp — no recipient — skipped'
 
-      const to = toRaw.startsWith('whatsapp:') ? toRaw : `whatsapp:${toRaw}`
-      const resp = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
-            'Content-Type': 'application/x-www-form-urlencoded',
+      if (provider === 'twilio') {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID
+        const authToken  = process.env.TWILIO_AUTH_TOKEN
+        const from       = process.env.TWILIO_WHATSAPP_FROM ?? process.env.TWILIO_WHATSAPP_NUMBER ?? 'whatsapp:+14155238886'
+        if (!accountSid || !authToken) return 'WhatsApp (Twilio) not configured — skipped'
+
+        const to = toRaw.startsWith('whatsapp:') ? toRaw : `whatsapp:${toRaw}`
+        const fromFormatted = from.startsWith('whatsapp:') ? from : `whatsapp:${from}`
+        const resp = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ From: fromFormatted, To: to, Body: message }),
           },
-          body: new URLSearchParams({ From: from, To: to, Body: message }),
-        },
-      )
-      if (!resp.ok) throw new Error(`Twilio error ${resp.status}`)
-      return `WhatsApp sent to ${toRaw}`
+        )
+        if (!resp.ok) throw new Error(await resp.text())
+        return `WhatsApp sent via Twilio to ${toRaw}`
+      }
+
+      if (provider === 'meta') {
+        const token   = process.env.META_WHATSAPP_TOKEN
+        const phoneId = process.env.META_WHATSAPP_PHONE_ID
+        if (!token || !phoneId) return 'WhatsApp (Meta) not configured — skipped'
+
+        const resp = await fetch(
+          `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              to: toRaw.replace('+', ''),
+              type: 'text',
+              text: { body: message },
+            }),
+          },
+        )
+        if (!resp.ok) throw new Error(await resp.text())
+        return `WhatsApp sent via Meta to ${toRaw}`
+      }
+
+      throw new Error('Unknown WhatsApp provider')
     }
 
     case 'facebookPost': {
@@ -188,6 +224,53 @@ async function executeNode(
       })
       if (!res.ok) return 'Facebook post failed'
       return `Posted to Facebook: ${content.slice(0, 60)}…`
+    }
+
+    case 'telegram': {
+      const chatId  = resolveVars((d.chatId as string) || '', ctx)
+      const rawMsg  = (d.message as string) || ''
+      const message = rawMsg.includes('{{')
+        ? resolveVars(rawMsg, ctx)
+        : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
+
+      const token = process.env.TELEGRAM_BOT_TOKEN
+      if (!token) return 'Telegram — TELEGRAM_BOT_TOKEN not configured — skipped'
+      if (!chatId) return 'Telegram — no chat ID — skipped'
+
+      const res = await fetch(
+        `https://api.telegram.org/bot${token}/sendMessage`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
+        },
+      )
+      if (!res.ok) throw new Error(await res.text())
+      return `Telegram message sent to ${chatId}`
+    }
+
+    case 'slack': {
+      const webhookUrl = resolveVars((d.webhookUrl as string) || '', ctx)
+      const channel    = resolveVars((d.channel as string) || '#general', ctx)
+      const rawMsg     = (d.message as string) || ''
+      const message    = rawMsg.includes('{{')
+        ? resolveVars(rawMsg, ctx)
+        : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
+
+      if (!webhookUrl) return 'Slack — no webhook URL — skipped'
+
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel,
+          text: message,
+          username: 'Bailey',
+          icon_emoji: ':robot_face:',
+        }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      return `Slack message sent to ${channel}`
     }
 
     case 'googleSheets':

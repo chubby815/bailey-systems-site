@@ -21,7 +21,9 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'sendEmail',        label: 'Send Email',       category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Send Email', toEmail: '', subject: '', body: '' } },
   { type: 'googleSheets',     label: 'Google Sheets',    category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Google Sheets', spreadsheetId: '', sheetName: 'Sheet1', operation: 'append' } },
   { type: 'facebookPost',     label: 'Facebook Post',    category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Facebook Post', content: '' } },
-  { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', toPhone: '', message: '' } },
+  { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', provider: 'twilio', to: '', message: '' } },
+  { type: 'telegram',         label: 'Telegram',         category: 'Actions',   color: '#229ED9', defaultData: { label: 'Telegram', chatId: '', message: '' } },
+  { type: 'slack',            label: 'Slack',            category: 'Actions',   color: '#4A154B', defaultData: { label: 'Slack', webhookUrl: '', channel: '#general', message: '' } },
   // Logic
   { type: 'ifCondition',      label: 'IF Condition',     category: 'Logic',     color: '#f97316', defaultData: { label: 'IF Condition', leftVar: '', operator: '=', rightValue: '' } },
   { type: 'delay',            label: 'Delay',            category: 'Logic',     color: '#f97316', defaultData: { label: 'Delay', duration: '5', unit: 'seconds' } },
