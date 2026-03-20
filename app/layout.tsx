@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { BaileyChat } from "@/components/BaileyChat";
+import NavWrapper from "@/components/NavWrapper";
+import FooterWrapper from "@/components/FooterWrapper";
 import { verifySession } from "@/lib/auth";
 
 const syne = Syne({
@@ -58,10 +57,9 @@ export default async function RootLayout({
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <head />
       <body>
-        {!hideNav && <Navbar initialLoggedIn={isLoggedIn} />}
+        <NavWrapper initialHideNav={hideNav} isLoggedIn={isLoggedIn} />
         {children}
-        {!hideNav && <Footer />}
-        {!hideNav && <BaileyChat />}
+        <FooterWrapper />
       </body>
     </html>
   );
