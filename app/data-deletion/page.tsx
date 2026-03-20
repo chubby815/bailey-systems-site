@@ -67,20 +67,49 @@ export default function DataDeletionPage() {
             </ul>
           </section>
 
-          {/* Section 3 — How to Request */}
-          <section className="bg-[#111214] border border-white/[0.07] rounded-2xl p-7">
+          {/* Section 3 — Disconnect Facebook */}
+          <section className="bg-[#111214] border border-[#1877F2]/20 rounded-2xl p-7">
             <h2 className="text-lg font-bold mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
-              How to Request Deletion
+              Disconnect Facebook (Instant)
             </h2>
             <p className="text-[#9ca3af] text-sm mb-5 leading-relaxed">
-              To request deletion of your account and all associated data:
+              To immediately remove your Facebook page connection and delete all stored tokens:
+            </p>
+            <ol className="space-y-3 mb-5">
+              {[
+                <>Log in to <a href="https://www.baileyagents.com/dashboard/connections" className="text-[#1877F2] hover:underline">baileyagents.com/dashboard/connections</a></>,
+                <>Find the <span className="text-white font-medium">Facebook</span> card and click <span className="text-white font-medium">Manage</span></>,
+                <>Click the <span className="text-red-400 font-medium">Disconnect</span> button</>,
+                "Your Facebook page token is deleted immediately from our servers",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-[#9ca3af]">
+                  <span className="text-[#00e5a0] font-bold shrink-0 w-5">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ol>
+            <a
+              href="https://www.baileyagents.com/dashboard/connections"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#1877F2] bg-[#1877F2]/10 border border-[#1877F2]/20 px-4 py-2.5 rounded-xl hover:bg-[#1877F2]/20 transition-colors"
+            >
+              Go to Connections →
+            </a>
+          </section>
+
+          {/* Section 4 — How to Request Full Deletion */}
+          <section className="bg-[#111214] border border-white/[0.07] rounded-2xl p-7">
+            <h2 className="text-lg font-bold mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
+              Request Full Account Deletion
+            </h2>
+            <p className="text-[#9ca3af] text-sm mb-5 leading-relaxed">
+              To request deletion of your entire account and all associated data:
             </p>
             <ol className="space-y-3">
               {[
-                <>Email us at: <a href="mailto:support@baileyagents.com" className="text-[#00e5a0] hover:underline">support@baileyagents.com</a></>,
+                <>Email us at: <a href="mailto:lilianajs27@gmail.com" className="text-[#00e5a0] hover:underline">lilianajs27@gmail.com</a></>,
                 <>Subject line: <span className="text-white font-medium">&ldquo;Data Deletion Request&rdquo;</span></>,
                 "Include your registered email address",
-                "We will process your request within 7 days",
+                "We will process your request within 24 hours",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-[#9ca3af]">
                   <span className="text-[#00e5a0] font-bold shrink-0 w-5">{i + 1}.</span>
@@ -90,7 +119,7 @@ export default function DataDeletionPage() {
             </ol>
           </section>
 
-          {/* Section 4 — What Gets Deleted */}
+          {/* Section 5 — What Gets Deleted */}
           <section className="bg-[#111214] border border-[#00e5a0]/20 rounded-2xl p-7">
             <h2 className="text-lg font-bold mb-4" style={{ fontFamily: "Syne, sans-serif" }}>
               What Gets Deleted
@@ -114,7 +143,7 @@ export default function DataDeletionPage() {
             </p>
           </section>
 
-          {/* Section 5 — Contact */}
+          {/* Section 6 — Contact */}
           <section className="bg-[#111214] border border-white/[0.07] rounded-2xl p-7">
             <h2 className="text-lg font-bold mb-4" style={{ fontFamily: "Syne, sans-serif" }}>
               Contact
@@ -123,10 +152,10 @@ export default function DataDeletionPage() {
               <p>
                 <span className="text-[#6b7280]">Email: </span>
                 <a
-                  href="mailto:support@baileyagents.com"
+                  href="mailto:lilianajs27@gmail.com"
                   className="text-[#00e5a0] hover:underline"
                 >
-                  support@baileyagents.com
+                  lilianajs27@gmail.com
                 </a>
               </p>
               <p>

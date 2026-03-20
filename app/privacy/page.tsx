@@ -104,13 +104,13 @@ export default function PrivacyPage() {
             <p className="text-sm text-[#9ca3af] mb-4 leading-relaxed">
               If you connect your Facebook account:
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-2 mb-5">
               {[
                 "Bailey Agents requests access only after you explicitly authorize via Facebook OAuth",
                 "We store only your Facebook Page ID, Page name, and Page access token",
                 "This data is used solely to publish AI-generated posts on your behalf",
-                "You can disconnect at any time from your dashboard",
                 "We never access personal Facebook profile data beyond public_profile",
+                "We never share your Facebook data with any third party",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-[#9ca3af]">
                   <span className="text-[#00e5a0] shrink-0 mt-0.5">•</span>
@@ -118,6 +118,20 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/dashboard/connections"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#1877F2] bg-[#1877F2]/10 border border-[#1877F2]/20 px-4 py-2.5 rounded-xl hover:bg-[#1877F2]/20 transition-colors"
+              >
+                Disconnect Facebook →
+              </Link>
+              <Link
+                href="/data-deletion"
+                className="inline-flex items-center gap-2 text-sm text-[#6b7280] border border-white/[0.07] px-4 py-2.5 rounded-xl hover:border-white/20 hover:text-white transition-colors"
+              >
+                Data Deletion Instructions →
+              </Link>
+            </div>
           </section>
 
           {/* Section 4 */}
@@ -153,7 +167,7 @@ export default function PrivacyPage() {
               Data Deletion
             </h3>
             <p className="text-sm text-[#9ca3af] mb-4 leading-relaxed">
-              You can request deletion of all your data at any time. Requests are processed within 7 days.
+              You can request deletion of all your data at any time. Requests are processed within 24 hours.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
@@ -163,10 +177,10 @@ export default function PrivacyPage() {
                 View Data Deletion Instructions →
               </Link>
               <a
-                href="mailto:support@baileyagents.com"
+                href="mailto:lilianajs27@gmail.com"
                 className="inline-flex items-center gap-2 text-sm text-[#6b7280] border border-white/[0.07] px-4 py-2.5 rounded-xl hover:border-white/20 hover:text-white transition-colors"
               >
-                support@baileyagents.com
+                lilianajs27@gmail.com
               </a>
             </div>
           </section>
@@ -209,8 +223,8 @@ export default function PrivacyPage() {
             <div className="space-y-2 text-sm">
               <p>
                 <span className="text-[#6b7280]">📧 </span>
-                <a href="mailto:support@baileyagents.com" className="text-[#00e5a0] hover:underline">
-                  support@baileyagents.com
+                <a href="mailto:lilianajs27@gmail.com" className="text-[#00e5a0] hover:underline">
+                  lilianajs27@gmail.com
                 </a>
               </p>
               <p>

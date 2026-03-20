@@ -55,6 +55,9 @@ export default function ConnectionsPage() {
   const [saving, setSaving]       = useState(false)
   const [saveMsg, setSaveMsg]     = useState<Record<string, string>>({})
 
+  // Facebook disconnect
+  const [fbDisconnecting, setFbDisconnecting] = useState(false)
+
   // Telegram verify
   const [telegramCode, setTelegramCode]   = useState('')
   // Slack
@@ -161,6 +164,19 @@ export default function ConnectionsPage() {
       setExpanded(null)
     } else {
       flash('whatsapp', data.error ?? 'Save failed')
+    }
+  }
+
+  async function disconnectFacebook() {
+    setFbDisconnecting(true)
+    const res = await fetch('/api/connections/facebook/disconnect', { method: 'DELETE' })
+    setFbDisconnecting(false)
+    if (res.ok) {
+      flash('facebook', '✓ Facebook disconnected')
+      setStatuses(prev => prev ? { ...prev, facebook: { connected: false } } : prev)
+      setExpanded(null)
+    } else {
+      flash('facebook', 'Disconnect failed — try again')
     }
   }
 
@@ -348,15 +364,38 @@ export default function ConnectionsPage() {
               onToggle={() => setExpanded(expanded === 'facebook' ? null : 'facebook')}
               saveMsg={saveMsg['facebook']}
             >
-              <div className="pt-2">
-                <p className="text-xs text-gray-500 mb-3">Connect your Facebook page to allow workflows to post content automatically.</p>
-                <a
-                  href="/api/auth/facebook"
-                  className="inline-block bg-[#1877F2] text-white font-bold px-5 py-2 rounded-lg text-sm hover:bg-[#1565d8] transition-colors"
-                >
-                  Connect Facebook →
-                </a>
-              </div>
+              {statuses?.facebook.connected ? (
+                <div className="pt-2 flex flex-col gap-3">
+                  <p className="text-xs text-gray-500">
+                    Your Facebook page is connected. Bailey can now post to it from workflows.
+                  </p>
+                  <div className="flex gap-3 flex-wrap">
+                    <a
+                      href="/api/auth/facebook"
+                      className="inline-block bg-[#1877F2] text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-[#1565d8] transition-colors"
+                    >
+                      Switch Page →
+                    </a>
+                    <button
+                      onClick={() => void disconnectFacebook()}
+                      disabled={fbDisconnecting}
+                      className="inline-block font-bold px-4 py-2 rounded-lg text-sm border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      {fbDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 flex flex-col gap-3">
+                  <p className="text-xs text-gray-500">Connect your Facebook page to allow workflows to post content automatically.</p>
+                  <a
+                    href="/api/auth/facebook"
+                    className="inline-block bg-[#1877F2] text-white font-bold px-5 py-2 rounded-lg text-sm hover:bg-[#1565d8] transition-colors self-start"
+                  >
+                    Connect Facebook →
+                  </a>
+                </div>
+              )}
             </ConnectionCard>
 
             {/* ── Instagram ── */}
