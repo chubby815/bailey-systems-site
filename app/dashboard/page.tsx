@@ -21,15 +21,23 @@ export default async function DashboardPage() {
     getMonthlyUsage(session.email).catch(() => 0),
   ]);
 
-  // Past-due payments → send to billing to update payment method
-  if (subscription?.status === "past_due") {
-    redirect("/dashboard/billing?reason=past_due");
+  // Admin bypasses all plan checks
+  const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? "lilianajs27@gmail.com").toLowerCase();
+  const isAdmin = session.email.toLowerCase() === ADMIN_EMAIL;
+
+  if (!isAdmin) {
+    // Past-due payments → send to billing to update payment method
+    if (subscription?.status === "past_due") {
+      redirect("/dashboard/billing?reason=past_due");
+    }
+    // No active subscription → send to pricing
+    if (!plan || subscription?.status === "canceled") {
+      redirect("/pricing?reason=subscription_required");
+    }
   }
 
-  // No active subscription → send to pricing
-  if (!plan || subscription?.status === "canceled") {
-    redirect("/pricing?reason=subscription_required");
-  }
+  // Admin with no subscription defaults to Pro display
+  const effectivePlan = (plan ?? "pro") as "starter" | "growth" | "pro";
 
   const planLabels = { starter: "Starter", growth: "Growth", pro: "Pro" };
   const planColors = {
@@ -39,7 +47,7 @@ export default async function DashboardPage() {
   };
 
   // Real limits from the plan
-  const limits        = PLAN_LIMITS[(plan ?? "starter") as PlanKey];
+  const limits        = PLAN_LIMITS[effectivePlan as PlanKey];
   const runsLimit     = limits.runsPerMonth   === Infinity ? "∞" : limits.runsPerMonth;
   const sitesLimit    = limits.sitesTotal      === Infinity ? "∞" : limits.sitesTotal;
   const runsRemaining = limits.runsPerMonth    === Infinity
@@ -57,8 +65,8 @@ export default async function DashboardPage() {
           Bailey<span className="text-[#00e5a0]">Agents</span>
         </Link>
         <div className="flex items-center gap-4">
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${planColors[plan]}`}>
-            {planLabels[plan]} Plan
+          <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${planColors[effectivePlan]}`}>
+            {planLabels[effectivePlan]} Plan
           </span>
           <div className="w-8 h-8 rounded-full bg-[#00e5a0]/20 flex items-center justify-center text-[#00e5a0] text-sm font-bold">
             {(session.name ?? session.email).charAt(0).toUpperCase()}
@@ -114,8 +122,8 @@ export default async function DashboardPage() {
             </h1>
             <p className="text-gray-500 text-sm">
               {subscription?.status === "trialing"
-                ? `Free trial active · ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`
-                : `You're on the ${planLabels[plan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`}
+                ? `Free trial active · ${planLabels[effectivePlan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`
+                : `You're on the ${planLabels[effectivePlan]} plan · ${sites.length} site${sites.length !== 1 ? "s" : ""} · ${runsRemaining} runs remaining`}
             </p>
           </div>
 
@@ -197,7 +205,7 @@ export default async function DashboardPage() {
                   name: "Lead Hunter",
                   desc: "Find qualified leads with outreach copy.",
                   href: "/dashboard/leads",
-                  available: plan === "pro",
+                  available: effectivePlan === "pro",
                   lockedBadge: "pro_only" as const,
                   color: "blue",
                 },
@@ -206,7 +214,7 @@ export default async function DashboardPage() {
                   name: "Content Machine",
                   desc: "7 posts, hashtags, and a blog draft.",
                   href: "/dashboard/content",
-                  available: plan === "pro",
+                  available: effectivePlan === "pro",
                   lockedBadge: "pro_only" as const,
                   color: "purple",
                 },
@@ -232,7 +240,7 @@ export default async function DashboardPage() {
                   name: "Email Marketer",
                   desc: "Generate cold emails, follow-ups and newsletters that get replies.",
                   href: "/dashboard/email",
-                  available: plan === "growth" || plan === "pro",
+                  available: effectivePlan === "growth" || effectivePlan === "pro",
                   lockedBadge: "growth_plus" as const,
                   comingSoon: false,
                   color: "emerald",
@@ -242,7 +250,7 @@ export default async function DashboardPage() {
                   name: "AI Copywriter",
                   desc: "Write blog posts, ads, and landing page copy that converts.",
                   href: "/dashboard/copywriter",
-                  available: plan === "pro",
+                  available: effectivePlan === "pro",
                   lockedBadge: "pro_only" as const,
                   comingSoon: false,
                   color: "purple",
@@ -252,7 +260,7 @@ export default async function DashboardPage() {
                   name: "Sales Manager",
                   desc: "Sales scripts, pitches and objection handlers that close deals.",
                   href: "/dashboard/sales",
-                  available: plan === "pro",
+                  available: effectivePlan === "pro",
                   lockedBadge: "pro_only" as const,
                   comingSoon: false,
                   color: "emerald",
@@ -262,13 +270,13 @@ export default async function DashboardPage() {
                   name: "Customer Support",
                   desc: "Reply templates, FAQs and brand voice guides that keep customers happy.",
                   href: "/dashboard/support",
-                  available: plan === "growth" || plan === "pro",
+                  available: effectivePlan === "growth" || effectivePlan === "pro",
                   lockedBadge: "growth_plus" as const,
                   comingSoon: false,
                   color: "purple",
                 },
               ].map((agent) => {
-                const showGrowthBadge = !agent.available && agent.lockedBadge === "growth_plus" && plan === "starter";
+                const showGrowthBadge = !agent.available && agent.lockedBadge === "growth_plus" && effectivePlan === "starter";
                 const showProBadge = !agent.available && agent.lockedBadge === "pro_only";
                 return (
                   <div
