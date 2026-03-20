@@ -149,19 +149,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Subscription
+  // Admin bypass — unlimited site generation
+  const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? "lilianajs27@gmail.com").toLowerCase();
+  const isAdmin = session.email.toLowerCase() === ADMIN_EMAIL;
+  if (isAdmin) {
+    console.log("[sites/generate] admin bypass for", session.email);
+  }
+
+  // Subscription (skipped for admin)
   const plan = await getActivePlan(session.email);
-  if (!plan) {
+  if (!isAdmin && !plan) {
     return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
   }
 
-  // Rate limit: 10 generations/hr per user
-  const rl = await rateLimit(`generate:${session.email}`, 10, 3600);
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: `Rate limit reached. Try again in ${rl.resetInSeconds}s.` },
-      { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
-    );
+  // Rate limit: 10 generations/hr per user (skipped for admin)
+  if (!isAdmin) {
+    const rl = await rateLimit(`generate:${session.email}`, 10, 3600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Rate limit reached. Try again in ${rl.resetInSeconds}s.` },
+        { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+      );
+    }
   }
 
   // Parse body early (needed for regeneration check)
@@ -169,14 +178,14 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  // Plan site limit (skip when regenerating)
+  // Plan site limit (skip when regenerating or admin)
   const isRegenerate = typeof body.editSiteId === "string" && body.editSiteId.trim() !== "";
-  if (!isRegenerate) {
-    const limit = SITE_LIMITS[plan] ?? 1;
+  if (!isAdmin && !isRegenerate) {
+    const limit = SITE_LIMITS[plan ?? "starter"] ?? 1;
     if (isFinite(limit)) {
       const existing = await getUserSites(session.email);
       if (existing.length >= limit) {
-        const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+        const planName = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Trial";
         return NextResponse.json(
           {
             error: "plan_limit",
@@ -244,18 +253,20 @@ export async function POST(req: NextRequest) {
   const cleanHours   = optStr(businessHours, 200);
   const cleanVibe    = optStr(websiteVibe, 300);
 
-  // Monthly run limit — checked AFTER validation, BEFORE calling Claude
-  const usageCheck = await checkAndIncrementUsage(session.email, plan);
-  if (!usageCheck.allowed) {
-    return NextResponse.json(
-      {
-        error:   "run_limit_reached",
-        message: `You've used all ${usageCheck.limit} runs for this month. Upgrade your plan for more.`,
-        used:    usageCheck.used,
-        limit:   usageCheck.limit,
-      },
-      { status: 429 }
-    );
+  // Monthly run limit — checked AFTER validation, BEFORE calling Claude (skipped for admin)
+  if (!isAdmin) {
+    const usageCheck = await checkAndIncrementUsage(session.email, plan ?? "starter");
+    if (!usageCheck.allowed) {
+      return NextResponse.json(
+        {
+          error:   "run_limit_reached",
+          message: `You've used all ${usageCheck.limit} runs for this month. Upgrade your plan for more.`,
+          used:    usageCheck.used,
+          limit:   usageCheck.limit,
+        },
+        { status: 429 }
+      );
+    }
   }
 
   // Generate full HTML site with Grok images + Anthropic layout
@@ -308,16 +319,18 @@ export async function POST(req: NextRequest) {
     }
     // Preserve the existing slug on regeneration, or derive from current name
     subdomainSlug = existingSite?.subdomainSlug ?? baseSlug;
-    // Regeneration limit
-    const regenCheck = await checkAndIncrementRegen(session.email, editSiteId.trim(), plan);
-    if (!regenCheck.allowed) {
-      return NextResponse.json(
-        {
-          error:   "regen_limit_reached",
-          message: `You've reached the maximum of ${regenCheck.max} regenerations for this site.`,
-        },
-        { status: 429 }
-      );
+    // Regeneration limit (skipped for admin)
+    if (!isAdmin) {
+      const regenCheck = await checkAndIncrementRegen(session.email, editSiteId.trim(), plan ?? "starter");
+      if (!regenCheck.allowed) {
+        return NextResponse.json(
+          {
+            error:   "regen_limit_reached",
+            message: `You've reached the maximum of ${regenCheck.max} regenerations for this site.`,
+          },
+          { status: 429 }
+        );
+      }
     }
     siteId = editSiteId.trim();
   } else {

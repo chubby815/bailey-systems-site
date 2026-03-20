@@ -459,44 +459,53 @@ export async function POST(req: NextRequest) {
     // Instantiate Anthropic inside handler so a missing key doesn't crash the module
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
-    // ── Plan enforcement ──────────────────────────────────────────────────────
-    const sub = await kv.get<{ plan: string; status: string; trialEnd?: string }>(
-      `sub:${session.email}`
-    )
-    const plan     = sub?.plan   ?? 'trial'
-    const status   = sub?.status ?? 'trialing'
-    const isTrialing = status === 'trialing'
-    const isPro      = plan === 'pro'
-
-    if (!isPro && !isTrialing) {
-      // starter, growth, or any unknown non-pro plan
-      return NextResponse.json({
-        logs: [{
-          nodeId: 'system', nodeType: 'system', nodeLabel: 'Upgrade Required',
-          status: 'error',
-          message: '🔒 Workflows are available on Pro plan only. Upgrade at baileyagents.com/pricing',
-          timestamp: new Date().toISOString(),
-        }],
-      }, { status: 403 })
+    // ── Admin bypass ──────────────────────────────────────────────────────────
+    const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? 'lilianajs27@gmail.com').toLowerCase()
+    const isAdmin = session.email.toLowerCase() === ADMIN_EMAIL
+    if (isAdmin) {
+      console.log('[workflows] admin bypass for', session.email)
     }
 
-    if (isTrialing) {
-      const runsKey = `workflow-runs:${session.email}`
-      const runs    = await kv.get<number>(runsKey) ?? 0
-      if (runs >= 3) {
+    // ── Plan enforcement (skipped for admin) ──────────────────────────────────
+    if (!isAdmin) {
+      const sub = await kv.get<{ plan: string; status: string; trialEnd?: string }>(
+        `sub:${session.email}`
+      )
+      const plan     = sub?.plan   ?? 'trial'
+      const status   = sub?.status ?? 'trialing'
+      const isTrialing = status === 'trialing'
+      const isPro      = plan === 'pro'
+
+      if (!isPro && !isTrialing) {
+        // starter, growth, or any unknown non-pro plan
         return NextResponse.json({
           logs: [{
-            nodeId: 'system', nodeType: 'system', nodeLabel: 'Trial Limit Reached',
+            nodeId: 'system', nodeType: 'system', nodeLabel: 'Upgrade Required',
             status: 'error',
-            message: '⏳ You have used all 3 free trial workflow runs. Upgrade to Pro ($149/mo) for unlimited workflows. baileyagents.com/pricing',
+            message: '🔒 Workflows are available on Pro plan only. Upgrade at baileyagents.com/pricing',
             timestamp: new Date().toISOString(),
           }],
         }, { status: 403 })
       }
-      await kv.set(runsKey, runs + 1)
-      console.log(`[workflows] trial run ${runs + 1}/3 for ${session.email}`)
+
+      if (isTrialing) {
+        const runsKey = `workflow-runs:${session.email}`
+        const runs    = await kv.get<number>(runsKey) ?? 0
+        if (runs >= 3) {
+          return NextResponse.json({
+            logs: [{
+              nodeId: 'system', nodeType: 'system', nodeLabel: 'Trial Limit Reached',
+              status: 'error',
+              message: '⏳ You have used all 3 free trial workflow runs. Upgrade to Pro ($149/mo) for unlimited workflows. baileyagents.com/pricing',
+              timestamp: new Date().toISOString(),
+            }],
+          }, { status: 403 })
+        }
+        await kv.set(runsKey, runs + 1)
+        console.log(`[workflows] trial run ${runs + 1}/3 for ${session.email}`)
+      }
+      // Pro = unlimited ✅
     }
-    // Pro = unlimited ✅
     // ─────────────────────────────────────────────────────────────────────────
 
     let body: { workflowId?: string; nodes?: RFNode[]; edges?: RFEdge[] }
