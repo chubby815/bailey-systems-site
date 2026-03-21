@@ -14,6 +14,7 @@
 - The **dashboard** lives at `/dashboard` — logged-in users manage their AI-generated sites and run AI agents
 - The **site editor** lives at `/sites/[siteId]?edit=true` — where users edit their generated websites
 - The **generated websites** are also served from `/sites/[siteId]` — customers' live business sites
+- The **workflow builder** lives at `/dashboard/workflows` — visual drag-and-drop automation builder
 
 ---
 
@@ -24,14 +25,15 @@
 | Framework | Next.js `latest` (currently resolves to ~16.x), App Router |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS + CSS-in-JS inline styles (templates use inline only) |
-| Database | Upstash Redis via `@vercel/kv` (`lib/kv.ts`) |
+| Database | Upstash Redis via `@upstash/redis` (`lib/kv.ts`) |
 | Auth | Custom cookie-based JWT sessions (`lib/auth.ts`) + bcryptjs passwords |
 | Payments | Stripe (`lib/stripe.ts`) — subscriptions, checkout, billing portal, webhooks |
 | Email | Resend SDK (`lib/email.ts`) — verification, password reset, contact forms |
 | AI | Anthropic `claude-sonnet-4-5` via API (site generation, Ask Bailey, all agents) |
+| Workflow Canvas | `@xyflow/react` v12 (React Flow) — visual node-based workflow builder |
 | Animations | GSAP 3.14.2 (hero reveals, stat counters), custom `ScrollAnimator.tsx` (IntersectionObserver) |
 | 3D/Visual | `@splinetool/react-spline`, `@react-three/fiber` (installed, used on marketing pages) |
-| Deployment | Vercel |
+| Deployment | Vercel Pro |
 | Domain | baileyagents.com |
 
 ---
@@ -46,6 +48,7 @@
 6. **0 TypeScript errors always.** Run `npx tsc --noEmit` to check before declaring done.
 7. **Do NOT commit `.env.local`** — it contains secrets. Never suggest committing it.
 8. **Emails send from `"Bailey Agents <noreply@baileyagents.com>"`** — do not change this.
+9. **NEVER touch `app/layout.tsx` hide logic** without preserving BOTH `isCustomerSite` (`/sites/*`) AND `isWorkflowEditor` (`/dashboard/workflows/*`) checks.
 
 ---
 
@@ -54,172 +57,227 @@
 ```
 bailey-systems-ai/
 ├── app/                          ← Next.js App Router pages and API routes
-│   ├── page.tsx                  ← HOME / MARKETING page (baileyagents.com landing page)
-│   ├── layout.tsx                ← Root layout — server component, reads auth cookie, passes isLoggedIn to Navbar
-│   ├── globals.css               ← Global CSS + Tailwind + scroll-behavior + fade-in animation classes
+│   ├── page.tsx                  ← HOME / MARKETING page
+│   ├── layout.tsx                ← Root layout — server component. Uses NavWrapper + FooterWrapper (client components) for nav visibility. Has Facebook domain verification meta tag. x-pathname header drives server-side hideNav for SSR; client-side usePathname() in wrappers handles client navigation.
+│   ├── globals.css               ← Global CSS + Tailwind
 │   │
-│   ├── about/page.tsx            ← Marketing: About page
-│   ├── agents/page.tsx           ← Marketing: AI Agents showcase page
-│   ├── ai-agents/page.tsx        ← Marketing: Another AI agents page
-│   ├── pricing/page.tsx          ← Marketing: Pricing/plans page (uses PRICING_PLANS from utils/constants.ts)
-│   ├── consulting/page.tsx       ← Marketing: Consulting services page
-│   ├── contacts/page.tsx         ← Marketing: Contact page
-│   ├── reviews/page.tsx          ← Marketing: Customer reviews page
-│   ├── videos/page.tsx           ← Marketing: Video library page
-│   ├── login/page.tsx            ← Auth: Login / Sign up page (both on one page)
-│   ├── forgot-password/page.tsx  ← Auth: Forgot password page
-│   ├── reset-password/page.tsx   ← Auth: Reset password page (uses token from URL)
-│   ├── verify-email/page.tsx     ← Auth: Email verification landing page
+│   ├── about/page.tsx
+│   ├── agents/page.tsx
+│   ├── ai-agents/page.tsx
+│   ├── pricing/page.tsx
+│   ├── consulting/page.tsx
+│   ├── contacts/page.tsx
+│   ├── reviews/page.tsx
+│   ├── videos/page.tsx
+│   ├── login/page.tsx
+│   ├── forgot-password/page.tsx
+│   ├── reset-password/page.tsx
+│   ├── verify-email/page.tsx
+│   ├── privacy/page.tsx          ← Privacy policy — includes Facebook Data section with links to /dashboard/connections and /data-deletion
+│   ├── data-deletion/page.tsx    ← Facebook data deletion instructions page — contact: lilianajs27@gmail.com, 24hr processing
 │   │
-│   ├── dashboard/                ← PRODUCT: All dashboard pages (requires auth)
-│   │   ├── page.tsx              ← Dashboard home — shows user's sites, plan status, past_due redirect
+│   ├── dashboard/
+│   │   ├── page.tsx              ← Dashboard home — admin bypass prevents redirect to /pricing. Uses effectivePlan='pro' for admin display.
 │   │   ├── layout.tsx            ← Dashboard layout wrapper
-│   │   ├── billing/page.tsx      ← Billing portal page — shows plan, Stripe portal button, past_due banner
-│   │   ├── agents/page.tsx       ← Agents dashboard — list of available AI agents with plan gating
-│   │   ├── copywriter/page.tsx   ← AI Copywriter agent UI
-│   │   ├── email/page.tsx        ← Email Marketer agent UI
-│   │   ├── facebook/page.tsx     ← Facebook post generator UI
-│   │   ├── leads/page.tsx        ← Lead Hunter agent UI (Pro only)
-│   │   ├── roast/page.tsx        ← Website Roast agent UI
-│   │   ├── sales/page.tsx        ← Sales Manager agent UI
-│   │   └── support/page.tsx      ← Customer Support agent UI
+│   │   ├── billing/page.tsx
+│   │   ├── agents/page.tsx
+│   │   ├── copywriter/page.tsx
+│   │   ├── email/page.tsx
+│   │   ├── facebook/page.tsx
+│   │   ├── leads/page.tsx
+│   │   ├── roast/page.tsx
+│   │   ├── sales/page.tsx
+│   │   ├── support/page.tsx
+│   │   │
+│   │   ├── connections/
+│   │   │   ├── page.tsx          ← Connections dashboard — Facebook, Instagram, Telegram, Slack, WhatsApp, Google Sheets cards. Facebook: shows "Switch Page" + "Disconnect" when connected. Instagram: shows connect button. Reads ?connected= and ?error= URL params for flash banners.
+│   │   │   └── facebook-pages/
+│   │   │       └── page.tsx      ← Facebook page selector UI — 'use client'. Reads ?token= from URL, fetches pages from /api/connections/facebook/pages, shows cards, user picks one. Saves via /api/connections/facebook/select. Redirects to /dashboard/connections?connected=facebook on success.
+│   │   │
+│   │   └── workflows/
+│   │       ├── page.tsx          ← Workflow list — server component. Reads workflows:{email} Redis list. Renders <WorkflowList>.
+│   │       ├── new/page.tsx      ← New workflow — server component. Renders <WorkflowCanvas> with no initial data.
+│   │       └── [id]/page.tsx     ← Existing workflow editor — server component. Loads workflow:{id} from Redis. Renders <WorkflowCanvas>.
 │   │
 │   ├── sites/[siteId]/
-│   │   └── page.tsx              ← CRITICAL: Renders the generated website. If isOwner && editMode → shows SiteEditor. Otherwise → shows TemplateRenderer for live site. Does NOT render SiteShareBar in edit mode.
+│   │   └── page.tsx              ← CRITICAL: Renders the generated website. If isOwner && editMode → SiteEditor. Otherwise → TemplateRenderer for live site.
 │   │
-│   └── api/                      ← All API route handlers
-│       ├── user/route.ts         ← POST: login/signup with bcrypt. GET: returns current user session.
-│       ├── contact/route.ts      ← POST: sends contact form emails via Resend
-│       ├── checkout/route.ts     ← Legacy checkout redirect (see also api/stripe/checkout)
+│   └── api/
+│       ├── user/route.ts
+│       ├── contact/route.ts
+│       ├── checkout/route.ts
 │       │
 │       ├── auth/
-│       │   ├── logout/route.ts           ← Clears auth-token cookie
-│       │   ├── verify-email/route.ts     ← Validates email verification token from Redis
-│       │   ├── forgot-password/route.ts  ← Sends password reset email via Resend
-│       │   ├── reset-password/route.ts   ← Validates reset token, updates hashed password
-│       │   ├── resend-verification/route.ts ← Rate-limited resend of verification email
-│       │   └── set-token/route.ts        ← Sets auth-token cookie (used after OAuth flows)
+│       │   ├── logout/route.ts
+│       │   ├── verify-email/route.ts
+│       │   ├── forgot-password/route.ts
+│       │   ├── reset-password/route.ts
+│       │   ├── resend-verification/route.ts
+│       │   ├── set-token/route.ts
+│       │   ├── facebook/route.ts          ← GET: starts Facebook OAuth. Scopes: pages_manage_posts, pages_read_engagement, pages_show_list. Redirects to Facebook dialog. state=email.
+│       │   ├── facebook/callback/route.ts ← GET: exchanges code, fetches pages. 1 page → saves directly to facebook:{email}. Multiple pages → stores in fb-pages-pending:{token} Redis (5-min TTL) → redirects to /dashboard/connections/facebook-pages?token=...
+│       │   ├── instagram/route.ts         ← GET: starts Instagram OAuth (same Facebook app). Scopes: instagram_basic, instagram_content_publish, pages_show_list, pages_read_engagement.
+│       │   └── instagram/callback/route.ts ← GET: exchanges code, finds page with instagram_business_account, fetches IG details, saves to instagram:{email}.
 │       │
 │       ├── stripe/
-│       │   ├── checkout/route.ts ← Creates Stripe checkout session for plan upgrade
-│       │   ├── portal/route.ts   ← Opens Stripe billing portal; recovers missing customerId from Stripe if needed
-│       │   └── webhook/route.ts  ← Handles Stripe events (subscription created/updated/deleted/past_due). Has STRIPE_WEBHOOK_SECRET guard. force-dynamic + nodejs runtime.
+│       │   ├── checkout/route.ts
+│       │   ├── portal/route.ts
+│       │   └── webhook/route.ts
 │       │
 │       ├── sites/
-│       │   ├── generate/route.ts         ← POST: AI generates a new site from business info using Claude
+│       │   ├── generate/route.ts         ← POST: AI generates site. Admin bypass skips all limits. Calls generateSiteHTML (Claude + Grok images). Returns { siteId, url, subdomainSlug, subdomainUrl }.
 │       │   └── [siteId]/
-│       │       ├── route.ts              ← GET: fetch site. PATCH: save site edits. DELETE: delete site. Has ownership check (case-insensitive email comparison).
-│       │       └── image/route.ts        ← POST: upload hero/about image as base64. DELETE: remove image.
+│       │       ├── route.ts
+│       │       └── image/route.ts
 │       │
-│       ├── editor/
-│       │   └── ask-bailey/
-│       │       ├── route.ts              ← POST: Ask Bailey chat — returns suggested content/theme changes
-│       │       └── apply/route.ts        ← POST: Apply Ask Bailey suggestions to site
+│       ├── editor/ask-bailey/
+│       │   ├── route.ts
+│       │   └── apply/route.ts
 │       │
-│       ├── agents/ (AI agent API routes)
-│       │   └── refine/route.ts           ← POST: refines agent output
-│       ├── copywriter/generate/route.ts  ← POST: AI copywriter
-│       ├── email/generate/route.ts       ← POST: Email marketer
-│       ├── facebook/                     ← Facebook post generator + OAuth connect
-│       ├── leads/generate/route.ts       ← POST: Lead Hunter (Pro only)
-│       ├── roast/route.ts                ← POST: Website Roast agent
-│       ├── sales/generate/route.ts       ← POST: Sales Manager
-│       ├── support/generate/route.ts     ← POST: Customer Support agent
-│       ├── content/generate/route.ts     ← POST: General content generation
-│       ├── bailey-chat/route.ts          ← POST: Bailey chat assistant
-│       ├── bailey-image/route.ts         ← POST: Image generation
-│       ├── chat/route.ts                 ← POST: General chat
-│       ├── usage/route.ts                ← GET/POST: AI usage tracking
+│       ├── workflows/
+│       │   ├── run/route.ts    ← POST: executes workflow node by node. maxDuration=60. Admin bypass skips plan checks. Handles all node types. baileyBuildSite ACTUALLY generates a real site using generateSiteHTML and saves to Redis, returns live URL.
+│       │   ├── save/route.ts   ← POST: saves workflow to Redis at workflow:{id}
+│       │   └── list/route.ts   ← GET: returns user's workflow list
 │       │
-│       └── admin/ (internal admin endpoints — no UI, called directly)
-│           ├── delete-user/route.ts      ← GET ?email=x — deletes user from Redis (admin only)
-│           ├── backfill-slugs/route.ts   ← Admin: backfills subdomain slugs
-│           ├── reset-customer/route.ts   ← Admin: resets Stripe customer data
-│           └── sync-subscription/route.ts ← Admin: syncs subscription from Stripe
+│       ├── connections/
+│       │   ├── status/route.ts                    ← GET: returns all connection statuses (telegram, slack, whatsapp, facebook, instagram, google)
+│       │   ├── facebook/pages/route.ts            ← GET ?token=: reads fb-pages-pending:{token}, returns page list (NO access tokens exposed to client)
+│       │   ├── facebook/select/route.ts           ← POST { token, pageId }: saves selected page to facebook:{email}, deletes pending token
+│       │   ├── facebook/disconnect/route.ts       ← DELETE: removes facebook:{email} from Redis
+│       │   ├── telegram/verify/route.ts           ← POST { code }: looks up telegram-verify:{code} → saves chatId to telegram-chatid:{email}
+│       │   ├── slack/save/route.ts                ← POST: saves Slack webhook URL to slack-webhook:{email}
+│       │   └── whatsapp/save/route.ts             ← POST: saves WhatsApp config to whatsapp-config:{email}
+│       │
+│       ├── telegram/
+│       │   └── webhook/route.ts  ← POST: receives Telegram updates from @BaileyOS_Bot. Generates 6-digit code, stores telegram-verify:{code} → chatId in Redis (5-min TTL), replies to user with code via Telegram Bot API. Registered webhook URL: https://baileyagents.com/api/telegram/webhook
+│       │
+│       ├── facebook/
+│       │   ├── data-deletion/route.ts  ← POST: parses Facebook signed_request (HMAC-SHA256 verified), returns { url, confirmation_code } for Meta App Review compliance. GET: info message.
+│       │   ├── status/route.ts         ← GET: returns { pageName, pageId } for connected Facebook page
+│       │   └── post/route.ts           ← POST: posts to Facebook page via Graph API
+│       │
+│       ├── agents/refine/route.ts
+│       ├── copywriter/generate/route.ts
+│       ├── email/generate/route.ts
+│       ├── leads/generate/route.ts
+│       ├── roast/route.ts
+│       ├── sales/generate/route.ts
+│       ├── support/generate/route.ts
+│       ├── content/generate/route.ts
+│       ├── bailey-chat/route.ts
+│       ├── bailey-image/route.ts
+│       ├── chat/route.ts
+│       ├── usage/route.ts
+│       │
+│       └── admin/
+│           ├── delete-user/route.ts
+│           ├── backfill-slugs/route.ts
+│           ├── reset-customer/route.ts
+│           └── sync-subscription/route.ts
 │
-├── components/                   ← All React components
+├── components/
 │   │
-│   ├── site/                     ← Components ONLY used for generated customer websites
-│   │   ├── SiteEditor.tsx        ← CRITICAL: Full website editor. Fixed position shell, flex-column layout (toolbar top, main area flex-row). Sidebar pushes preview. No position:fixed for panels.
-│   │   ├── TemplateRenderer.tsx  ← Picks which template to render based on site.template. Injects theme CSS variables. Passes isEditing prop.
-│   │   ├── ScrollAnimator.tsx    ← Client component: IntersectionObserver fade-in. Adds 'visible' class when in viewport. Respects prefers-reduced-motion.
-│   │   ├── HeroReveal.tsx        ← Client component: GSAP word-by-word hero headline reveal. Dynamic import of gsap. gsap.context() cleanup.
-│   │   ├── StatCounter.tsx       ← Client component: GSAP ScrollTrigger count-up animation for stats. Dynamic import of gsap + ScrollTrigger.
-│   │   ├── ContactFormBlock.tsx  ← Contact form that POSTs to /api/contact. Used in all 5 templates.
-│   │   ├── TrustBadges.tsx       ← Trust badge pills and rating badge. Used in templates.
-│   │   ├── SiteShareBar.tsx      ← "Your site is live" banner. ONLY shown in view mode — NOT shown in edit mode.
-│   │   ├── LayoutRenderer.tsx    ← Legacy layout renderer (older system)
-│   │   └── templates/            ← The 5 website templates
-│   │       ├── darkpremium/index.tsx   ← Dark Premium: Tesla/Stripe aesthetic. Animated gradient, 12 floating particles, GSAP word reveal, glassmorphism cards, shine sweep on testimonials.
-│   │       ├── neobrutalism/index.tsx  ← Neo Brutalism: Bold poster aesthetic. Animated diagonal grain, 3D press cards, image zoom on work cards.
-│   │       ├── minimal/index.tsx       ← Modern Minimal: Apple/Linear aesthetic. GSAP word reveal, underline draw animation, subtle lift cards.
-│   │       ├── magazine/index.tsx      ← Bold Magazine: Editorial/Vogue aesthetic. Ken Burns on hero image, text slide-in from left.
-│   │       └── classic/index.tsx       ← Classic Business: Navy/gold trustworthy. Animated gradient, gold underline draw, GSAP stat counters.
+│   ├── site/
+│   │   ├── SiteEditor.tsx
+│   │   ├── TemplateRenderer.tsx
+│   │   ├── ScrollAnimator.tsx
+│   │   ├── HeroReveal.tsx
+│   │   ├── StatCounter.tsx
+│   │   ├── ContactFormBlock.tsx
+│   │   ├── TrustBadges.tsx
+│   │   ├── SiteShareBar.tsx
+│   │   ├── LayoutRenderer.tsx
+│   │   └── templates/
+│   │       ├── darkpremium/index.tsx
+│   │       ├── neobrutalism/index.tsx
+│   │       ├── minimal/index.tsx
+│   │       ├── magazine/index.tsx
+│   │       └── classic/index.tsx
 │   │
-│   ├── editor/
-│   │   └── AskBailey.tsx         ← Ask Bailey chat panel inside SiteEditor. Connects to /api/editor/ask-bailey.
+│   ├── workflow/                          ← ALL workflow components live here
+│   │   ├── WorkflowCanvas.tsx            ← CRITICAL: Main React Flow canvas. 'use client'. Top bar with workflow name + Run button always rendered (NOT conditional). nodeTypes registered here. Outside ReactFlow component.
+│   │   ├── NodeSidebar.tsx               ← Left sidebar — draggable node categories: Triggers, AI Nodes, Actions, Logic
+│   │   ├── WorkflowCard.tsx              ← Exports WorkflowList component used on the list page
+│   │   ├── ExecutionLog.tsx              ← Shows live execution log output when workflow runs
+│   │   └── nodes/
+│   │       ├── ManualNode.tsx            ← Trigger: manual run. Outputs: trigger
+│   │       ├── ScheduleNode.tsx          ← Trigger: cron schedule. Outputs: trigger
+│   │       ├── WebhookNode.tsx           ← Trigger: incoming webhook. Outputs: trigger
+│   │       ├── BaileyWriteNode.tsx       ← AI: generates text via Claude Haiku. Outputs: aiText
+│   │       ├── BaileyFindLeadsNode.tsx   ← AI: generates leads JSON via Claude. Outputs: leads
+│   │       ├── BaileyBuildSiteNode.tsx   ← AI: fields are businessName, industry, tone. Outputs: siteUrl (REAL live URL — actually generates site via Claude + Grok)
+│   │       ├── SendEmailNode.tsx         ← Action: send email via Resend. Auto-chains aiText if body empty.
+│   │       ├── FacebookPostNode.tsx      ← Action: post to Facebook page. Reads facebook:{email} from Redis. Auto-chains aiText.
+│   │       ├── InstagramPostNode.tsx     ← Action: post to Instagram Business Account (color #E1306C). Reads instagram:{email}. Requires imageUrl field. Auto-chains aiText for caption.
+│   │       ├── SlackNode.tsx             ← Action: send Slack message. Reads slack-webhook:{email}. Auto-chains aiText.
+│   │       ├── TelegramNode.tsx          ← Action: send Telegram message. Reads telegram-chatid:{email}. Auto-chains aiText. Use {{siteUrl}} in message field to send site URL.
+│   │       ├── WhatsAppNode.tsx          ← Action: send WhatsApp (Twilio or Meta). Auto-chains aiText.
+│   │       ├── GoogleSheetsNode.tsx      ← Action: placeholder (OAuth not configured yet)
+│   │       ├── IfConditionNode.tsx       ← Logic: conditional branching
+│   │       └── DelayNode.tsx             ← Logic: wait X seconds/minutes (max 10s in practice)
 │   │
-│   ├── agents/
-│   │   └── RefineChat.tsx        ← Refine chat component for agent outputs
+│   ├── editor/AskBailey.tsx
+│   ├── agents/RefineChat.tsx
 │   │
-│   │ ← MARKETING/UI components (used on baileyagents.com pages):
-│   ├── Navbar.tsx                ← Site navbar. Client component. Reads initialLoggedIn prop from layout.tsx. Shows/hides Log In button based on auth state.
-│   ├── Footer.tsx                ← Site footer
-│   ├── Hero.tsx                  ← Legacy hero component (some pages still use this)
-│   ├── HeroInput.tsx             ← Homepage hero input — "Enter your business name" generates site
-│   ├── AgentCards.tsx            ← Cards showing the AI agents on the homepage
-│   ├── BaileyChat.tsx            ← Floating AI chat widget on marketing pages
-│   ├── PricingCard.tsx           ← Pricing plan card component
-│   ├── BentoGrid.tsx             ← Bento grid layout for features/agents
-│   ├── BentoServices.tsx         ← Services bento grid
-│   ├── SiteCard.tsx              ← Card showing a generated site in dashboard
-│   ├── ContentMachine.tsx        ← Content machine marketing section
-│   ├── Button.tsx                ← Reusable button component
-│   ├── Input.tsx                 ← Reusable input component
-│   ├── LogoutButton.tsx          ← Logout button (client component, calls /api/auth/logout)
-│   ├── GoogleMap.tsx             ← Google Maps embed component
-│   ├── FallingText.tsx           ← Animated falling text effect (marketing)
-│   ├── FloatingVideoChat.tsx     ← Floating video chat component
-│   ├── ReviewCard.jsx            ← Customer review card
-│   ├── ServiceCard.jsx           ← Service card
-│   ├── VideoCard.tsx             ← Video card for video library
-│   ├── ChatBubble.tsx            ← Chat bubble UI
-│   ├── ChatWindow.tsx            ← Chat window UI
-│   ├── LeadsAgent.tsx            ← Lead Hunter agent UI component
-│   ├── ProfessionalServices.tsx  ← Professional services section
-│   ├── CleanTeam.tsx             ← Team section
-│   ├── CharacterSelectTeam.tsx   ← Team member character cards
-│   ├── HackerToggle.tsx          ← Hacker mode easter egg toggle
-│   └── KonamiCode.tsx            ← Konami code easter egg
+│   ├── NavWrapper.tsx      ← 'use client'. Uses usePathname() to hide Navbar on /sites/* and /dashboard/workflows/* during client-side navigation. Fixes Run button visibility bug.
+│   ├── FooterWrapper.tsx   ← 'use client'. Same pattern for Footer + BaileyChat together.
+│   │
+│   ├── Navbar.tsx
+│   ├── Footer.tsx
+│   ├── Hero.tsx
+│   ├── HeroInput.tsx
+│   ├── AgentCards.tsx
+│   ├── BaileyChat.tsx
+│   ├── PricingCard.tsx
+│   ├── BentoGrid.tsx
+│   ├── BentoServices.tsx
+│   ├── SiteCard.tsx
+│   ├── ContentMachine.tsx
+│   ├── Button.tsx
+│   ├── Input.tsx
+│   ├── LogoutButton.tsx
+│   ├── GoogleMap.tsx
+│   ├── FallingText.tsx
+│   ├── FloatingVideoChat.tsx
+│   ├── ReviewCard.jsx
+│   ├── ServiceCard.jsx
+│   ├── VideoCard.tsx
+│   ├── ChatBubble.tsx
+│   ├── ChatWindow.tsx
+│   ├── LeadsAgent.tsx
+│   ├── ProfessionalServices.tsx
+│   ├── CleanTeam.tsx
+│   ├── CharacterSelectTeam.tsx
+│   ├── HackerToggle.tsx
+│   └── KonamiCode.tsx
 │
-├── lib/                          ← Core server-side utilities
-│   ├── kv.ts                     ← CRITICAL: All Redis/KV operations. Defines SiteRecord, UserRecord, SubscriptionRecord types. Functions: getSite, saveSite, deleteSite, getUserSites (batched, strips base64 images), getUserPlan (returns null for past_due), getSubscriptionByEmail, getUser, saveUser. Keys: site:{siteId}, user:{email}, subscription:{email}.
-│   ├── auth.ts                   ← JWT session management. Functions: createSessionToken, getSession, requireAuth, clearSessionCookie, verifySession. Cookie name: auth-token. Session payload: { email, name }.
-│   ├── stripe.ts                 ← Stripe client init. API version: "2026-02-25.clover".
-│   ├── email.ts                  ← Resend email functions. Lazy-initialized (Resend client created inside each function, NOT at module level — required to fix Vercel build failures). From: "Bailey Agents <noreply@baileyagents.com>".
-│   ├── site-theme.ts             ← ThemeConfig type, StructuredSiteContent type, FONT_SIZE_MULTIPLIERS, theme presets per template, default content generator.
-│   ├── openai.ts                 ← Anthropic client setup (named openai.ts for legacy reasons — actually uses Anthropic SDK)
-│   ├── ratelimit.ts              ← Rate limiting utility
-│   ├── stripe-links.ts           ← Stripe payment link URLs
-│   └── usage.ts                  ← AI usage tracking helpers
+├── lib/
+│   ├── kv.ts                     ← CRITICAL: All Redis/KV operations. Types: SiteRecord, UserRecord, SubscriptionRecord, FacebookPageRecord, InstagramAccountRecord. Functions: getSite, saveSite, deleteSite, getUserSites, saveFacebookPage, getFacebookPage, saveInstagramAccount, getInstagramAccount, getUserPlan, getSubscriptionByEmail, getUser, saveUser.
+│   ├── auth.ts                   ← JWT session management. getSession(req) for API routes. getSessionFromCookies() for server components. AUTH_SECRET env var (not JWT_SECRET).
+│   ├── generate-site-html.ts     ← CRITICAL: generateSiteHTML() — calls Claude + Grok to produce full HTML site. Used by /api/sites/generate AND by baileyBuildSite workflow node.
+│   ├── stripe.ts
+│   ├── email.ts
+│   ├── site-theme.ts
+│   ├── openai.ts                 ← Anthropic client (named openai.ts for legacy reasons)
+│   ├── ratelimit.ts
+│   ├── stripe-links.ts
+│   └── usage.ts
 │
 ├── utils/
-│   ├── constants.ts              ← NAV_LINKS, PRICING_PLANS (SaaSPricingPlan type, 3 tiers: starter $29, growth $79, pro $149), LEGACY_PRICING_PLANS, STATS, REVIEWS, VIDEO_LIBRARY, TRUST_ITEMS, DEFAULT_CHAT_MESSAGES
-│   └── validations.ts            ← Form validation helpers
+│   ├── constants.ts
+│   └── validations.ts
 │
-├── styles/
-│   └── animations.css            ← Additional CSS animations (imported globally)
-│
+├── styles/animations.css
 ├── public/
-│   ├── avatar.mp4                ← Video asset for marketing
-│   ├── tem6.webp                 ← Template preview image
-│   └── templates/README.md       ← Notes about template assets
+│   ├── avatar.mp4
+│   ├── tem6.webp
+│   └── templates/README.md
 │
-├── middleware.ts                 ← ⚠️ DO NOT TOUCH. Handles auth redirects and subdomain routing.
-├── next.config.js                ← Next.js config
-├── tailwind.config.js            ← Tailwind config
-├── tsconfig.json                 ← TypeScript config
-└── package.json                  ← Dependencies (see key deps below)
+├── middleware.ts     ← ⚠️ DO NOT TOUCH
+├── next.config.js
+├── tailwind.config.js
+├── tsconfig.json
+└── package.json
 ```
 
 ---
@@ -231,12 +289,14 @@ bailey-systems-ai/
 "react": "^19.2.3",
 "react-dom": "^19.2.3",
 "@anthropic-ai/sdk": "...",
-"@vercel/kv": "...",
+"@upstash/redis": "...",
+"@xyflow/react": "^12.x",
 "stripe": "latest",
 "resend": "...",
 "bcryptjs": "...",
 "jose": "...",
 "gsap": "^3.14.2",
+"@vercel/blob": "...",
 "@splinetool/react-spline": "...",
 "@react-three/fiber": "...",
 "@react-three/drei": "..."
@@ -250,23 +310,21 @@ bailey-systems-ai/
 
 - **Cookie:** `auth-token` (HTTP-only, secure)
 - **Session format (JWT payload):** `{ email: string, name: string }`
-- **Signup/Login:** `POST /api/user` — handles both. Checks if user exists: if yes → login (bcrypt compare). If no → signup (bcrypt hash, save UserRecord, send verification email via Resend).
-- **Session reading (server):** `lib/auth.ts` → `getSession()` or `requireAuth()` — reads cookie from `next/headers`
-- **Session reading (client):** `GET /api/user` — returns `{ email, name }` or 401
-- **Email verification:** Required before full access. Token stored in Redis with expiry.
-- **Password reset:** Token-based flow. Token in Redis, link sent via Resend.
-- **Navbar auth:** `app/layout.tsx` (server component) reads cookie and passes `isLoggedIn` prop to `<Navbar />`. Navbar uses this as `initialLoggedIn` state, then verifies via `GET /api/user` on mount. This prevents flash of wrong state.
+- **Auth secret env var:** `AUTH_SECRET` (NOT `JWT_SECRET`)
+- **Signup/Login:** `POST /api/user`
+- **Session reading (API routes):** `getSession(req)` from `lib/auth.ts` — reads from NextRequest cookies
+- **Session reading (server components/pages):** `getSessionFromCookies()` from `lib/auth.ts` — reads from next/headers
+- **Email verification:** Token stored in Redis `verify:{token}` → email, with expiry
+- **Password reset:** Token stored in Redis `reset:{token}` → email
 
 ---
 
 ## Stripe / Subscriptions
 
 - **Plans:** `starter` ($29/mo), `growth` ($79/mo), `pro` ($149/mo)
-- **Subscription record in Redis:** key = `subscription:{email}`, type = `SubscriptionRecord { status, plan, customerId, subscriptionId, priceId, currentPeriodEnd }`
-- **Plan gating:** `getUserPlan(email)` in `lib/kv.ts` — returns `null` for `past_due` status (locks access)
-- **Past due:** Dashboard redirects to `/dashboard/billing?reason=past_due`. Billing page shows a payment required banner.
-- **Webhook:** `/api/stripe/webhook/route.ts` — `export const dynamic = "force-dynamic"`, `export const runtime = "nodejs"`. Has guard for missing `STRIPE_WEBHOOK_SECRET`.
-- **Portal:** `/api/stripe/portal` — recovers missing `customerId` by searching Stripe by email if needed.
+- **Subscription record in Redis:** key = `sub:{email}` (NOT `subscription:{email}`), type = `SubscriptionRecord { status, plan, customerId, subscriptionId }`
+- **Plan gating:** `getUserPlan(email)` returns `null` for `past_due` or `canceled`
+- **Webhook:** `/api/stripe/webhook/route.ts` — `force-dynamic` + `nodejs` runtime
 
 ---
 
@@ -275,105 +333,148 @@ bailey-systems-ai/
 | Key pattern | Value type | Purpose |
 |---|---|---|
 | `site:{siteId}` | `SiteRecord` JSON | A generated website |
-| `user:{email}` | `UserRecord` JSON | User account (hashed password, verified flag) |
-| `subscription:{email}` | `SubscriptionRecord` JSON | Stripe subscription data |
+| `html:{siteId}` | string | Full generated HTML (stored separately to avoid 1MB limit) |
+| `slug:{subdomainSlug}` | siteId string | Reverse lookup for subdomain routing |
+| `user:{email}` | `UserRecord` JSON | User account |
+| `sub:{email}` | `SubscriptionRecord` JSON | Stripe subscription (note: `sub:` not `subscription:`) |
 | `verify:{token}` | email string | Email verification token |
 | `reset:{token}` | email string | Password reset token |
+| `facebook:{email}` | `FacebookPageRecord` JSON | Connected Facebook page — `{ pageId, pageName, pageAccessToken, connectedAt }` |
+| `instagram:{email}` | `InstagramAccountRecord` JSON | Connected Instagram account — `{ accountId, accountName, username, pageAccessToken, pageId, connectedAt }` |
+| `fb-pages-pending:{token}` | `{ email, pages[] }` JSON | Temp storage for Facebook page selection (5-min TTL) |
+| `telegram-chatid:{email}` | string | User's Telegram chat ID |
+| `telegram-verify:{code}` | chatId string | 6-digit code → chatId mapping (5-min TTL) |
+| `slack-webhook:{email}` | string | Slack webhook URL |
+| `whatsapp-config:{email}` | `{ provider }` JSON | WhatsApp provider config |
+| `workflows:{email}` | Redis list of IDs | User's workflow IDs |
+| `workflow:{id}` | `WorkflowRecord` JSON | Full workflow — nodes, edges, name, userId, createdAt, lastRun |
+| `workflow-runs:{email}` | number | Trial run counter (max 3 for trialing users) |
 | `rl:{key}` | counter | Rate limiting |
 
-**Important:** `getUserSites()` fetches in batches and strips `heroImage`/`aboutImage` base64 content (replaces with `"[uploaded]"`) to avoid Upstash's 10MB payload limit.
-
 ---
 
-## Generated Site Data Structure (SiteRecord)
+## Workflow System
 
-```typescript
-type SiteRecord = {
-  siteId:         string;   // e.g. "abc123"
-  userId:         string;   // owner's email (always lowercase)
-  businessName:   string;
-  location:       string;
-  industry:       string;
-  template:       string;   // "darkpremium" | "neobrutalism" | "minimal" | "magazine" | "classic"
-  subdomainSlug?: string;   // e.g. "joes-plumbing"
-  contactEmail?:  string;
-  contactPhone?:  string;
-  yearsInBusiness?: string;
-  content?:       string;   // JSON string of StructuredSiteContent
-  theme?:         string;   // JSON string of ThemeConfig
-  heroImage?:     string;   // base64 encoded image (stripped in getUserSites)
-  aboutImage?:    string;   // base64 encoded image (stripped in getUserSites)
-  isPaused?:      boolean;
-  createdAt?:     string;
-}
+### How Workflows Execute (`app/api/workflows/run/route.ts`)
+
+- `maxDuration = 60` seconds
+- Admin bypass: `lilianajs27@gmail.com` skips all plan checks
+- Non-admin: requires Pro plan OR trialing (max 3 trial runs)
+- Execution order: topological sort from edges, falls back to `TYPE_PRIORITY` (Triggers=0, AI=1, Actions=2, Logic=3)
+- Each node stores output under a predictable context variable name
+
+### Context Variable Names (auto-chaining)
+
+| Node type | Output stored as |
+|---|---|
+| `manual` / `schedule` / `webhook` | `trigger` |
+| `baileyWrite` | `aiText` |
+| `baileyFindLeads` | `leads` |
+| `baileyBuildSite` | `siteUrl` (real live URL like `https://baileyagents.com/sites/abc123`) |
+| `sendEmail` | `emailResult` |
+| `telegram` | `telegramResult` |
+| `slack` | `slackResult` |
+| `facebookPost` | `postResult` |
+| `instagramPost` | `instagramResult` |
+
+### Auto-chain Rules
+
+- **Telegram, Slack, WhatsApp, Email, Facebook, Instagram** — if message/body field is empty or has no `{{...}}`, they automatically use `aiText` from context (then `leads` as fallback)
+- Use `{{siteUrl}}` in the Telegram/Email message field to pass the Build Site output through
+- Variables resolved via `{{variableName}}` syntax anywhere in node fields
+
+### Typical Workflow Patterns
+
+```
+Manual → Bailey Write → Telegram        (AI writes text, sends to Telegram)
+Manual → Bailey Write → Facebook Post   (AI writes post, publishes to FB page)
+Manual → Build Site → Telegram          (builds real site, sends URL via Telegram — use {{siteUrl}} in message)
+Schedule → Bailey Write → Send Email    (daily AI email)
 ```
 
 ---
 
-## ThemeConfig Structure (lib/site-theme.ts)
+## Facebook & Instagram OAuth
 
-```typescript
-type ThemeConfig = {
-  primaryColor?:  string;  // hex color
-  headingColor?:  string;
-  bodyColor?:     string;
-  btnTextColor?:  string;
-  accentColor?:   string;
-  background?:    string;  // maps to --site-bg CSS variable
-  surface?:       string;  // maps to --site-surface CSS variable
-  fontFamily?:    string;  // "modern" | "classic" | "bold" | "minimal"
-  buttonStyle?:   string;  // "rounded" | "sharp" | "pill"
-  fontSize?:      string;  // "sm" | "md" | "lg" | "xl"
-}
-```
+### Facebook Flow
+1. User clicks "Connect Facebook" → hits `/api/auth/facebook` → redirects to Facebook OAuth dialog
+2. Facebook redirects to `/api/auth/facebook/callback` with `code` and `state=email`
+3. Callback exchanges code for token, fetches user's pages:
+   - 1 page → saves directly to `facebook:{email}` in Redis
+   - Multiple pages → stores in `fb-pages-pending:{token}` (5-min TTL) → redirects to `/dashboard/connections/facebook-pages?token=...`
+4. Page selector UI lets user pick → POST to `/api/connections/facebook/select` → saves to `facebook:{email}`
 
----
+### Instagram Flow
+1. User clicks "Connect Instagram" → hits `/api/auth/instagram` → redirects to Facebook OAuth (same app)
+2. Callback at `/api/auth/instagram/callback` exchanges code, fetches pages with `instagram_business_account` field
+3. First page with linked Instagram Business Account gets its IG details fetched and saved to `instagram:{email}`
 
-## The 5 Website Templates
+### Required Facebook App Permissions (already approved in Meta)
+- `pages_manage_posts`, `pages_read_engagement`, `pages_show_list`
+- `instagram_basic`, `instagram_content_publish`
 
-All templates live in `components/site/templates/[name]/index.tsx`. They are **server components** (no hooks directly). Client-side animations are imported from separate client components (`HeroReveal`, `StatCounter`, `ScrollAnimator`).
-
-Each template:
-- Exports a named layout function (e.g. `DarkPremiumLayout`, `NeoBrutalismLayout`, etc.)
-- Accepts `TemplateProps` which includes `site`, `content`, `primaryColor`, `heroImageUrl?`, `aboutImageUrl?`, `theme?`, `isEditing?`
-- When `isEditing=true` is passed, navbars show a primary-color border + box-shadow so they're always visible in the editor
-- All use inline CSS-in-JS styles (NO Tailwind inside templates)
-- All have `overflowX: "clip"` on root div (NOT hidden — clip doesn't create a scroll container so sticky positioning works)
-
-| Template | Aesthetic | Key colors |
-|---|---|---|
-| `darkpremium` | Tesla/Stripe, cinematic dark | `#080808` bg, `#0d0e10` surface, primary color glow |
-| `neobrutalism` | Bold poster, raw energy | Cream `#fffef7` bg, black `#0a0a0a` surface, yellow `#FFE500` accent |
-| `minimal` | Apple/Linear, clean whitespace | White bg, thin fonts, primary color accents |
-| `magazine` | Vogue/Wired, full-bleed editorial | `#fafaf8` bg, dark hero, serif x sans type |
-| `classic` | Trustworthy, navy/gold | Navy `#1a2744`, gold `#c9a84c`, white text |
+### Facebook App Review Compliance
+- Data deletion endpoint: `POST /api/facebook/data-deletion` — parses `signed_request`, HMAC-SHA256 verified
+- Data deletion instructions: `/data-deletion` page
+- Privacy policy: `/privacy` page with Facebook Data section
 
 ---
 
-## Site Editor Architecture (SiteEditor.tsx)
+## Telegram Bot Setup
 
-```
-Fixed outer shell (position: fixed, full viewport, flex-column, zIndex: 200)
-├── Toolbar (height: 52px, flexShrink: 0, dark bg)
-│   ├── Left: panel toggle buttons (Themes, Content/Edit, Ask Bailey)
-│   ├── Center: template name + saving indicator
-│   └── Right: View Live ↗ button
-│
-└── Main area (flex: 1, display: flex, flex-row, overflow: hidden)
-    ├── Left sidebar (width: 320px, flexShrink: 0) — conditionally shown
-    │   ├── ThemesPanel — pick theme preset + template
-    │   └── ContentPanel — 7 section tabs (Navbar, Hero, Services, About, Testimonials, CTA, Design)
-    │       Each tab shows inputs for that section. Changes fire instantly in preview.
-    │
-    ├── Preview canvas (flex: 1, overflowY: auto, minWidth: 0)
-    │   └── <TemplateRenderer isEditing={true} ... />
-    │
-    └── Right panel (width: 320px, flexShrink: 0) — Ask Bailey chat
-        └── <AskBailey ... />
-```
+- **Bot name:** `@BaileyOS_Bot`
+- **Webhook URL registered:** `https://baileyagents.com/api/telegram/webhook`
+- **How it works:** User messages the bot → webhook fires → generates 6-digit code → stores `telegram-verify:{code}` → chatId in Redis (5-min TTL) → bot replies with code → user enters code in dashboard → `/api/connections/telegram/verify` saves chatId to `telegram-chatid:{email}`
+- **Workflow sending:** Telegram node reads `telegram-chatid:{email}` from Redis, uses `TELEGRAM_BOT_TOKEN` to call Telegram Bot API
 
-**Autosave:** 800ms debounce after any change. `hasChanges` ref tracks dirty state. "Saved ✓" indicator in toolbar.
-**View Live:** Saves first, waits 1500ms, then opens live URL in new tab.
+---
+
+## Admin Bypass
+
+**Admin email:** `lilianajs27@gmail.com` (set via `ADMIN_EMAIL` env var)
+
+Admin bypasses are applied in:
+- `app/api/workflows/run/route.ts` — skips all plan checks and trial limits
+- `app/api/sites/generate/route.ts` — skips subscription check, rate limit, site limit, monthly usage limit, regen limit
+- `app/dashboard/page.tsx` — never redirected to `/pricing`. Uses `effectivePlan = 'pro'` if actual plan is null/undefined.
+
+---
+
+## Layout — NavWrapper / FooterWrapper
+
+`app/layout.tsx` uses `NavWrapper` and `FooterWrapper` (both `'use client'`) instead of server-side conditionals. This fixes a bug where the Navbar covered the workflow canvas Run button on client-side navigation.
+
+- Server-side `x-pathname` check (`hideNav`) still computed in layout — used as `initialHideNav` prop for correct SSR
+- Client-side `usePathname()` in NavWrapper/FooterWrapper handles all subsequent navigations
+- Both hide on: `/sites/*` (customer sites) and `/dashboard/workflows/*` (workflow editor)
+- `app/layout.tsx` also has Facebook domain verification meta tag in `<head>`
+
+---
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `KV_REST_API_URL` | Upstash Redis REST URL |
+| `KV_REST_API_TOKEN` | Upstash Redis token |
+| `ANTHROPIC_API_KEY` | Claude AI API key |
+| `GROK_API_KEY` | xAI Grok API key (image generation in site builder) |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key |
+| `RESEND_API_KEY` | Resend email API key |
+| `AUTH_SECRET` | Secret for signing session JWTs (NOT JWT_SECRET) |
+| `NEXT_PUBLIC_BASE_URL` | `https://baileyagents.com` (no trailing slash) |
+| `GOOGLE_PLACES_API_KEY` | Google Places API |
+| `FACEBOOK_APP_ID` | Facebook/Meta app ID (also used for Instagram OAuth) |
+| `FACEBOOK_APP_SECRET` | Facebook/Meta app secret |
+| `TELEGRAM_BOT_TOKEN` | @BaileyOS_Bot token from BotFather |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | `BaileyOS_Bot` |
+| `ADMIN_EMAIL` | `lilianajs27@gmail.com` — bypasses all plan limits |
+| `TWILIO_ACCOUNT_SID` | Twilio for WhatsApp |
+| `TWILIO_AUTH_TOKEN` | Twilio auth |
+| `TWILIO_WHATSAPP_NUMBER` | `whatsapp:+14155238886` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob CDN token |
 
 ---
 
@@ -385,90 +486,73 @@ Fixed outer shell (position: fixed, full viewport, flex-column, zIndex: 200)
 | Website Roast Agent | ✓ | ✓ | ✓ |
 | Email Marketer Agent | — | ✓ | ✓ |
 | Customer Support Agent | — | ✓ | ✓ |
-| Lead Hunter Agent | — | — | ✓ (Pro only) |
+| Lead Hunter Agent | — | — | ✓ |
 | AI Copywriter | — | — | ✓ |
 | Sales Manager | — | — | ✓ |
+| Workflows | — | — | ✓ (Pro only, 3 free trial runs) |
 | Ask Bailey edits | 3/mo | 15/mo | Unlimited |
-| AI runs/mo | 20 | 150 | Unlimited |
 
 ---
 
-## Environment Variables (What They Are)
+## The 5 Website Templates
 
-These are in `.env.local` (NEVER commit this file) and in Vercel:
+All in `components/site/templates/[name]/index.tsx`. Server components. All inline CSS (NO Tailwind inside templates). All use `overflowX: "clip"` (NOT hidden).
 
-| Variable | Purpose |
-|---|---|
-| `KV_REST_API_URL` | Upstash Redis REST URL |
-| `KV_REST_API_TOKEN` | Upstash Redis token |
-| `ANTHROPIC_API_KEY` | Claude AI API key |
-| `STRIPE_SECRET_KEY` | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key (client-safe) |
-| `STRIPE_STARTER_PRICE_ID` | Stripe Price ID for $29/mo plan |
-| `STRIPE_GROWTH_PRICE_ID` | Stripe Price ID for $79/mo plan |
-| `STRIPE_PRO_PRICE_ID` | Stripe Price ID for $149/mo plan |
-| `RESEND_API_KEY` | Resend email API key |
-| `JWT_SECRET` | Secret for signing session JWTs |
-| `NEXT_PUBLIC_BASE_URL` | `https://baileyagents.com` (no trailing slash) |
-| `GOOGLE_PLACES_API_KEY` | Google Places API for location lookup |
-| `FACEBOOK_APP_ID` | Facebook app ID for social posting |
-| `FACEBOOK_APP_SECRET` | Facebook app secret |
-
----
-
-## Marketing Site Pages (baileyagents.com public pages)
-
-| Route | File | What it is |
+| Template | Aesthetic | Key colors |
 |---|---|---|
-| `/` | `app/page.tsx` | Homepage — hero with business name input, agent cards, features, pricing teaser. Dark `#08090a` background. Brand color `#00e5a0` (green). Uses Tailwind + `font-syne` headings. |
-| `/pricing` | `app/pricing/page.tsx` | Full pricing page — 3 plan cards from `PRICING_PLANS` in `utils/constants.ts` |
-| `/about` | `app/about/page.tsx` | About the company |
-| `/agents` | `app/agents/page.tsx` | AI agents showcase |
-| `/consulting` | `app/consulting/page.tsx` | Consulting services |
-| `/contacts` | `app/contacts/page.tsx` | Contact form |
-| `/reviews` | `app/reviews/page.tsx` | Customer reviews |
-| `/videos` | `app/videos/page.tsx` | Video library |
-| `/login` | `app/login/page.tsx` | Login + signup (same page, toggle between modes) |
-
-**Marketing color scheme:**
-- Background: `#08090a` (near black)
-- Brand accent: `#00e5a0` (bright green)
-- Text: `#f0f0f0` (off-white)
-- Muted text: `#9ca3af`
-- Cards/surfaces: `#111214` or `#0d0e10`
-- Borders: `rgba(255,255,255,0.08)` or `rgba(255,255,255,0.10)`
+| `darkpremium` | Tesla/Stripe, cinematic dark | `#080808` bg, primary color glow |
+| `neobrutalism` | Bold poster | Cream `#fffef7`, black, yellow `#FFE500` |
+| `minimal` | Apple/Linear | White bg, thin fonts |
+| `magazine` | Vogue/Wired editorial | `#fafaf8` bg, dark hero |
+| `classic` | Trustworthy navy/gold | Navy `#1a2744`, gold `#c9a84c` |
 
 ---
 
-## Marketing Components (used on baileyagents.com pages only)
+## Site Editor Architecture
 
-- `Navbar.tsx` — sticky top nav with auth-aware Log In/Dashboard buttons
-- `Footer.tsx` — site footer with links
-- `HeroInput.tsx` — the hero "Enter your business name" generator on homepage
-- `AgentCards.tsx` — agent showcase cards on homepage
-- `BaileyChat.tsx` — floating chat widget
-- `BentoGrid.tsx`, `BentoServices.tsx` — bento-style feature grids
-- `PricingCard.tsx` — individual pricing plan card
-- `SiteCard.tsx` — shows a user's generated site in dashboard
-- `ContentMachine.tsx` — content machine marketing section
-- `FallingText.tsx` — animated falling text effect
+```
+Fixed outer shell (position: fixed, full viewport, flex-column, zIndex: 200)
+├── Toolbar (52px) — Left: panel toggles | Center: template name | Right: View Live
+└── Main area (flex-row)
+    ├── Left sidebar (320px) — ThemesPanel + ContentPanel (7 tabs)
+    ├── Preview canvas — <TemplateRenderer isEditing={true} />
+    └── Right panel (320px) — <AskBailey />
+```
+
+**Autosave:** 800ms debounce. **View Live:** saves first, waits 1500ms, opens live URL.
+
+---
+
+## Marketing Color Scheme
+
+- Background: `#08090a`
+- Brand accent: `#00e5a0` (green)
+- Text: `#f0f0f0`
+- Muted: `#9ca3af`
+- Cards: `#111214` or `#0d0e10`
+- Borders: `rgba(255,255,255,0.08)`
 
 ---
 
 ## What Has Already Been Built (Do Not Rebuild)
 
-- ✅ Complete auth system (signup, login, email verification, password reset, sessions)
-- ✅ Stripe subscriptions (checkout, webhooks, portal, plan gating, past_due handling)
-- ✅ 5 website templates (darkpremium, neobrutalism, minimal, magazine, classic)
-- ✅ Wix-style site editor (7-tab sidebar, instant preview, autosave, Ask Bailey panel)
-- ✅ GSAP animations across all 5 templates (HeroReveal, StatCounter, ScrollAnimator, particles, Ken Burns, etc.)
-- ✅ Contact forms on all templates (sends real emails via Resend)
-- ✅ Hero image + about image upload (base64, stored in Redis)
-- ✅ Navbar editor (background color, link color pickers in sidebar)
-- ✅ Admin endpoints (delete-user, backfill-slugs, reset-customer, sync-subscription)
-- ✅ Rate limiting on sensitive endpoints
-- ✅ Email from noreply@baileyagents.com
+- ✅ Complete auth system (signup, login, email verification, password reset)
+- ✅ Stripe subscriptions (checkout, webhooks, portal, plan gating)
+- ✅ 5 website templates + GSAP animations
+- ✅ Wix-style site editor (7-tab sidebar, autosave, Ask Bailey)
+- ✅ Hero + about image upload (base64, Redis)
+- ✅ Facebook OAuth + page selector UI
+- ✅ Instagram OAuth
+- ✅ Facebook disconnect button
+- ✅ Facebook data deletion endpoint (Meta App Review compliant)
+- ✅ Telegram bot webhook + dashboard connect flow (@BaileyOS_Bot)
+- ✅ Slack + WhatsApp connections
+- ✅ Full workflow builder (React Flow canvas, 14 node types)
+- ✅ Workflow execution engine (topological sort, context chaining, auto-var names)
+- ✅ baileyBuildSite node generates REAL sites (Claude + Grok, saves to Redis, returns live URL)
+- ✅ Admin bypass for lilianajs27@gmail.com (unlimited runs, sites, no pricing redirect)
+- ✅ NavWrapper + FooterWrapper (fixes Run button visibility on client navigation)
+- ✅ Facebook domain verification meta tag in layout
 
 ---
 
@@ -476,9 +560,9 @@ These are in `.env.local` (NEVER commit this file) and in Vercel:
 
 - **Repo:** `https://github.com/chubby815/bailey-systems-site.git`
 - **Branch:** `main`
-- **Latest commit:** `98c44f8` — GSAP animations across all 5 templates
+- **Latest commit:** `0d724a8` — baileyBuildSite generates real sites
 - **Shell:** PowerShell — use `;` not `&&` to chain commands
 
 ---
 
-*Last updated: March 2026. Context written from full conversation history.*
+*Last updated: March 2026.*
