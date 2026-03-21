@@ -55,7 +55,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
-      <head />
+      <head>
+        <meta name="facebook-domain-verification" content="nhn0bhrtz0192wpswpma5vpktzl99" />
+      </head>
       <body>
         <NavWrapper initialHideNav={hideNav} isLoggedIn={isLoggedIn} />
         {children}
