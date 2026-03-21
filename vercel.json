@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/api/workflows/run/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/sites/generate/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}
