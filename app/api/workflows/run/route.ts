@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth'
 
 export const maxDuration = 60
 
-import { kv } from '@/lib/kv'
+import { kv, saveSite } from '@/lib/kv'
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
 
@@ -138,7 +138,61 @@ async function executeNode(
 
     case 'baileyBuildSite': {
       const businessName = resolveVars((d.businessName as string) || 'My Business', ctx)
-      return `Site queued for generation: ${businessName}`
+      const industry     = resolveVars((d.industry as string) || 'Consulting', ctx)
+      const tone         = resolveVars((d.tone as string) || 'Professional', ctx)
+      const location     = resolveVars((d.location as string) || 'United States', ctx)
+      const services     = resolveVars((d.services as string) || industry, ctx)
+      const primaryColor = (d.primaryColor as string) || 'Emerald Green'
+
+      const { generateSiteHTML } = await import('@/lib/generate-site-html')
+
+      const generatedHTML = await generateSiteHTML({
+        businessName,
+        industry,
+        location,
+        services,
+        tone,
+        primaryColor,
+        fontStyle:   'Modern',
+        heroStyle:   'Gradient Background',
+        layoutStyle: 'Standard',
+      })
+
+      // Build slug and siteId
+      const baseSlug     = businessName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 55)
+      const suffix       = Math.random().toString(36).substring(2, 6)
+      const existingSlug = await kv.get(`slug:${baseSlug}`)
+      const subdomainSlug = existingSlug ? `${baseSlug}-${suffix}` : baseSlug
+      const siteId        = `${subdomainSlug}-${suffix}`
+
+      await saveSite(siteId, {
+        siteId,
+        userId:        email,
+        businessName,
+        industry,
+        location,
+        services,
+        tone,
+        primaryColor,
+        contactEmail:  '',
+        contactPhone:  '',
+        generatedContent: {
+          hero:         { headline: `${industry} Services`, subheadline: businessName, ctaText: 'Get Started', badge: location },
+          services:     [{ name: services, description: `Professional ${industry} services`, icon: '✓' }],
+          about:        { title: businessName, body: `${businessName} provides professional ${industry} services.`, stats: [] },
+          testimonials: [],
+          cta:          { headline: 'Get Started', subtext: 'Contact us today', buttonText: 'Contact Us' },
+          seo:          { title: `${businessName} — ${industry}`, description: `${businessName} provides professional ${industry} services.` },
+        },
+        generatedHTML,
+        createdAt:     new Date().toISOString(),
+        subdomainSlug,
+      })
+
+      await kv.set(`slug:${subdomainSlug}`, siteId)
+
+      const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://baileyagents.com'
+      return `${BASE_URL}/sites/${siteId}`
     }
 
     case 'baileyFindLeads': {
