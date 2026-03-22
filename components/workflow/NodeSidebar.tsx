@@ -31,9 +31,12 @@ const NODE_DEFS: NodeDef[] = [
   // Logic
   { type: 'ifCondition',      label: 'IF Condition',     category: 'Logic',     color: '#f97316', defaultData: { label: 'IF Condition', leftVar: '', operator: '=', rightValue: '' } },
   { type: 'delay',            label: 'Delay',            category: 'Logic',     color: '#f97316', defaultData: { label: 'Delay', duration: '5', unit: 'seconds' } },
+  // Utility
+  { type: 'note',             label: 'Note',             category: 'Utility',   color: '#fbbf24', defaultData: { label: 'Note', text: '' } },
+  { type: 'setVariable',      label: 'Set Variable',     category: 'Utility',   color: '#06b6d4', defaultData: { label: 'Set Variable', varName: 'myVar', value: '' } },
 ]
 
-const CATEGORIES = ['Triggers', 'Bailey AI', 'Actions', 'Logic'] as const
+const CATEGORIES = ['Triggers', 'Bailey AI', 'Actions', 'Logic', 'Utility'] as const
 
 interface NodeSidebarProps {
   onDragStart: (e: React.DragEvent, nodeDef: NodeDef) => void

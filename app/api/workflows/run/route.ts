@@ -51,6 +51,7 @@ const autoVarNames: Record<string, string> = {
   instagramPost:   'instagramResult',
   linkedinPost:    'linkedinResult',
   httpRequest:     'httpResult',
+  setVariable:     'setVariableResult',
   schedule:        'trigger',
   manual:          'trigger',
   webhook:         'trigger',
@@ -79,6 +80,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   instagramPost:   2,
   linkedinPost:    2,
   httpRequest:     2,
+  setVariable:     2,
   googleSheets:    2,
   ifCondition:     3,
   delay:           3,
@@ -598,6 +600,13 @@ async function executeNode(
       return text.slice(0, 1000)
     }
 
+    case 'setVariable': {
+      const varName = ((d.varName as string) || 'myVar').trim()
+      const value   = resolveVars((d.value as string) || '', ctx)
+      ctx[varName]  = value
+      return value || `Set ${varName}`
+    }
+
     default:
       return 'unknown node type'
   }
@@ -786,16 +795,39 @@ export async function POST(req: NextRequest) {
       const label = (node.data.label as string) || node.type || 'Node'
       logs.push({ nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'running', timestamp: new Date().toISOString() })
 
-      try {
-        const output = await executeNode(node, context, anthropic, session.email.toLowerCase())
-        const durationMs = Date.now() - start
+      const MAX_RETRIES = TYPE_PRIORITY[node.type ?? ''] === 2 ? 2 : 0
+      let output   = ''
+      let lastErr: Error | null = null
 
-        // Store under predictable auto name (e.g. "aiText") and always also under node ID
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          output  = await executeNode(node, context, anthropic, session.email.toLowerCase())
+          lastErr = null
+          break
+        } catch (err) {
+          lastErr = err instanceof Error ? err : new Error(String(err))
+          if (attempt < MAX_RETRIES) {
+            await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+          }
+        }
+      }
+
+      if (lastErr) {
+        const durationMs = Date.now() - start
+        logs[logs.length - 1] = {
+          nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
+          status: 'error', message: lastErr.message, durationMs,
+          timestamp: new Date().toISOString(),
+        }
+        continue
+      }
+
+      {
+        const durationMs = Date.now() - start
         const autoName = autoVarNames[node.type ?? '']
         const userVar  = (node.data.outputVar as string) || ''
         const varName  = userVar || autoName || node.id
         context[varName] = output
-        // Also store under node ID so {{nodeId}} references always work
         if (varName !== node.id) context[node.id] = output
 
         console.log(`[WORKFLOW] node ${node.type} stored as "${varName}" = "${output.slice(0, 50)}..."`)
@@ -804,13 +836,6 @@ export async function POST(req: NextRequest) {
         logs[logs.length - 1] = {
           nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
           status: 'success', output: output.slice(0, 500), durationMs,
-          timestamp: new Date().toISOString(),
-        }
-      } catch (err) {
-        const durationMs = Date.now() - start
-        logs[logs.length - 1] = {
-          nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label,
-          status: 'error', message: err instanceof Error ? err.message : String(err), durationMs,
           timestamp: new Date().toISOString(),
         }
       }

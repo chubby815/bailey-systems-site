@@ -38,6 +38,8 @@ import { InstagramPostNode }   from './nodes/InstagramPostNode'
 import { BaileyImageNode }     from './nodes/BaileyImageNode'
 import { LinkedInPostNode }   from './nodes/LinkedInPostNode'
 import { HttpRequestNode }   from './nodes/HttpRequestNode'
+import { NoteNode }          from './nodes/NoteNode'
+import { SetVariableNode }   from './nodes/SetVariableNode'
 
 // ── HOC: wraps any node with a hoverable ✕ delete button ──────────────────
 type AnyComp = React.ComponentType<Record<string, unknown>>
@@ -104,6 +106,8 @@ const nodeTypes: NodeTypes = {
   baileyImage:     withDelete(BaileyImageNode     as AnyComp) as NodeTypes[string],
   linkedinPost:    withDelete(LinkedInPostNode    as AnyComp) as NodeTypes[string],
   httpRequest:     withDelete(HttpRequestNode    as AnyComp) as NodeTypes[string],
+  note:            withDelete(NoteNode           as AnyComp) as NodeTypes[string],
+  setVariable:     withDelete(SetVariableNode    as AnyComp) as NodeTypes[string],
 }
 
 interface RunSummary {

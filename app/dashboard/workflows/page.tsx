@@ -24,15 +24,27 @@ export default async function WorkflowsPage() {
             <p style={{ color: '#00e5a0', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>Automation</p>
             <h1 style={{ color: '#f0f0f0', fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.02em' }}>Workflows</h1>
           </div>
-          <Link
-            href="/dashboard/workflows/new"
-            style={{
-              background: '#00e5a0', color: '#000', fontWeight: 700, fontSize: '0.875rem',
-              padding: '0.75rem 1.5rem', borderRadius: '10px', textDecoration: 'none',
-            }}
-          >
-            + New Workflow
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Link
+              href="/dashboard/workflows/templates"
+              style={{
+                background: 'transparent', color: '#9ca3af', fontWeight: 600, fontSize: '0.875rem',
+                padding: '0.75rem 1.25rem', borderRadius: '10px', textDecoration: 'none',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
+              Browse Templates
+            </Link>
+            <Link
+              href="/dashboard/workflows/new"
+              style={{
+                background: '#00e5a0', color: '#000', fontWeight: 700, fontSize: '0.875rem',
+                padding: '0.75rem 1.5rem', borderRadius: '10px', textDecoration: 'none',
+              }}
+            >
+              + New Workflow
+            </Link>
+          </div>
         </div>
 
         <WorkflowList initialWorkflows={workflows} />
