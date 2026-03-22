@@ -49,6 +49,7 @@ const autoVarNames: Record<string, string> = {
   slack:           'slackResult',
   facebookPost:    'postResult',
   instagramPost:   'instagramResult',
+  linkedinPost:    'linkedinResult',
   schedule:        'trigger',
   manual:          'trigger',
   webhook:         'trigger',
@@ -75,6 +76,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   slack:           2,
   facebookPost:    2,
   instagramPost:   2,
+  linkedinPost:    2,
   googleSheets:    2,
   ifCondition:     3,
   delay:           3,
@@ -498,6 +500,54 @@ async function executeNode(
       })
       if (!res.ok) throw new Error(await res.text())
       return `Slack message sent to ${channel}`
+    }
+
+    case 'linkedinPost': {
+      const rawContent = (d.content as string) || ''
+      const content    = rawContent.includes('{{')
+        ? resolveVars(rawContent, ctx)
+        : ctx['aiText'] ?? rawContent
+
+      const imageUrl = resolveVars((d.imageUrl as string) || '', ctx)
+
+      if (!content.trim()) throw new Error('LinkedIn Post — no content to post')
+
+      const li = await kv.get<{ accessToken: string; personId: string; name: string }>(`linkedin:${email}`)
+      if (!li?.accessToken || !li?.personId) {
+        throw new Error('LinkedIn account not connected — go to Dashboard → Connections → LinkedIn')
+      }
+
+      const postBody: Record<string, unknown> = {
+        author:      `urn:li:person:${li.personId}`,
+        commentary:  imageUrl ? `${content}\n\n${imageUrl}` : content,
+        visibility:  'PUBLIC',
+        distribution: {
+          feedDistribution:              'MAIN_FEED',
+          targetEntities:               [],
+          thirdPartyDistributionChannels: [],
+        },
+        lifecycleState:              'PUBLISHED',
+        isReshareDisableForOperator: false,
+      }
+
+      const postRes = await fetch('https://api.linkedin.com/rest/posts', {
+        method: 'POST',
+        headers: {
+          'Authorization':              `Bearer ${li.accessToken}`,
+          'Content-Type':               'application/json',
+          'LinkedIn-Version':           '202304',
+          'X-Restli-Protocol-Version':  '2.0.0',
+        },
+        body: JSON.stringify(postBody),
+      })
+
+      if (!postRes.ok) {
+        const errText = await postRes.text()
+        console.error('[linkedinPost] failed:', errText)
+        throw new Error(`LinkedIn post failed (${postRes.status}) — check your connection`)
+      }
+
+      return `Posted to LinkedIn as ${li.name}`
     }
 
     case 'googleSheets':

@@ -36,6 +36,7 @@ import { TelegramNode }        from './nodes/TelegramNode'
 import { SlackNode }           from './nodes/SlackNode'
 import { InstagramPostNode }   from './nodes/InstagramPostNode'
 import { BaileyImageNode }     from './nodes/BaileyImageNode'
+import { LinkedInPostNode }   from './nodes/LinkedInPostNode'
 
 // ── HOC: wraps any node with a hoverable ✕ delete button ──────────────────
 type AnyComp = React.ComponentType<Record<string, unknown>>
@@ -100,6 +101,7 @@ const nodeTypes: NodeTypes = {
   slack:           withDelete(SlackNode           as AnyComp) as NodeTypes[string],
   instagramPost:   withDelete(InstagramPostNode   as AnyComp) as NodeTypes[string],
   baileyImage:     withDelete(BaileyImageNode     as AnyComp) as NodeTypes[string],
+  linkedinPost:    withDelete(LinkedInPostNode    as AnyComp) as NodeTypes[string],
 }
 
 interface RunSummary {

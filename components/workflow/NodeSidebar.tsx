@@ -23,6 +23,7 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'googleSheets',     label: 'Google Sheets',    category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Google Sheets', spreadsheetId: '', sheetName: 'Sheet1', operation: 'append' } },
   { type: 'facebookPost',     label: 'Facebook Post',    category: 'Actions',   color: '#1877F2', defaultData: { label: 'Facebook Post', content: '' } },
   { type: 'instagramPost',    label: 'Instagram Post',   category: 'Actions',   color: '#E1306C', defaultData: { label: 'Instagram Post', caption: '', imageUrl: '' } },
+  { type: 'linkedinPost',     label: 'LinkedIn Post',    category: 'Actions',   color: '#0A66C2', defaultData: { label: 'LinkedIn Post', content: '', imageUrl: '' } },
   { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', provider: 'twilio', to: '', message: '' } },
   { type: 'telegram',         label: 'Telegram',         category: 'Actions',   color: '#229ED9', defaultData: { label: 'Telegram', chatId: '', message: '' } },
   { type: 'slack',            label: 'Slack',            category: 'Actions',   color: '#4A154B', defaultData: { label: 'Slack', webhookUrl: '', channel: '#general', message: '' } },

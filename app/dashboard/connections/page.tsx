@@ -11,6 +11,7 @@ interface ConnectionStatus {
   whatsapp:  { connected: boolean; provider?: string }
   facebook:  { connected: boolean; pageName?: string }
   instagram: { connected: boolean; username?: string; accountName?: string }
+  linkedin:  { connected: boolean; name?: string }
   google:    { connected: boolean }
 }
 
@@ -82,6 +83,7 @@ export default function ConnectionsPage() {
         whatsapp:  { connected: false },
         facebook:  { connected: false },
         instagram: { connected: false },
+        linkedin:  { connected: false },
         google:    { connected: false },
       }))
   }, [])
@@ -94,6 +96,8 @@ export default function ConnectionsPage() {
       flash('facebook', '✓ Facebook page connected!')
     } else if (connected === 'instagram') {
       flash('instagram', '✓ Instagram account connected!')
+    } else if (connected === 'linkedin') {
+      flash('linkedin', '✓ LinkedIn account connected!')
     } else if (error) {
       const msg = ERROR_MESSAGES[error] ?? 'Connection failed — please try again.'
       // Show under whichever card is most likely — use generic top-level flash
@@ -422,6 +426,34 @@ export default function ConnectionsPage() {
                   style={{ background: 'linear-gradient(135deg, #E1306C, #833AB4)' }}
                 >
                   Connect Instagram →
+                </a>
+              </div>
+            </ConnectionCard>
+
+            {/* ── LinkedIn ── */}
+            <ConnectionCard
+              id="linkedin"
+              icon="💼"
+              name="LinkedIn"
+              color="#0A66C2"
+              description="Post text and updates to your LinkedIn profile from workflows"
+              connected={statuses?.linkedin.connected ?? false}
+              detail={statuses?.linkedin.name ? `Connected as ${statuses.linkedin.name}` : undefined}
+              expanded={expanded === 'linkedin'}
+              onToggle={() => setExpanded(expanded === 'linkedin' ? null : 'linkedin')}
+              saveMsg={saveMsg['linkedin']}
+            >
+              <div className="pt-2 flex flex-col gap-3">
+                <p className="text-xs text-gray-500">
+                  Connect your LinkedIn profile to allow Bailey workflows to post content automatically.
+                  Requires a LinkedIn app with <strong className="text-white">Share on LinkedIn</strong> and <strong className="text-white">Sign In with OpenID Connect</strong> products enabled.
+                </p>
+                <a
+                  href="/api/auth/linkedin"
+                  className="inline-block text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors self-start"
+                  style={{ background: '#0A66C2' }}
+                >
+                  {statuses?.linkedin.connected ? 'Reconnect LinkedIn →' : 'Connect LinkedIn →'}
                 </a>
               </div>
             </ConnectionCard>
