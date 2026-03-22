@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
     // Find first page with a connected Instagram Business Account
     const pageWithIg = pagesData.data.find(p => p.instagram_business_account?.id)
     if (!pageWithIg?.instagram_business_account?.id) {
+      console.log(`[auth/instagram/callback] no instagram found for ${email} — pages: ${pagesData.data?.map(p => p.name).join(', ')}`)
       return NextResponse.redirect(`${BASE_URL}/dashboard/connections?error=no_instagram`)
     }
 
@@ -81,6 +82,10 @@ export async function GET(req: NextRequest) {
     igUrl.searchParams.set('access_token', pageWithIg.access_token)
 
     const igRes = await fetch(igUrl.toString())
+    if (!igRes.ok) {
+      console.error('[auth/instagram/callback] IG details fetch failed:', await igRes.text())
+      return NextResponse.redirect(`${BASE_URL}/dashboard/connections?error=server`)
+    }
     const igData = await igRes.json() as { id: string; name?: string; username?: string }
 
     await saveInstagramAccount(email.toLowerCase(), {
