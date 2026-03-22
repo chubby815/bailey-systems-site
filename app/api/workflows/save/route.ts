@@ -42,6 +42,23 @@ async function syncSchedule(workflowId: string, email: string, nodes: unknown[])
   }
 }
 
+async function syncWebhook(workflowId: string, email: string, nodes: unknown[], existingNodes?: unknown[]) {
+  const webhookNode = (nodes as RawNode[]).find(n => n.type === 'webhook')
+  if (webhookNode?.data?.path) {
+    const path = String(webhookNode.data.path)
+    await kv.set(`webhook-path:${path}`, { workflowId, email })
+    console.log(`[save] registered webhook path "${path}" for ${workflowId}`)
+  } else {
+    // No webhook node — remove old path if it existed
+    const oldNodes = (existingNodes ?? []) as RawNode[]
+    const oldPath = oldNodes.find(n => n.type === 'webhook')?.data?.path
+    if (oldPath) {
+      await kv.del(`webhook-path:${String(oldPath)}`)
+      console.log(`[save] removed webhook path for ${workflowId}`)
+    }
+  }
+}
+
 function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 }
@@ -100,6 +117,7 @@ export async function POST(req: NextRequest) {
       const updated: WorkflowRecord = { ...existing, name: name ?? existing.name, nodes, edges, updatedAt: now }
       await kv.set(`workflow:${workflowId}`, updated)
       await syncSchedule(workflowId, email, nodes)
+      await syncWebhook(workflowId, email, nodes, existing.nodes)
       return NextResponse.json({ id: workflowId, success: true })
     }
 
@@ -112,6 +130,7 @@ export async function POST(req: NextRequest) {
     await kv.set(`workflow:${id}`, record)
     await kv.lpush(`workflows:${email}`, id)
     await syncSchedule(id, email, nodes)
+    await syncWebhook(id, email, nodes)
     return NextResponse.json({ id, success: true })
   } catch (err) {
     console.error('[workflows/save]', err)
@@ -143,6 +162,10 @@ export async function DELETE(req: NextRequest) {
     if (!existing || existing.userId !== email) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
+    // Clean up webhook path before deleting workflow record
+    const webhookPath = (existing.nodes as RawNode[]).find(n => n.type === 'webhook')?.data?.path
+    if (webhookPath) await kv.del(`webhook-path:${String(webhookPath)}`)
+
     await kv.del(`workflow:${workflowId}`)
     await kv.lrem(`workflows:${email}`, 0, workflowId)
     await kv.del(`schedule:${workflowId}`)

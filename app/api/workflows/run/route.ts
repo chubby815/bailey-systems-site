@@ -50,6 +50,7 @@ const autoVarNames: Record<string, string> = {
   facebookPost:    'postResult',
   instagramPost:   'instagramResult',
   linkedinPost:    'linkedinResult',
+  httpRequest:     'httpResult',
   schedule:        'trigger',
   manual:          'trigger',
   webhook:         'trigger',
@@ -77,6 +78,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   facebookPost:    2,
   instagramPost:   2,
   linkedinPost:    2,
+  httpRequest:     2,
   googleSheets:    2,
   ifCondition:     3,
   delay:           3,
@@ -575,6 +577,27 @@ async function executeNode(
       return `Waited ${amount} ${unit}`
     }
 
+    case 'httpRequest': {
+      const url    = resolveVars((d.url as string) || '', ctx)
+      const method = (d.method as string) || 'GET'
+      let headers: Record<string, string> = {}
+      try {
+        headers = JSON.parse((d.headers as string) || '{}') as Record<string, string>
+      } catch {
+        headers = {}
+      }
+      const rawBody = (d.body as string) || ''
+      const body = method !== 'GET' ? resolveVars(rawBody, ctx) : undefined
+      if (!url.trim()) return 'HTTP Request — no URL — skipped'
+      const res = await fetch(url, {
+        method,
+        headers,
+        ...(body ? { body } : {}),
+      })
+      const text = await res.text()
+      return text.slice(0, 1000)
+    }
+
     default:
       return 'unknown node type'
   }
@@ -593,7 +616,7 @@ export async function POST(req: NextRequest) {
 
     if (isCronCall) {
       // Parse body to get email injected by cron handler
-      const raw = await req.json() as { workflowId?: string; _cronEmail?: string; nodes?: unknown[]; edges?: unknown[] }
+      const raw = await req.json() as { workflowId?: string; _cronEmail?: string; nodes?: unknown[]; edges?: unknown[]; triggerData?: string }
       if (!raw._cronEmail) {
         return NextResponse.json({ error: 'Cron call missing email', logs: [] }, { status: 400 })
       }
@@ -624,6 +647,7 @@ export async function POST(req: NextRequest) {
       const order = executionOrder(nodes, edges)
       const logs: LogEntry[] = []
       const context: Record<string, string> = {}
+      if (raw.triggerData) context['webhookData'] = raw.triggerData
 
       for (const node of order) {
         const start = Date.now()
