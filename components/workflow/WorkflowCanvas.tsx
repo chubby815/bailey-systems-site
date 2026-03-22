@@ -102,6 +102,15 @@ const nodeTypes: NodeTypes = {
   baileyImage:     withDelete(BaileyImageNode     as AnyComp) as NodeTypes[string],
 }
 
+interface RunSummary {
+  runId: string
+  runAt: string
+  status: 'success' | 'error'
+  durationMs: number
+  nodeCount: number
+  errorMessage?: string
+}
+
 export interface WorkflowCanvasProps {
   workflowId?: string
   initialName?: string
@@ -124,6 +133,9 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
   const [saveMsg, setSaveMsg]   = useState('')
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isDirty, setIsDirty]   = useState(false)
+  const [showRuns, setShowRuns]   = useState(false)
+  const [runHistory, setRunHistory] = useState<RunSummary[]>([])
+  const [runsLoading, setRunsLoading] = useState(false)
   // Track actual persisted workflow ID (may be created on first save)
   const [currentId, setCurrentId] = useState<string | undefined>(workflowId)
 
@@ -217,6 +229,28 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
     e.dataTransfer.effectAllowed = 'move'
   }, [])
 
+  // ── Run history ────────────────────────────────────────────────────────
+  const fetchRunHistory = useCallback(async (id: string) => {
+    setRunsLoading(true)
+    try {
+      const res = await fetch(`/api/workflows/${id}/runs`)
+      const data = await res.json() as { runs: RunSummary[] }
+      setRunHistory(data.runs ?? [])
+    } catch {
+      // silent
+    } finally {
+      setRunsLoading(false)
+    }
+  }, [])
+
+  const handleToggleRuns = useCallback(() => {
+    setShowRuns(prev => {
+      const next = !prev
+      if (next && currentId) fetchRunHistory(currentId).catch(() => null)
+      return next
+    })
+  }, [currentId, fetchRunHistory])
+
   // ── Manual save ────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
     setIsSaving(true)
@@ -284,8 +318,9 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       }])
     } finally {
       setIsRunning(false)
+      if (showRuns && currentId) fetchRunHistory(currentId).catch(() => null)
     }
-  }, [currentId, nodes, edges])
+  }, [currentId, nodes, edges, showRuns, fetchRunHistory])
 
   // ── Save status label ──────────────────────────────────────────────────
   const savedAtStr = lastSaved
@@ -331,6 +366,17 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
           ) : null}
 
           <button
+            onClick={handleToggleRuns}
+            style={{
+              padding: '0.4rem 0.9rem', background: showRuns ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+              color: showRuns ? '#f0f0f0' : '#9ca3af',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '0.8rem',
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Runs
+          </button>
+          <button
             onClick={handleSave}
             disabled={isSaving}
             style={{
@@ -358,6 +404,52 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
       {/* ── Main Area ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
         <NodeSidebar onDragStart={handleDragStart} />
+
+        {/* ── Run History Panel ── */}
+        {showRuns && (
+          <div style={{
+            width: '272px', flexShrink: 0, background: '#0a0b0d',
+            borderLeft: '1px solid rgba(255,255,255,0.07)', overflowY: 'auto',
+            display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif',
+          }}>
+            <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#f0f0f0', fontSize: '0.85rem', fontWeight: 600 }}>Run History</span>
+              <button onClick={() => setShowRuns(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}>✕</button>
+            </div>
+            {runsLoading ? (
+              <div style={{ padding: '1.5rem 1rem', color: '#6b7280', fontSize: '0.78rem', textAlign: 'center' }}>Loading…</div>
+            ) : !currentId ? (
+              <div style={{ padding: '1.5rem 1rem', color: '#6b7280', fontSize: '0.78rem', textAlign: 'center' }}>Save the workflow first to see run history.</div>
+            ) : runHistory.length === 0 ? (
+              <div style={{ padding: '1.5rem 1rem', color: '#6b7280', fontSize: '0.78rem', textAlign: 'center' }}>No runs yet. Click ▶ Run to execute this workflow.</div>
+            ) : (
+              runHistory.map(run => (
+                <div key={run.runId} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: run.status === 'success' ? '#00e5a0' : '#ef4444' }} />
+                    <span style={{ color: run.status === 'success' ? '#00e5a0' : '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {run.status === 'success' ? 'Success' : 'Failed'}
+                    </span>
+                    <span style={{ color: '#4b5563', fontSize: '0.68rem', marginLeft: 'auto' }}>
+                      {run.durationMs ? `${(run.durationMs / 1000).toFixed(1)}s` : ''}
+                    </span>
+                  </div>
+                  <span style={{ color: '#6b7280', fontSize: '0.7rem' }}>
+                    {new Date(run.runAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span style={{ color: '#374151', fontSize: '0.68rem' }}>
+                    {run.nodeCount} node{run.nodeCount !== 1 ? 's' : ''}
+                  </span>
+                  {run.errorMessage && (
+                    <span style={{ color: '#ef4444', fontSize: '0.68rem', marginTop: '0.1rem', wordBreak: 'break-word' }}>
+                      {run.errorMessage}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         <div ref={reactFlowWrapper} style={{ flex: 1, position: 'relative' }}>
           <ReactFlow

@@ -664,10 +664,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Update lastRun
+    // Update lastRun + save run history
     if (workflowId) {
       const wf = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
       if (wf) await kv.set(`workflow:${workflowId}`, { ...wf, lastRun: new Date().toISOString() })
+
+      const hasError = logs.some(l => l.status === 'error')
+      const errorEntry = logs.find(l => l.status === 'error')
+      const runSummary = {
+        runId:        String(Date.now()),
+        runAt:        new Date().toISOString(),
+        status:       hasError ? 'error' : 'success',
+        durationMs:   logs.reduce((sum, l) => sum + (l.durationMs ?? 0), 0),
+        nodeCount:    logs.length,
+        errorMessage: errorEntry?.message?.slice(0, 120),
+      }
+      await kv.lpush(`run-history:${workflowId}`, runSummary)
+      await kv.ltrim(`run-history:${workflowId}`, 0, 19)
     }
 
     return NextResponse.json({ logs, context })
