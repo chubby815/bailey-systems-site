@@ -42,6 +42,7 @@ const autoVarNames: Record<string, string> = {
   baileyWrite:     'aiText',
   baileyFindLeads: 'leads',
   baileyBuildSite: 'siteUrl',
+  baileyImage:     'imageUrl',
   sendEmail:       'emailResult',
   whatsApp:        'whatsAppResult',
   telegram:        'telegramResult',
@@ -66,6 +67,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   baileyWrite:     1,
   baileyFindLeads: 1,
   baileyBuildSite: 1,
+  baileyImage:     1,
   aiAgent:         1,
   sendEmail:       2,
   whatsApp:        2,
@@ -193,6 +195,31 @@ async function executeNode(
 
       const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://baileyagents.com'
       return `${BASE_URL}/sites/${siteId}`
+    }
+
+    case 'baileyImage': {
+      const prompt = resolveVars((d.prompt as string) || 'A professional business photo, high quality', ctx)
+      const OpenAI = (await import('openai')).default
+      const grok = new OpenAI({
+        apiKey: process.env.GROK_API_KEY!,
+        baseURL: 'https://api.x.ai/v1',
+      })
+      const response = await grok.images.generate({
+        model: 'grok-imagine-image',
+        prompt,
+        n: 1,
+        response_format: 'b64_json',
+      } as Parameters<typeof grok.images.generate>[0])
+      const b64 = response.data?.[0]
+        ? (response.data[0] as { b64_json?: string }).b64_json
+        : undefined
+      if (!b64) throw new Error('Grok image generation returned no image data')
+      const { put } = await import('@vercel/blob')
+      const buffer = Buffer.from(b64, 'base64')
+      const blob = await put(`workflow-images/${Date.now()}.jpg`, buffer, {
+        access: 'public', contentType: 'image/jpeg',
+      })
+      return blob.url
     }
 
     case 'baileyFindLeads': {

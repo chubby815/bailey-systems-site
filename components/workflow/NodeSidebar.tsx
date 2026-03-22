@@ -17,6 +17,7 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'baileyWrite',      label: 'Bailey Write',     category: 'Bailey AI', color: '#00e5a0', defaultData: { label: 'Bailey Write', prompt: '', outputVar: 'aiOutput' } },
   { type: 'baileyBuildSite',  label: 'Build Site',       category: 'Bailey AI', color: '#00e5a0', defaultData: { label: 'Build Site', businessName: '', industry: '', tone: 'Professional' } },
   { type: 'baileyFindLeads',  label: 'Find Leads',       category: 'Bailey AI', color: '#00e5a0', defaultData: { label: 'Find Leads', industry: '', location: '', count: '10' } },
+  { type: 'baileyImage',      label: 'Bailey Image',     category: 'Bailey AI', color: '#a855f7', defaultData: { label: 'Bailey Image', prompt: '' } },
   // Actions
   { type: 'sendEmail',        label: 'Send Email',       category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Send Email', toEmail: '', subject: '', body: '' } },
   { type: 'googleSheets',     label: 'Google Sheets',    category: 'Actions',   color: '#3b82f6', defaultData: { label: 'Google Sheets', spreadsheetId: '', sheetName: 'Sheet1', operation: 'append' } },
