@@ -582,7 +582,85 @@ async function executeNode(
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession(req)
+    // ── Internal cron bypass — called by /api/cron/workflows ─────────────────
+    const cronSecret     = process.env.CRON_SECRET
+    const incomingSecret = req.headers.get('x-cron-secret')
+    const isCronCall     = cronSecret
+      ? incomingSecret === cronSecret
+      : incomingSecret === 'cron'
+
+    let session: { email: string } | null = null
+
+    if (isCronCall) {
+      // Parse body to get email injected by cron handler
+      const raw = await req.json() as { workflowId?: string; _cronEmail?: string; nodes?: unknown[]; edges?: unknown[] }
+      if (!raw._cronEmail) {
+        return NextResponse.json({ error: 'Cron call missing email', logs: [] }, { status: 400 })
+      }
+      session = { email: raw._cronEmail.toLowerCase() }
+      // Re-create request-like object with the body already consumed
+      // We pass nodes/edges/workflowId through the reconstructed body below
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+      const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? 'lilianajs27@gmail.com').toLowerCase()
+      const email = session.email
+
+      const workflowId  = raw.workflowId
+      let nodes: RFNode[] = (raw.nodes as RFNode[]) ?? []
+      let edges: RFEdge[] = (raw.edges as RFEdge[]) ?? []
+
+      if (workflowId && nodes.length === 0) {
+        const wf = await kv.get<WorkflowRecord & { nodes: RFNode[]; edges: RFEdge[] }>(`workflow:${workflowId}`)
+        if (!wf || wf.userId !== email) {
+          return NextResponse.json({ error: 'Workflow not found', logs: [] }, { status: 404 })
+        }
+        nodes = wf.nodes
+        edges = wf.edges
+      }
+
+      if (nodes.length === 0) {
+        return NextResponse.json({ logs: [{ nodeId: 'system', nodeType: 'system', nodeLabel: 'System', status: 'error' as const, message: 'No nodes found.', timestamp: new Date().toISOString() }], context: {} })
+      }
+
+      const order = executionOrder(nodes, edges)
+      const logs: LogEntry[] = []
+      const context: Record<string, string> = {}
+
+      for (const node of order) {
+        const start = Date.now()
+        const label = (node.data.label as string) || node.type || 'Node'
+        logs.push({ nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'running', timestamp: new Date().toISOString() })
+        try {
+          const output = await executeNode(node, context, anthropic, email)
+          const durationMs = Date.now() - start
+          const autoName = autoVarNames[node.type ?? '']
+          const userVar  = (node.data.outputVar as string) || ''
+          const varName  = userVar || autoName || node.id
+          context[varName] = output
+          if (varName !== node.id) context[node.id] = output
+          logs[logs.length - 1] = { nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'success', output: output.slice(0, 500), durationMs, timestamp: new Date().toISOString() }
+        } catch (err) {
+          const durationMs = Date.now() - start
+          logs[logs.length - 1] = { nodeId: node.id, nodeType: node.type ?? 'unknown', nodeLabel: label, status: 'error', message: err instanceof Error ? err.message : String(err), durationMs, timestamp: new Date().toISOString() }
+        }
+      }
+
+      if (workflowId) {
+        const wf = await kv.get<WorkflowRecord>(`workflow:${workflowId}`)
+        if (wf) await kv.set(`workflow:${workflowId}`, { ...wf, lastRun: new Date().toISOString() })
+        const hasError = logs.some(l => l.status === 'error')
+        const errorEntry = logs.find(l => l.status === 'error')
+        const runSummary = { runId: String(Date.now()), runAt: new Date().toISOString(), status: hasError ? 'error' : 'success', durationMs: logs.reduce((s, l) => s + (l.durationMs ?? 0), 0), nodeCount: logs.length, errorMessage: errorEntry?.message?.slice(0, 120) }
+        await kv.lpush(`run-history:${workflowId}`, runSummary)
+        await kv.ltrim(`run-history:${workflowId}`, 0, 19)
+      }
+
+      console.log(`[cron-run] ${email} workflow ${workflowId} — ${logs.filter(l => l.status === 'success').length}/${logs.length} nodes OK`)
+      void ADMIN_EMAIL // suppress unused warning
+      return NextResponse.json({ logs, context })
+    }
+    // ── End internal cron bypass ──────────────────────────────────────────────
+
+    session = await getSession(req)
     if (!session?.email) {
       return NextResponse.json({ error: 'Unauthorized', logs: [] }, { status: 401 })
     }

@@ -14,6 +14,34 @@ interface WorkflowRecord {
   status: 'active' | 'paused'
 }
 
+interface RawNode {
+  type?: string
+  data?: Record<string, unknown>
+}
+
+async function syncSchedule(workflowId: string, email: string, nodes: unknown[]) {
+  const scheduleNode = (nodes as RawNode[]).find(n => n.type === 'schedule')
+  if (scheduleNode?.data?.cron) {
+    const cronExpression = String(scheduleNode.data.cron)
+    await kv.set(`schedule:${workflowId}`, {
+      email,
+      cronExpression,
+      workflowId,
+      enabled: true,
+    })
+    await kv.sadd('scheduled-workflows', workflowId)
+    console.log(`[save] registered schedule for ${workflowId}: ${cronExpression}`)
+  } else {
+    // No schedule node — remove from scheduled set
+    const existing = await kv.get(`schedule:${workflowId}`)
+    if (existing) {
+      await kv.del(`schedule:${workflowId}`)
+      await kv.srem('scheduled-workflows', workflowId)
+      console.log(`[save] removed schedule for ${workflowId}`)
+    }
+  }
+}
+
 function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 }
@@ -71,6 +99,7 @@ export async function POST(req: NextRequest) {
       }
       const updated: WorkflowRecord = { ...existing, name: name ?? existing.name, nodes, edges, updatedAt: now }
       await kv.set(`workflow:${workflowId}`, updated)
+      await syncSchedule(workflowId, email, nodes)
       return NextResponse.json({ id: workflowId, success: true })
     }
 
@@ -82,6 +111,7 @@ export async function POST(req: NextRequest) {
     }
     await kv.set(`workflow:${id}`, record)
     await kv.lpush(`workflows:${email}`, id)
+    await syncSchedule(id, email, nodes)
     return NextResponse.json({ id, success: true })
   } catch (err) {
     console.error('[workflows/save]', err)
@@ -115,6 +145,8 @@ export async function DELETE(req: NextRequest) {
     }
     await kv.del(`workflow:${workflowId}`)
     await kv.lrem(`workflows:${email}`, 0, workflowId)
+    await kv.del(`schedule:${workflowId}`)
+    await kv.srem('scheduled-workflows', workflowId)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[workflows/delete]', err)

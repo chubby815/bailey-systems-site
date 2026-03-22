@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/workflows",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "functions": {
     "app/api/workflows/run/route.ts": {
       "maxDuration": 300
