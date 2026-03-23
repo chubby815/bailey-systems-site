@@ -183,6 +183,82 @@ export default async function GuidePage() {
           ))}
         </div>
 
+        {/* Platform Requirements — Transparency Section */}
+        <div style={{ background: "#111214", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "1.5rem", marginBottom: "2rem" }}>
+          <p style={{ color: "#f0f0f0", fontSize: "0.85rem", fontWeight: 800, marginBottom: "0.25rem" }}>
+            📋 Platform Requirements — What You Need Before Connecting
+          </p>
+          <p style={{ color: "#6b7280", fontSize: "0.78rem", marginBottom: "1rem", lineHeight: 1.6 }}>
+            Bailey Agents connects to real social media APIs. Each platform has its own requirements set by that platform — not by us. Here's exactly what you need for each one.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+            {[
+              {
+                platform: "LinkedIn",
+                icon: "💼",
+                status: "ready",
+                req: "A LinkedIn account. That's it. Connect via OAuth on the Connections page.",
+              },
+              {
+                platform: "Facebook",
+                icon: "📘",
+                status: "ready",
+                req: "A Facebook Business PAGE (not a personal profile). Facebook's API does not allow posting to personal profiles — this is Facebook's policy, not ours. Creating a free Business Page takes 5 minutes.",
+              },
+              {
+                platform: "Instagram",
+                icon: "📸",
+                status: "ready",
+                req: "An Instagram Business or Creator account linked to a Facebook Page. Personal Instagram accounts cannot connect via API — this is Instagram/Meta's policy that applies to every social media tool (Buffer, Hootsuite, Later, etc.).",
+              },
+              {
+                platform: "Telegram",
+                icon: "✈️",
+                status: "ready",
+                req: "A Telegram account. Message @BaileyOS_Bot to get your verification code. Works instantly.",
+              },
+              {
+                platform: "Slack",
+                icon: "💬",
+                status: "ready",
+                req: "A Slack workspace. Create a webhook URL in Slack → Apps → Incoming Webhooks. Free on all Slack plans.",
+              },
+              {
+                platform: "WhatsApp",
+                icon: "📱",
+                status: "soon",
+                req: "Requires Meta Business Verification (3-7 days review process). Currently in setup — coming soon.",
+              },
+            ].map(item => (
+              <div key={item.platform} style={{
+                display: "flex", gap: "0.75rem", alignItems: "flex-start",
+                background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "0.65rem 0.85rem",
+              }}>
+                <span style={{ fontSize: "1rem", flexShrink: 0 }}>{item.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
+                    <span style={{ color: "#f0f0f0", fontSize: "0.8rem", fontWeight: 700 }}>{item.platform}</span>
+                    <span style={{
+                      fontSize: "0.6rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "4px",
+                      background: item.status === "ready" ? "rgba(0,229,160,0.1)" : "rgba(251,191,36,0.1)",
+                      color: item.status === "ready" ? "#00e5a0" : "#fbbf24",
+                      border: `1px solid ${item.status === "ready" ? "rgba(0,229,160,0.2)" : "rgba(251,191,36,0.2)"}`,
+                    }}>
+                      {item.status === "ready" ? "READY" : "COMING SOON"}
+                    </span>
+                  </div>
+                  <p style={{ color: "#9ca3af", fontSize: "0.76rem", lineHeight: 1.6, margin: 0 }}>
+                    {item.req}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ color: "#4b5563", fontSize: "0.72rem", marginTop: "0.75rem", lineHeight: 1.6 }}>
+            💡 These requirements are set by Facebook, Instagram, LinkedIn, and other platforms — not by Bailey Agents. Every social media scheduling tool (Buffer, Hootsuite, Later, Sprout Social) has identical requirements.
+          </p>
+        </div>
+
         {/* Cron Quick Reference */}
         <div style={{ background: "#111214", border: "1px solid rgba(0,229,160,0.2)", borderRadius: "14px", padding: "1.5rem", marginBottom: "2rem" }}>
           <p style={{ color: "#00e5a0", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>
