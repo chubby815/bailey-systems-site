@@ -546,8 +546,7 @@ async function executeNode(
           targetEntities:               [],
           thirdPartyDistributionChannels: [],
         },
-        lifecycleState:              'PUBLISHED',
-        isReshareDisableForOperator: false,
+        lifecycleState: 'PUBLISHED',
       }
 
       const postRes = await fetch('https://api.linkedin.com/rest/posts', {
