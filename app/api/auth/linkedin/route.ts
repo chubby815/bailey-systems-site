@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   }
 
   const redirectUri = `${BASE_URL}/api/auth/linkedin/callback`
-  const scope       = 'openid profile email'
+  const scope       = 'openid profile email w_member_social'
 
   const oauthUrl = new URL('https://www.linkedin.com/oauth/v2/authorization')
   oauthUrl.searchParams.set('response_type', 'code')
