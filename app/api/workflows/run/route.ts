@@ -151,6 +151,13 @@ async function executeNode(
       const location     = resolveVars((d.location as string) || 'United States', ctx)
       const services     = resolveVars((d.services as string) || industry, ctx)
       const primaryColor = (d.primaryColor as string) || 'Emerald Green'
+      const websiteVibe  = resolveVars((d.websiteVibe as string) || '', ctx)
+      const tagline      = resolveVars((d.tagline as string) || '', ctx)
+      const description  = resolveVars((d.description as string) || '', ctx)
+      const fontStyle    = (d.fontStyle as string) || 'Modern'
+      const heroStyle    = (d.heroStyle as string) || 'Gradient Background'
+      const contactEmail = resolveVars((d.contactEmail as string) || '', ctx)
+      const contactPhone = resolveVars((d.contactPhone as string) || '', ctx)
 
       const { generateSiteHTML } = await import('@/lib/generate-site-html')
 
@@ -161,9 +168,14 @@ async function executeNode(
         services,
         tone,
         primaryColor,
-        fontStyle:   'Modern',
-        heroStyle:   'Gradient Background',
+        fontStyle,
+        heroStyle,
         layoutStyle: 'Standard',
+        websiteVibe,
+        tagline,
+        description,
+        contactEmail,
+        contactPhone,
       })
 
       // Build slug and siteId
@@ -182,15 +194,19 @@ async function executeNode(
         services,
         tone,
         primaryColor,
-        contactEmail:  '',
-        contactPhone:  '',
+        fontStyle,
+        heroStyle,
+        tagline,
+        description,
+        contactEmail,
+        contactPhone,
         generatedContent: {
-          hero:         { headline: `${industry} Services`, subheadline: businessName, ctaText: 'Get Started', badge: location },
+          hero:         { headline: tagline || `${industry} Services`, subheadline: businessName, ctaText: 'Get Started', badge: location },
           services:     [{ name: services, description: `Professional ${industry} services`, icon: '✓' }],
-          about:        { title: businessName, body: `${businessName} provides professional ${industry} services.`, stats: [] },
+          about:        { title: businessName, body: description || `${businessName} provides professional ${industry} services.`, stats: [] },
           testimonials: [],
           cta:          { headline: 'Get Started', subtext: 'Contact us today', buttonText: 'Contact Us' },
-          seo:          { title: `${businessName} — ${industry}`, description: `${businessName} provides professional ${industry} services.` },
+          seo:          { title: `${businessName} — ${industry}`, description: `${businessName} provides professional ${industry} services in ${location}.` },
         },
         generatedHTML,
         createdAt:     new Date().toISOString(),
