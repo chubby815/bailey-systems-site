@@ -537,9 +537,58 @@ async function executeNode(
         throw new Error('LinkedIn account not connected — go to Dashboard → Connections → LinkedIn')
       }
 
+      const liHeaders = {
+        'Authorization':             `Bearer ${li.accessToken}`,
+        'Content-Type':              'application/json',
+        'LinkedIn-Version':          '202603',
+        'X-Restli-Protocol-Version': '2.0.0',
+      }
+
+      // ── Image upload (3-step LinkedIn process) ──────────────────────────────
+      let imageAssetUrn: string | null = null
+      if (imageUrl.trim()) {
+        try {
+          // Step 1: Initialize upload — get uploadUrl + image URN
+          const initRes = await fetch('https://api.linkedin.com/rest/images?action=initializeUpload', {
+            method:  'POST',
+            headers: liHeaders,
+            body:    JSON.stringify({ initializeUploadRequest: { owner: `urn:li:person:${li.personId}` } }),
+          })
+          if (initRes.ok) {
+            const initData = await initRes.json() as { value: { uploadUrl: string; image: string } }
+            const { uploadUrl, image: imageUrn } = initData.value
+
+            // Step 2: Download the image bytes from Vercel Blob
+            const imgRes = await fetch(imageUrl)
+            if (imgRes.ok) {
+              const imgBuffer = await imgRes.arrayBuffer()
+
+              // Step 3: PUT binary to LinkedIn's upload URL
+              const uploadRes = await fetch(uploadUrl, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body:    imgBuffer,
+              })
+              if (uploadRes.ok || uploadRes.status === 201) {
+                imageAssetUrn = imageUrn
+                console.log('[linkedinPost] image uploaded:', imageUrn)
+              } else {
+                console.error('[linkedinPost] image PUT failed:', uploadRes.status)
+              }
+            }
+          } else {
+            console.error('[linkedinPost] initializeUpload failed:', await initRes.text())
+          }
+        } catch (imgErr) {
+          console.error('[linkedinPost] image upload error:', imgErr)
+          // Continue without image rather than failing the whole post
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       const postBody: Record<string, unknown> = {
         author:      `urn:li:person:${li.personId}`,
-        commentary:  imageUrl ? `${content}\n\n${imageUrl}` : content,
+        commentary:  content,
         visibility:  'PUBLIC',
         distribution: {
           feedDistribution:              'MAIN_FEED',
@@ -549,15 +598,15 @@ async function executeNode(
         lifecycleState: 'PUBLISHED',
       }
 
+      // Attach image asset if upload succeeded
+      if (imageAssetUrn) {
+        postBody.content = { media: { id: imageAssetUrn } }
+      }
+
       const postRes = await fetch('https://api.linkedin.com/rest/posts', {
-        method: 'POST',
-        headers: {
-          'Authorization':              `Bearer ${li.accessToken}`,
-          'Content-Type':               'application/json',
-          'LinkedIn-Version':           '202603',
-          'X-Restli-Protocol-Version':  '2.0.0',
-        },
-        body: JSON.stringify(postBody),
+        method:  'POST',
+        headers: liHeaders,
+        body:    JSON.stringify(postBody),
       })
 
       if (!postRes.ok) {
@@ -566,7 +615,7 @@ async function executeNode(
         throw new Error(`LinkedIn post failed (${postRes.status}): ${errText.slice(0, 200)}`)
       }
 
-      return `Posted to LinkedIn as ${li.name}`
+      return `Posted to LinkedIn as ${li.name}${imageAssetUrn ? ' with image' : ''}`
     }
 
     case 'googleSheets':
