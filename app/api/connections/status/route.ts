@@ -11,13 +11,14 @@ export async function GET(req: NextRequest) {
 
   const email = session.email.toLowerCase()
 
-  const [telegramChatId, slackWebhook, whatsappConfig, facebookPage, instagramAccount, linkedInAccount] = await Promise.all([
+  const [telegramChatId, slackWebhook, whatsappConfig, facebookPage, instagramAccount, linkedInAccount, googleAccount] = await Promise.all([
     kv.get<string>(`telegram-chatid:${email}`),
     kv.get<string>(`slack-webhook:${email}`),
     kv.get<{ provider: string }>(`whatsapp-config:${email}`),
     kv.get<FacebookPageRecord>(`facebook:${email}`),
     kv.get<InstagramAccountRecord>(`instagram:${email}`),
     kv.get<{ name: string; personId: string }>(`linkedin:${email}`),
+    kv.get<{ accessToken: string; email: string }>(`google:${email}`),
   ])
 
   return NextResponse.json({
@@ -39,6 +40,6 @@ export async function GET(req: NextRequest) {
     linkedin: linkedInAccount
       ? { connected: true,  name:        linkedInAccount.name }
       : { connected: false },
-    google: { connected: false },
+    google: googleAccount ? { connected: true } : { connected: false },
   })
 }

@@ -3,9 +3,15 @@ import { useCallback } from 'react'
 import { Handle, Position, useReactFlow } from '@xyflow/react'
 import type { Node, NodeProps } from '@xyflow/react'
 
-const COLOR = '#3b82f6'
+const COLOR = '#0F9D58'
 
-type GoogleSheetsData = { label: string; spreadsheetId: string; sheetName: string; operation: string }
+type GoogleSheetsData = {
+  label: string
+  spreadsheetId: string
+  sheetName: string
+  operation: string
+  values: string
+}
 type GoogleSheetsNodeType = Node<GoogleSheetsData, 'googleSheets'>
 
 export function GoogleSheetsNode({ id, data, selected }: NodeProps<GoogleSheetsNodeType>) {
@@ -51,15 +57,28 @@ export function GoogleSheetsNode({ id, data, selected }: NodeProps<GoogleSheetsN
             value={data.operation || 'append'}
             onChange={e => update({ operation: e.target.value })}
             className="nodrag nopan"
-            style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
           >
             <option value="append">Append row</option>
             <option value="read">Read rows</option>
           </select>
         </div>
-        <div style={{ background: '#0a0a12', border: '1px solid rgba(255,165,0,0.2)', borderRadius: '6px', padding: '0.4rem 0.5rem', color: '#f97316', fontSize: '0.65rem' }}>
-          ⚠ Google OAuth required — configure in Settings
-        </div>
+        {(data.operation || 'append') === 'append' && (
+          <div>
+            <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.15rem' }}>Values (comma-separated)</label>
+            <textarea
+              value={data.values || ''}
+              onChange={e => update({ values: e.target.value })}
+              className="nodrag nopan"
+              rows={2}
+              placeholder="{{leads}}, {{aiText}}, or Name, Email, Phone"
+              style={{ width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0', fontSize: '0.75rem', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+        )}
+        <p style={{ color: '#4b5563', fontSize: '0.65rem', margin: 0 }}>
+          Connect Google in Dashboard → Connections first
+        </p>
       </div>
       <Handle type="source" position={Position.Right} style={{ background: COLOR, border: `2px solid ${COLOR}`, width: 8, height: 8 }} />
     </div>

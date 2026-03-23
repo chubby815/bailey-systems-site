@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth'
 export const maxDuration = 300
 
 import { kv, saveSite } from '@/lib/kv'
+import { getGoogleAccessToken } from '@/lib/google-token'
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
 
@@ -641,8 +642,46 @@ async function executeNode(
       return `Posted to LinkedIn as ${li.name}${imageAssetUrn ? ' with image' : ''}`
     }
 
-    case 'googleSheets':
-      return 'Google Sheets — OAuth not configured (placeholder)'
+    case 'googleSheets': {
+      const spreadsheetId = resolveVars((d.spreadsheetId as string) || '', ctx)
+      const sheetName     = resolveVars((d.sheetName as string) || 'Sheet1', ctx)
+      const operation     = (d.operation as string) || 'append'
+      const range         = `${sheetName}!A1`
+
+      if (!spreadsheetId) return 'Google Sheets — no spreadsheet ID — skipped'
+
+      const accessToken = await getGoogleAccessToken(email)
+      if (!accessToken) return 'Google Sheets — not connected — go to Dashboard → Connections → Connect Google'
+
+      if (operation === 'read') {
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        )
+        if (!res.ok) throw new Error(await res.text())
+        const data2 = await res.json() as { values?: string[][] }
+        const rows = (data2.values ?? []).slice(0, 10)
+        return rows.map(r => r.join(', ')).join('\n') || 'No data found'
+      }
+
+      // Append
+      const rawValues = resolveVars((d.values as string) || '', ctx)
+      const rowValues = rawValues.split(',').map(v => v.trim())
+
+      const res = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ values: [rowValues] }),
+        }
+      )
+      if (!res.ok) throw new Error(await res.text())
+      return `Row appended to ${sheetName}: ${rowValues.join(', ')}`
+    }
 
     case 'ifCondition': {
       const left  = resolveVars((d.leftVar as string) || '', ctx)

@@ -465,13 +465,22 @@ export default function ConnectionsPage() {
               name="Google Sheets"
               color="#0F9D58"
               description="Read and write data to Google Sheets from workflows"
-              connected={false}
+              connected={statuses?.google.connected ?? false}
               expanded={expanded === 'google'}
               onToggle={() => setExpanded(expanded === 'google' ? null : 'google')}
               saveMsg={saveMsg['google']}
             >
-              <div className="pt-2">
-                <p className="text-xs text-gray-500">Google OAuth integration is coming soon. You&apos;ll be able to read and write Google Sheets rows from any workflow.</p>
+              <div className="pt-2 flex flex-col gap-3">
+                <p className="text-xs text-gray-500">
+                  Connect your Google account to allow Bailey workflows to read and write rows in any Google Sheet automatically.
+                </p>
+                <a
+                  href="/api/auth/google"
+                  className="inline-block text-white font-bold px-5 py-2 rounded-lg text-sm transition-colors self-start"
+                  style={{ background: '#0F9D58' }}
+                >
+                  {statuses?.google.connected ? 'Reconnect Google →' : 'Connect Google Sheets →'}
+                </a>
               </div>
             </ConnectionCard>
 
