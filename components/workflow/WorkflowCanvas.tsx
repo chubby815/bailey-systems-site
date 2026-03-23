@@ -34,6 +34,7 @@ import { IfConditionNode }     from './nodes/IfConditionNode'
 import { DelayNode }           from './nodes/DelayNode'
 import { TelegramNode }        from './nodes/TelegramNode'
 import { SlackNode }           from './nodes/SlackNode'
+import { DiscordNode }         from './nodes/DiscordNode'
 import { InstagramPostNode }   from './nodes/InstagramPostNode'
 import { BaileyImageNode }     from './nodes/BaileyImageNode'
 import { LinkedInPostNode }   from './nodes/LinkedInPostNode'
@@ -102,6 +103,7 @@ const nodeTypes: NodeTypes = {
   delay:           withDelete(DelayNode           as AnyComp) as NodeTypes[string],
   telegram:        withDelete(TelegramNode        as AnyComp) as NodeTypes[string],
   slack:           withDelete(SlackNode           as AnyComp) as NodeTypes[string],
+  discord:         withDelete(DiscordNode         as AnyComp) as NodeTypes[string],
   instagramPost:   withDelete(InstagramPostNode   as AnyComp) as NodeTypes[string],
   baileyImage:     withDelete(BaileyImageNode     as AnyComp) as NodeTypes[string],
   linkedinPost:    withDelete(LinkedInPostNode    as AnyComp) as NodeTypes[string],

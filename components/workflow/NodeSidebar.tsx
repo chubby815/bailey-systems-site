@@ -27,6 +27,7 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', provider: 'twilio', to: '', message: '' } },
   { type: 'telegram',         label: 'Telegram',         category: 'Actions',   color: '#229ED9', defaultData: { label: 'Telegram', chatId: '', message: '' } },
   { type: 'slack',            label: 'Slack',            category: 'Actions',   color: '#4A154B', defaultData: { label: 'Slack', webhookUrl: '', channel: '#general', message: '' } },
+  { type: 'discord',          label: 'Discord',          category: 'Actions',   color: '#5865F2', defaultData: { label: 'Discord', webhookUrl: '', message: '', username: 'Bailey' } },
   { type: 'httpRequest',      label: 'HTTP Request',     category: 'Actions',   color: '#f59e0b', defaultData: { label: 'HTTP Request', url: '', method: 'GET', headers: '{}', body: '' } },
   // Logic
   { type: 'ifCondition',      label: 'IF Condition',     category: 'Logic',     color: '#f97316', defaultData: { label: 'IF Condition', leftVar: '', operator: '=', rightValue: '' } },

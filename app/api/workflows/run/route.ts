@@ -45,6 +45,7 @@ const autoVarNames: Record<string, string> = {
   baileyImage:     'imageUrl',
   sendEmail:       'emailResult',
   whatsApp:        'whatsAppResult',
+  discord:         'discordResult',
   telegram:        'telegramResult',
   slack:           'slackResult',
   facebookPost:    'postResult',
@@ -74,6 +75,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   aiAgent:         1,
   sendEmail:       2,
   whatsApp:        2,
+  discord:         2,
   telegram:        2,
   slack:           2,
   facebookPost:    2,
@@ -521,6 +523,26 @@ async function executeNode(
       })
       if (!res.ok) throw new Error(await res.text())
       return `Slack message sent to ${channel}`
+    }
+
+    case 'discord': {
+      const webhookUrl = resolveVars((d.webhookUrl as string) || '', ctx)
+      const rawMsg  = (d.message as string) || ''
+      const message = rawMsg.includes('{{')
+        ? resolveVars(rawMsg, ctx)
+        : ctx['aiText'] ?? ctx['leads'] ?? rawMsg
+      const username = resolveVars((d.username as string) || 'Bailey', ctx)
+
+      if (!webhookUrl) return 'Discord — no webhook URL — skipped'
+      if (!message)    return 'Discord — no message — skipped'
+
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: message, username }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      return `Discord message sent`
     }
 
     case 'linkedinPost': {
