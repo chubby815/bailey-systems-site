@@ -352,8 +352,9 @@ async function executeNode(
           return 'WhatsApp Meta not configured — connect in Settings → Connections'
         }
 
+        const toClean = to.replace(/\D/g, '')
         const resp = await fetch(
-          `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+          `https://graph.facebook.com/v22.0/${phoneId}/messages`,
           {
             method: 'POST',
             headers: {
@@ -362,7 +363,7 @@ async function executeNode(
             },
             body: JSON.stringify({
               messaging_product: 'whatsapp',
-              to: to.replace('+', ''),
+              to: toClean,
               type: 'text',
               text: { body: message },
             }),
