@@ -664,9 +664,39 @@ async function executeNode(
         return rows.map(r => r.join(', ')).join('\n') || 'No data found'
       }
 
-      // Append
+      // Append — detect if context has leads and write one row per lead
       const rawValues = resolveVars((d.values as string) || '', ctx)
-      const rowValues = rawValues.split(',').map(v => v.trim())
+      const leadsRaw  = ctx['leads'] ?? ''
+
+      // If writing leads, parse JSON array and write one row per lead
+      const isLeadsWrite = rawValues.includes('{{leads}}') || rawValues.trim() === leadsRaw.trim()
+
+      interface LeadRecord { name?: string; address?: string; phone?: string; email?: string; comments?: string }
+
+      let rows: string[][] = []
+
+      if (isLeadsWrite && leadsRaw) {
+        let parsed: LeadRecord[] = []
+        try { parsed = JSON.parse(leadsRaw) as LeadRecord[] } catch { parsed = [] }
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Header row first
+          rows.push(['Name', 'Address', 'Phone', 'Email', 'Notes'])
+          for (const lead of parsed) {
+            rows.push([
+              lead.name    ?? '',
+              lead.address ?? '',
+              lead.phone   ?? '',
+              lead.email   ?? '',
+              lead.comments ?? '',
+            ])
+          }
+        }
+      }
+
+      // Fallback: split by comma as before
+      if (rows.length === 0) {
+        rows = [rawValues.split(',').map(v => v.trim())]
+      }
 
       const res = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
@@ -676,11 +706,11 @@ async function executeNode(
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ values: [rowValues] }),
+          body: JSON.stringify({ values: rows }),
         }
       )
       if (!res.ok) throw new Error(await res.text())
-      return `Row appended to ${sheetName}: ${rowValues.join(', ')}`
+      return `${rows.length} row(s) appended to ${sheetName}`
     }
 
     case 'ifCondition': {
