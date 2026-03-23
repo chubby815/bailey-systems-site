@@ -555,7 +555,7 @@ async function executeNode(
         headers: {
           'Authorization':              `Bearer ${li.accessToken}`,
           'Content-Type':               'application/json',
-          'LinkedIn-Version':           '202501',
+          'LinkedIn-Version':           '202412',
           'X-Restli-Protocol-Version':  '2.0.0',
         },
         body: JSON.stringify(postBody),
@@ -563,8 +563,8 @@ async function executeNode(
 
       if (!postRes.ok) {
         const errText = await postRes.text()
-        console.error('[linkedinPost] failed:', errText)
-        throw new Error(`LinkedIn post failed (${postRes.status}) — check your connection`)
+        console.error('[linkedinPost] failed:', postRes.status, errText)
+        throw new Error(`LinkedIn post failed (${postRes.status}): ${errText.slice(0, 200)}`)
       }
 
       return `Posted to LinkedIn as ${li.name}`
