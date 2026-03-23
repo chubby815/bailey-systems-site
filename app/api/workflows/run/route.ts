@@ -677,7 +677,11 @@ async function executeNode(
 
       if (isLeadsWrite && leadsRaw) {
         let parsed: LeadRecord[] = []
-        try { parsed = JSON.parse(leadsRaw) as LeadRecord[] } catch { parsed = [] }
+        try {
+          // Strip markdown code fences if present
+          const cleaned = leadsRaw.replace(/```(?:json)?\n?/g, '').trim()
+          parsed = JSON.parse(cleaned) as LeadRecord[]
+        } catch { parsed = [] }
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Header row first
           rows.push(['Name', 'Address', 'Phone', 'Email', 'Notes'])
