@@ -183,6 +183,35 @@ export default async function GuidePage() {
           ))}
         </div>
 
+        {/* Cron Quick Reference */}
+        <div style={{ background: "#111214", border: "1px solid rgba(0,229,160,0.2)", borderRadius: "14px", padding: "1.5rem", marginBottom: "2rem" }}>
+          <p style={{ color: "#00e5a0", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>
+            ⏰ Schedule Quick Reference — copy these into your Schedule node
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.5rem" }}>
+            {[
+              { cron: "*/5 * * * *", label: "Every 5 minutes (testing)" },
+              { cron: "0 * * * *",   label: "Every hour" },
+              { cron: "0 9 * * *",   label: "Every day at 9am" },
+              { cron: "0 9 * * 1-5", label: "Weekdays at 9am" },
+              { cron: "0 9 * * 1",   label: "Every Monday at 9am" },
+              { cron: "0 8 * * 1",   label: "Weekly newsletter (Mon 8am)" },
+              { cron: "0 10 * * *",  label: "Every day at 10am" },
+              { cron: "0 18 * * *",  label: "Every day at 6pm" },
+            ].map((s) => (
+              <div key={s.cron} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "0.5rem 0.75rem", gap: "0.75rem" }}>
+                <span style={{ color: "#9ca3af", fontSize: "0.78rem" }}>{s.label}</span>
+                <code style={{ background: "rgba(0,229,160,0.08)", color: "#00e5a0", fontSize: "0.72rem", padding: "0.2rem 0.5rem", borderRadius: "4px", fontFamily: "monospace", flexShrink: 0 }}>
+                  {s.cron}
+                </code>
+              </div>
+            ))}
+          </div>
+          <p style={{ color: "#4b5563", fontSize: "0.72rem", marginTop: "0.75rem" }}>
+            💡 Paste any of these into the Schedule node cron field. Workflows check every 5 minutes so changes take effect quickly.
+          </p>
+        </div>
+
         {/* Steps */}
         <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
           {steps.map(step => (
