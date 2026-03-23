@@ -237,6 +237,18 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
     e.dataTransfer.effectAllowed = 'move'
   }, [])
 
+  // Tap-to-add: places node at a slightly offset center so multiple taps stack visibly
+  const handleAddNode = useCallback((nodeDef: NodeDef) => {
+    const offset = Math.floor(Math.random() * 40) - 20
+    const newNode: Node = {
+      id: `${nodeDef.type}-${Date.now()}`,
+      type: nodeDef.type,
+      position: { x: 200 + offset, y: 150 + offset },
+      data: { ...nodeDef.defaultData },
+    }
+    setNodes(nds => [...nds, newNode])
+  }, [setNodes])
+
   // ── Run history ────────────────────────────────────────────────────────
   const fetchRunHistory = useCallback(async (id: string) => {
     setRunsLoading(true)
@@ -411,7 +423,7 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
 
       {/* ── Main Area ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        <NodeSidebar onDragStart={handleDragStart} />
+        <NodeSidebar onDragStart={handleDragStart} onAddNode={handleAddNode} />
 
         {/* ── Run History Panel ── */}
         {showRuns && (
@@ -471,6 +483,9 @@ function WorkflowEditor({ workflowId, initialName, initialNodes, initialEdges }:
             nodeTypes={nodeTypes}
             deleteKeyCode={['Delete', 'Backspace']}
             fitView
+            panOnDrag
+            panOnScroll={false}
+            zoomOnPinch
             defaultEdgeOptions={{ animated: false, style: { stroke: '#374151', strokeWidth: 1.5 } }}
             style={{ background: '#080810' }}
           >

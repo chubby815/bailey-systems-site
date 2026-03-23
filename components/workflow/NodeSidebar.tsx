@@ -40,9 +40,10 @@ const CATEGORIES = ['Triggers', 'Bailey AI', 'Actions', 'Logic', 'Utility'] as c
 
 interface NodeSidebarProps {
   onDragStart: (e: React.DragEvent, nodeDef: NodeDef) => void
+  onAddNode: (nodeDef: NodeDef) => void
 }
 
-export function NodeSidebar({ onDragStart }: NodeSidebarProps) {
+export function NodeSidebar({ onDragStart, onAddNode }: NodeSidebarProps) {
   return (
     <div style={{
       width: '200px', flexShrink: 0, background: '#0a0b0d',
@@ -78,7 +79,30 @@ export function NodeSidebar({ onDragStart }: NodeSidebarProps) {
                 }}
               >
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: node.color, flexShrink: 0 }} />
-                <span style={{ color: '#d1d5db', fontSize: '0.78rem' }}>{node.label}</span>
+                <span style={{ color: '#d1d5db', fontSize: '0.78rem', flex: 1 }}>{node.label}</span>
+                {/* Tap-to-add button — visible on touch devices */}
+                <button
+                  onClick={() => onAddNode(node)}
+                  title={`Add ${node.label}`}
+                  style={{
+                    background: `${node.color}22`,
+                    border: `1px solid ${node.color}44`,
+                    color: node.color,
+                    borderRadius: '4px',
+                    width: '20px',
+                    height: '20px',
+                    fontSize: '0.85rem',
+                    lineHeight: 1,
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                  }}
+                >
+                  +
+                </button>
               </div>
             ))}
           </div>
