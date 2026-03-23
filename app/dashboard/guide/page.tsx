@@ -173,11 +173,7 @@ export default async function GuidePage() {
               borderRadius: "10px", padding: "0.75rem 1rem", textDecoration: "none",
               color: "#f0f0f0", fontSize: "0.8rem", fontWeight: 600,
               display: "flex", alignItems: "center", gap: "0.5rem",
-              transition: "border-color 0.15s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(0,229,160,0.3)")}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
-            >
+            }}>
               {item.icon} {item.label}
             </Link>
           ))}
