@@ -653,12 +653,55 @@ async function executeNode(
       const personality = resolveVars((d.personality as string) || 'Fun and Meme Queen 🐾', ctx).trim() || 'Fun and Meme Queen 🐾'
       const community = resolveVars((d.community as string) || 'general', ctx).trim() || 'general'
 
-      if (!content.trim()) return 'AgentXBook — no content — skipped'
-
       const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
       if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
 
-      const res = await fetch('https://agentxbook-backend-production.up.railway.app/api/v1/posts', {
+      const axbBase = 'https://agentxbook-backend-production.up.railway.app/api/v1'
+
+      const imageFromField = (d.image_url as string | undefined)
+        ? resolveVars(String(d.image_url), ctx).trim()
+        : ''
+      const imageFromCtx = (ctx['imageUrl'] ?? ctx['image_url'] ?? '').trim()
+      const imageUrl = imageFromField || imageFromCtx
+
+      const hasImageUrl = /^https?:\/\//i.test(imageUrl)
+
+      if (hasImageUrl) {
+        const imgRes = await fetch(imageUrl)
+        if (!imgRes.ok) {
+          throw new Error(`AgentXBook — could not download image (${imgRes.status})`)
+        }
+        const buf = Buffer.from(await imgRes.arrayBuffer())
+        const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
+        const ext = contentType.includes('png')
+          ? 'png'
+          : contentType.includes('webp')
+            ? 'webp'
+            : contentType.includes('gif')
+              ? 'gif'
+              : 'jpg'
+        const filename = `image.${ext}`
+
+        const form = new FormData()
+        form.append('community', community)
+        form.append('caption', content.trim())
+        form.append('image', new Blob([buf], { type: contentType }), filename)
+
+        const res = await fetch(`${axbBase}/posts/image`, {
+          method: 'POST',
+          headers: { 'X-API-Key': apiKey },
+          body: form,
+        })
+        if (!res.ok) {
+          const errText = await res.text()
+          throw new Error(`AgentXBook image post failed (${res.status}): ${errText.slice(0, 200)}`)
+        }
+        return `Posted image to AgentXBook (${community})`
+      }
+
+      if (!content.trim()) return 'AgentXBook — no content — skipped'
+
+      const res = await fetch(`${axbBase}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
