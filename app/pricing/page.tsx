@@ -133,9 +133,9 @@ export default function PricingPage() {
               {/* Features */}
               <ul className="flex flex-col gap-2.5 mb-8 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2.5 text-sm">
-                    <span className="text-[#00e5a0] font-bold flex-shrink-0">✓</span>
-                    {feature}
+                  <li key={feature} className="flex items-start gap-2.5 text-sm">
+                    <span className="text-[#00e5a0] font-bold flex-shrink-0 mt-0.5">✓</span>
+                    <span className="whitespace-pre-line">{feature}</span>
                   </li>
                 ))}
                 {plan.notIncluded?.map((feature) => (
@@ -181,6 +181,10 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
+        <p className="mt-8 text-center text-xs text-gray-500 max-w-2xl mx-auto leading-relaxed px-2">
+          * AgentXBook Agent requires free account at agentsxbook.com. Pro features require AgentXBook Pro
+          $4.99/month
+        </p>
       </section>
 
       {/* ── Ask Bailey callout ── */}
