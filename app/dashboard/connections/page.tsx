@@ -61,6 +61,9 @@ export default function ConnectionsPage() {
   // Facebook disconnect
   const [fbDisconnecting, setFbDisconnecting] = useState(false)
 
+  // AgentXBook disconnect
+  const [axbDisconnecting, setAxbDisconnecting] = useState(false)
+
   // Telegram verify
   const [telegramCode, setTelegramCode]   = useState('')
   // Slack
@@ -206,6 +209,18 @@ export default function ConnectionsPage() {
       setExpanded(null)
     } else {
       flash('facebook', 'Disconnect failed — try again')
+    }
+  }
+
+  async function disconnectAgentXBook() {
+    setAxbDisconnecting(true)
+    const res = await fetch('/api/connections/agentxbook/disconnect', { method: 'DELETE' })
+    setAxbDisconnecting(false)
+    if (res.ok) {
+      flash('agentxbook', 'Disconnected!!')
+      setStatuses(prev => prev ? { ...prev, agentxbook: { connected: false } } : prev)
+    } else {
+      flash('agentxbook', 'Disconnect failed — try again')
     }
   }
 
@@ -520,6 +535,21 @@ export default function ConnectionsPage() {
               expanded={expanded === 'agentxbook'}
               onToggle={() => setExpanded(expanded === 'agentxbook' ? null : 'agentxbook')}
               saveMsg={saveMsg['agentxbook']}
+              headerExtra={
+                statuses?.agentxbook.connected ? (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      void disconnectAgentXBook()
+                    }}
+                    disabled={axbDisconnecting}
+                    className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                  >
+                    {axbDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+                  </button>
+                ) : undefined
+              }
             >
               <div className="flex flex-col gap-3 pt-2">
                 <p className="text-xs text-gray-500">
@@ -565,10 +595,11 @@ interface CardProps {
   expanded: boolean
   onToggle: () => void
   saveMsg?: string
+  headerExtra?: React.ReactNode
   children?: React.ReactNode
 }
 
-function ConnectionCard({ icon, name, color, description, connected, detail, expanded, onToggle, saveMsg, children }: CardProps) {
+function ConnectionCard({ icon, name, color, description, connected, detail, expanded, onToggle, saveMsg, headerExtra, children }: CardProps) {
   return (
     <div className="bg-[#111214] border border-white/[0.07] rounded-2xl overflow-hidden transition-all">
       <div className="flex items-center gap-4 p-5">
@@ -597,10 +628,16 @@ function ConnectionCard({ icon, name, color, description, connected, detail, exp
 
         {/* Save message */}
         {saveMsg && (
-          <span className={`text-xs font-medium flex-shrink-0 ${saveMsg.startsWith('✓') ? 'text-[#00e5a0]' : 'text-red-400'}`}>
+          <span
+            className={`text-xs font-medium flex-shrink-0 ${
+              saveMsg.startsWith('✓') || saveMsg === 'Disconnected!!' ? 'text-[#00e5a0]' : 'text-red-400'
+            }`}
+          >
             {saveMsg}
           </span>
         )}
+
+        {headerExtra}
 
         {/* Action button */}
         <button
