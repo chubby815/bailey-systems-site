@@ -13,6 +13,7 @@ interface ConnectionStatus {
   instagram: { connected: boolean; username?: string; accountName?: string }
   linkedin:  { connected: boolean; name?: string }
   google:    { connected: boolean }
+  agentxbook:{ connected: boolean }
 }
 
 type ConnectionId = keyof ConnectionStatus
@@ -35,6 +36,7 @@ const NAV = [
   { icon: '📊', label: 'Usage',            href: '/dashboard/usage' },
   { icon: '💳', label: 'Billing',          href: '/dashboard/billing' },
   { icon: '🔗', label: 'Connections',      href: '/dashboard/connections' },
+  { icon: '🤖', label: 'Get AgentXBook Agent', href: '/dashboard/agentxbook' },
 ]
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -70,6 +72,8 @@ export default function ConnectionsPage() {
   const [waFrom, setWaFrom]               = useState('')
   const [waMetaToken, setWaMetaToken]     = useState('')
   const [waPhoneId, setWaPhoneId]         = useState('')
+  // AgentXBook
+  const [agentxbookKey, setAgentxbookKey] = useState('')
 
   const searchParams = useSearchParams()
 
@@ -85,6 +89,7 @@ export default function ConnectionsPage() {
         instagram: { connected: false },
         linkedin:  { connected: false },
         google:    { connected: false },
+        agentxbook:{ connected: false },
       }))
   }, [])
 
@@ -168,6 +173,26 @@ export default function ConnectionsPage() {
       setExpanded(null)
     } else {
       flash('whatsapp', data.error ?? 'Save failed')
+    }
+  }
+
+  async function saveAgentXBook() {
+    if (!agentxbookKey.trim()) return
+    setSaving(true)
+    const res = await fetch('/api/connections/agentxbook/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: agentxbookKey.trim() }),
+    })
+    const data = await res.json() as SaveResult
+    setSaving(false)
+    if (res.ok) {
+      flash('agentxbook', '✓ AgentXBook connected!')
+      setStatuses(prev => prev ? { ...prev, agentxbook: { connected: true } } : prev)
+      setExpanded(null)
+      setAgentxbookKey('')
+    } else {
+      flash('agentxbook', data.error ?? 'Save failed')
     }
   }
 
@@ -481,6 +506,42 @@ export default function ConnectionsPage() {
                 >
                   {statuses?.google.connected ? 'Reconnect Google →' : 'Connect Google Sheets →'}
                 </a>
+              </div>
+            </ConnectionCard>
+
+            {/* ── AgentXBook ── */}
+            <ConnectionCard
+              id="agentxbook"
+              icon="🤖"
+              name="AgentXBook"
+              color="#00e5a0"
+              description="Post to AgentXBook communities from workflows"
+              connected={statuses?.agentxbook.connected ?? false}
+              expanded={expanded === 'agentxbook'}
+              onToggle={() => setExpanded(expanded === 'agentxbook' ? null : 'agentxbook')}
+              saveMsg={saveMsg['agentxbook']}
+            >
+              <div className="flex flex-col gap-3 pt-2">
+                <p className="text-xs text-gray-500">
+                  Paste your AgentXBook API key. Save it somewhere safe. Bailey will store it to post from workflows.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    value={agentxbookKey}
+                    onChange={e => setAgentxbookKey(e.target.value)}
+                    placeholder="AgentXBook API key"
+                    className="flex-1 bg-[#0d0e10] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#00e5a0]"
+                    type="password"
+                    onKeyDown={e => e.key === 'Enter' && void saveAgentXBook()}
+                  />
+                  <button
+                    onClick={() => void saveAgentXBook()}
+                    disabled={saving || !agentxbookKey.trim()}
+                    className="bg-[#00e5a0] text-black font-bold px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-[#00ffb2] transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
               </div>
             </ConnectionCard>
 

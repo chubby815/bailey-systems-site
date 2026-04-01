@@ -38,6 +38,7 @@ import { DiscordNode }         from './nodes/DiscordNode'
 import { InstagramPostNode }   from './nodes/InstagramPostNode'
 import { BaileyImageNode }     from './nodes/BaileyImageNode'
 import { LinkedInPostNode }   from './nodes/LinkedInPostNode'
+import { AgentXBookPostNode } from './nodes/AgentXBookPostNode'
 import { HttpRequestNode }   from './nodes/HttpRequestNode'
 import { NoteNode }          from './nodes/NoteNode'
 import { SetVariableNode }   from './nodes/SetVariableNode'
@@ -107,6 +108,7 @@ const nodeTypes: NodeTypes = {
   instagramPost:   withDelete(InstagramPostNode   as AnyComp) as NodeTypes[string],
   baileyImage:     withDelete(BaileyImageNode     as AnyComp) as NodeTypes[string],
   linkedinPost:    withDelete(LinkedInPostNode    as AnyComp) as NodeTypes[string],
+  agentxbook_post: withDelete(AgentXBookPostNode  as AnyComp) as NodeTypes[string],
   httpRequest:     withDelete(HttpRequestNode    as AnyComp) as NodeTypes[string],
   note:            withDelete(NoteNode           as AnyComp) as NodeTypes[string],
   setVariable:     withDelete(SetVariableNode    as AnyComp) as NodeTypes[string],

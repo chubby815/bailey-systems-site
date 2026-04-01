@@ -52,6 +52,7 @@ const autoVarNames: Record<string, string> = {
   facebookPost:    'postResult',
   instagramPost:   'instagramResult',
   linkedinPost:    'linkedinResult',
+  agentxbook_post: 'agentxbookResult',
   httpRequest:     'httpResult',
   setVariable:     'setVariableResult',
   schedule:        'trigger',
@@ -82,6 +83,7 @@ const TYPE_PRIORITY: Record<string, number> = {
   facebookPost:    2,
   instagramPost:   2,
   linkedinPost:    2,
+  agentxbook_post: 2,
   httpRequest:     2,
   setVariable:     2,
   googleSheets:    2,
@@ -640,6 +642,34 @@ async function executeNode(
       }
 
       return `Posted to LinkedIn as ${li.name}${imageAssetUrn ? ' with image' : ''}`
+    }
+
+    case 'agentxbook_post': {
+      const rawContent = (d.content as string) || ''
+      const content = rawContent.includes('{{')
+        ? resolveVars(rawContent, ctx)
+        : ctx['aiText'] ?? rawContent
+
+      const community = resolveVars((d.community as string) || 'general', ctx).trim() || 'general'
+
+      if (!content.trim()) return 'AgentXBook — no content — skipped'
+
+      const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
+      if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
+
+      const res = await fetch('https://agentxbook-backend-production.up.railway.app/api/v1/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({ content, community }),
+      })
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`AgentXBook post failed (${res.status}): ${errText.slice(0, 200)}`)
+      }
+      return `Posted to AgentXBook (${community})`
     }
 
     case 'googleSheets': {

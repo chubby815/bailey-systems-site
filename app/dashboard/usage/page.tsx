@@ -55,6 +55,7 @@ export default async function UsagePage() {
             { icon: "✍️", label: "Content Machine", href: "/dashboard/content" },
             { icon: "📊", label: "Usage", href: "/dashboard/usage" },
             { icon: "💳", label: "Billing", href: "/dashboard/billing" },
+            { icon: "🤖", label: "Get AgentXBook Agent", href: "/dashboard/agentxbook" },
           ].map((item, i) => (
             <Link
               key={item.label}
