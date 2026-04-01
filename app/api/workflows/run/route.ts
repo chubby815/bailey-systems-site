@@ -650,6 +650,7 @@ async function executeNode(
         ? resolveVars(rawContent, ctx)
         : ctx['aiText'] ?? rawContent
 
+      const personality = resolveVars((d.personality as string) || 'Fun and Meme Queen 🐾', ctx).trim() || 'Fun and Meme Queen 🐾'
       const community = resolveVars((d.community as string) || 'general', ctx).trim() || 'general'
 
       if (!content.trim()) return 'AgentXBook — no content — skipped'
@@ -663,7 +664,7 @@ async function executeNode(
           'Content-Type': 'application/json',
           'X-API-Key': apiKey,
         },
-        body: JSON.stringify({ content, community }),
+        body: JSON.stringify({ content, community, personality }),
       })
       if (!res.ok) {
         const errText = await res.text()

@@ -5,10 +5,19 @@ import type { Node, NodeProps } from '@xyflow/react'
 
 const COLOR = '#00e5a0'
 
-type AgentXBookPostData = { label: string; content: string; community: string }
+type AgentXBookPostData = { label: string; content: string; community: string; personality: string }
 type AgentXBookPostNodeType = Node<AgentXBookPostData, 'agentxbook_post'>
 
 const COMMUNITIES = ['general', 'agents', 'collabs', 'tech'] as const
+const PERSONALITIES = [
+  'Fun and Meme Queen 🐾',
+  'Sharp and Tactical 🎯',
+  'Icy and Mysterious ❄️',
+  'Street Smart 💪',
+  'Silent Meme God 👑',
+  'AI Software Engineer 🧠',
+  'Business Strategist 💼',
+] as const
 
 export function AgentXBookPostNode({ id, data, selected }: NodeProps<AgentXBookPostNodeType>) {
   const { updateNodeData } = useReactFlow()
@@ -20,6 +29,10 @@ export function AgentXBookPostNode({ id, data, selected }: NodeProps<AgentXBookP
   const community = COMMUNITIES.includes((data.community as (typeof COMMUNITIES)[number]) ?? 'general')
     ? (data.community as (typeof COMMUNITIES)[number])
     : 'general'
+
+  const personality = PERSONALITIES.includes((data.personality as (typeof PERSONALITIES)[number]) ?? PERSONALITIES[0])
+    ? (data.personality as (typeof PERSONALITIES)[number])
+    : PERSONALITIES[0]
 
   return (
     <div style={{
@@ -48,6 +61,30 @@ export function AgentXBookPostNode({ id, data, selected }: NodeProps<AgentXBookP
               fontSize: '0.75rem', outline: 'none', resize: 'none', boxSizing: 'border-box',
             }}
           />
+        </div>
+        <div>
+          <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.2rem' }}>Personality</label>
+          <select
+            value={personality}
+            onChange={e => update({ personality: e.target.value })}
+            className="nodrag nopan"
+            style={{
+              width: '100%', background: '#111214', border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: '6px', padding: '0.35rem 0.5rem', color: '#f0f0f0',
+              fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box',
+            }}
+          >
+            {PERSONALITIES.map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+          <span style={{ color: '#4b5563', fontSize: '0.65rem', marginTop: '0.2rem', display: 'block' }}>
+            {personality === 'AI Software Engineer 🧠'
+              ? 'Talks code architecture and technical deep dives'
+              : personality === 'Business Strategist 💼'
+                ? 'Talks growth marketing and business insights'
+                : ''}
+          </span>
         </div>
         <div>
           <label style={{ color: '#6b7280', display: 'block', marginBottom: '0.2rem' }}>Community</label>

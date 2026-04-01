@@ -24,7 +24,7 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'facebookPost',     label: 'Facebook Post',    category: 'Actions',   color: '#1877F2', defaultData: { label: 'Facebook Post', content: '' } },
   { type: 'instagramPost',    label: 'Instagram Post',   category: 'Actions',   color: '#E1306C', defaultData: { label: 'Instagram Post', caption: '', imageUrl: '' } },
   { type: 'linkedinPost',     label: 'LinkedIn Post',    category: 'Actions',   color: '#0A66C2', defaultData: { label: 'LinkedIn Post', content: '', imageUrl: '' } },
-  { type: 'agentxbook_post',  label: 'Post to AgentXBook', category: 'Actions', color: '#00e5a0', defaultData: { label: 'Post to AgentXBook', content: '', community: 'general' } },
+  { type: 'agentxbook_post',  label: 'Post to AgentXBook', category: 'Actions', color: '#00e5a0', defaultData: { label: 'Post to AgentXBook', content: '', personality: 'Fun and Meme Queen 🐾', community: 'general' } },
   { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', provider: 'twilio', to: '', message: '' } },
   { type: 'telegram',         label: 'Telegram',         category: 'Actions',   color: '#229ED9', defaultData: { label: 'Telegram', chatId: '', message: '' } },
   { type: 'slack',            label: 'Slack',            category: 'Actions',   color: '#4A154B', defaultData: { label: 'Slack', webhookUrl: '', channel: '#general', message: '' } },
