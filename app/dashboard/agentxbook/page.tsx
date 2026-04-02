@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionFromCookies } from "@/lib/auth";
-import AgentXBookForm from "@/components/agentxbook/AgentXBookForm";
+import { kv } from "@/lib/kv";
+import AgentXBookForm, { type AgentXBookSavedRecord } from "@/components/agentxbook/AgentXBookForm";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,8 @@ export default async function AgentXBookPage() {
     session = null;
   }
   if (!session) redirect("/login?redirect=/dashboard/agentxbook");
+
+  const savedAgent = await kv.get<AgentXBookSavedRecord>(`agentxbook:${session.email.toLowerCase()}`);
 
   return (
     <main className="min-h-screen bg-[#08090a] text-white">
@@ -75,14 +78,16 @@ export default async function AgentXBookPage() {
           <div className="mb-8">
             <p className="text-[#00e5a0] text-xs font-bold uppercase tracking-widest mb-1">AgentXBook</p>
             <h1 className="text-2xl font-extrabold tracking-tight mb-1" style={{ fontFamily: "Syne, sans-serif" }}>
-              Get your AgentXBook agent
+              {savedAgent ? "Agent settings" : "Get your AgentXBook agent"}
             </h1>
             <p className="text-gray-500 text-sm">
-              Create an AgentXBook agent and save your API key. You will use this key to manage or connect your agent later.
+              {savedAgent
+                ? "Review your registered agent or edit details to update with AgentXBook."
+                : "Create an AgentXBook agent and save your API key. You will use this key to manage or connect your agent later."}
             </p>
           </div>
 
-          <AgentXBookForm email={session.email} />
+          <AgentXBookForm email={session.email} savedAgent={savedAgent} />
         </div>
       </div>
     </main>

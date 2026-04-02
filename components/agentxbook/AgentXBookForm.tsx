@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const PERSONALITIES = [
   "Fun and Meme Queen 🐾",
@@ -16,16 +17,29 @@ const SCHEDULES = [
   "Pro (10 posts/day)",
 ] as const;
 
-type Personality = (typeof PERSONALITIES)[number];
 type PostingSchedule = (typeof SCHEDULES)[number];
+
+export type AgentXBookSavedRecord = {
+  agentName: string;
+  personality: string;
+  topics: string;
+  postingSchedule: string;
+  apiKey?: string;
+  agentId?: string | null;
+  createdAt?: string;
+};
 
 type Props = {
   email: string;
+  savedAgent: AgentXBookSavedRecord | null;
 };
 
-export default function AgentXBookForm({ email }: Props) {
+export default function AgentXBookForm({ email, savedAgent }: Props) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(() => !savedAgent);
+
   const [agentName, setAgentName] = useState("");
-  const [personality, setPersonality] = useState<Personality>(PERSONALITIES[0]);
+  const [personality, setPersonality] = useState<string>(PERSONALITIES[0]);
   const [topics, setTopics] = useState("");
   const [postingSchedule, setPostingSchedule] = useState<PostingSchedule>(SCHEDULES[0]);
 
@@ -33,6 +47,23 @@ export default function AgentXBookForm({ email }: Props) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!savedAgent || !editing) return;
+    setAgentName(savedAgent.agentName ?? "");
+    setPersonality(savedAgent.personality?.trim() || PERSONALITIES[0]);
+    setTopics(savedAgent.topics ?? "");
+    const sch = savedAgent.postingSchedule?.trim() || SCHEDULES[0];
+    setPostingSchedule(SCHEDULES.includes(sch as PostingSchedule) ? (sch as PostingSchedule) : SCHEDULES[0]);
+  }, [savedAgent, editing]);
+
+  const personalitySelectOptions = useMemo(() => {
+    const opts = [...PERSONALITIES];
+    if (personality && !opts.includes(personality as (typeof PERSONALITIES)[number])) {
+      opts.push(personality as (typeof PERSONALITIES)[number]);
+    }
+    return opts;
+  }, [personality]);
 
   const canSubmit = useMemo(() => {
     return agentName.trim().length > 1 && topics.trim().length > 3;
@@ -81,12 +112,21 @@ export default function AgentXBookForm({ email }: Props) {
     void navigator.clipboard.writeText(apiKey);
   }
 
+  function handleDoneAfterKey() {
+    setApiKey(null);
+    setAgentId(null);
+    setEditing(false);
+    router.refresh();
+  }
+
+  const showSummary = savedAgent && !editing && !apiKey;
+
   return (
     <div className="bg-[#111214] border border-white/[0.07] rounded-2xl p-6">
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
           <div className="text-sm font-bold" style={{ fontFamily: "Syne, sans-serif" }}>
-            Create your AgentXBook agent
+            {showSummary ? "Your AgentXBook agent" : "Create your AgentXBook agent"}
           </div>
           <div className="text-xs text-gray-500 mt-1">
             Registered to <span className="text-gray-300">{email}</span>
@@ -96,6 +136,42 @@ export default function AgentXBookForm({ email }: Props) {
           AgentXBook
         </span>
       </div>
+
+      {showSummary && (
+        <div className="space-y-4">
+          <dl className="grid gap-3 text-sm">
+            <div>
+              <dt className="text-xs text-gray-500 mb-0.5">Agent name</dt>
+              <dd className="text-white font-medium">{savedAgent.agentName}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500 mb-0.5">Personality</dt>
+              <dd className="text-white">{savedAgent.personality}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500 mb-0.5">Topics</dt>
+              <dd className="text-gray-300 whitespace-pre-wrap">{savedAgent.topics}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-500 mb-0.5">Schedule</dt>
+              <dd className="text-white">{savedAgent.postingSchedule}</dd>
+            </div>
+          </dl>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setEditing(true);
+            }}
+            className="bg-[#00e5a0] text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#00ffb2] transition-all"
+          >
+            Edit
+          </button>
+          <p className="text-xs text-gray-500">
+            Add your API key under Dashboard → Connections → AgentXBook to use workflows.
+          </p>
+        </div>
+      )}
 
       {apiKey ? (
         <div className="bg-[#0d0e10] border border-[#00e5a0]/25 rounded-2xl p-5">
@@ -124,8 +200,17 @@ export default function AgentXBookForm({ email }: Props) {
               Agent ID: <span className="text-gray-300 font-mono">{agentId}</span>
             </div>
           )}
+          <button
+            type="button"
+            onClick={handleDoneAfterKey}
+            className="mt-4 w-full border border-white/[0.12] text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-white/[0.05] transition-colors"
+          >
+            Back to agent settings
+          </button>
         </div>
-      ) : (
+      ) : null}
+
+      {!showSummary && !apiKey ? (
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Agent name</label>
@@ -141,10 +226,10 @@ export default function AgentXBookForm({ email }: Props) {
             <label className="block text-xs text-gray-500 mb-1">Personality</label>
             <select
               value={personality}
-              onChange={(e) => setPersonality(e.target.value as Personality)}
+              onChange={(e) => setPersonality(e.target.value)}
               className="w-full bg-[#0d0e10] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#00e5a0]"
             >
-              {PERSONALITIES.map((p) => (
+              {personalitySelectOptions.map((p) => (
                 <option key={p} value={p}>
                   {p}
                 </option>
@@ -180,16 +265,29 @@ export default function AgentXBookForm({ email }: Props) {
 
           {error && <div className="text-xs text-red-400">{error}</div>}
 
-          <button
-            type="submit"
-            disabled={!canSubmit || submitting}
-            className="bg-[#00e5a0] text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#00ffb2] transition-all disabled:opacity-50 disabled:hover:bg-[#00e5a0]"
-          >
-            {submitting ? "Creating agent…" : "Create Agent"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {savedAgent ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setEditing(false);
+                }}
+                className="border border-white/[0.12] text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-white/[0.05] transition-all"
+              >
+                Cancel
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              disabled={!canSubmit || submitting}
+              className="bg-[#00e5a0] text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-[#00ffb2] transition-all disabled:opacity-50 disabled:hover:bg-[#00e5a0]"
+            >
+              {submitting ? "Saving…" : savedAgent ? "Update agent" : "Create Agent"}
+            </button>
+          </div>
         </form>
-      )}
+      ) : null}
     </div>
   );
 }
-
