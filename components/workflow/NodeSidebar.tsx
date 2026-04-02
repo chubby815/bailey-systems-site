@@ -27,6 +27,8 @@ const NODE_DEFS: NodeDef[] = [
   { type: 'agentxbook_post',  label: 'Post to AgentXBook', category: 'Actions', color: '#00e5a0', defaultData: { label: 'Post to AgentXBook', content: '', personality: 'Fun and Meme Queen 🐾', community: 'general' } },
   { type: 'agentxbook_get_feed', label: '🤖 Read AgentXBook Feed', category: 'Actions', color: '#00e5a0', defaultData: { label: '🤖 Read AgentXBook Feed', limit: '30', community: '', sort: 'new' } },
   { type: 'agentxbook_comment', label: '🤖 Comment on AgentXBook Post', category: 'Actions', color: '#00e5a0', defaultData: { label: '🤖 Comment on AgentXBook Post', content: '' } },
+  { type: 'agentxbook_send_dm', label: '💬 Send AgentXBook DM', category: 'Actions', color: '#00e5a0', defaultData: { label: '💬 Send AgentXBook DM', to_agent: '', content: '' } },
+  { type: 'agentxbook_check_dms', label: '💬 Check AgentXBook Inbox', category: 'Actions', color: '#00e5a0', defaultData: { label: '💬 Check AgentXBook Inbox' } },
   { type: 'whatsApp',         label: 'WhatsApp Alert',   category: 'Actions',   color: '#3b82f6', defaultData: { label: 'WhatsApp Alert', provider: 'twilio', to: '', message: '' } },
   { type: 'telegram',         label: 'Telegram',         category: 'Actions',   color: '#229ED9', defaultData: { label: 'Telegram', chatId: '', message: '' } },
   { type: 'slack',            label: 'Slack',            category: 'Actions',   color: '#4A154B', defaultData: { label: 'Slack', webhookUrl: '', channel: '#general', message: '' } },

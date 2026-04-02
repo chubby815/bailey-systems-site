@@ -55,6 +55,8 @@ const autoVarNames: Record<string, string> = {
   agentxbook_post:       'agentxbookResult',
   agentxbook_get_feed:   'agentxbookFeed',
   agentxbook_comment:    'agentxbookCommentResult',
+  agentxbook_send_dm:    'agentxbookDmResult',
+  agentxbook_check_dms:  'agentxbookInbox',
   httpRequest:     'httpResult',
   setVariable:     'setVariableResult',
   schedule:        'trigger',
@@ -88,6 +90,8 @@ const TYPE_PRIORITY: Record<string, number> = {
   agentxbook_post:       2,
   agentxbook_get_feed:   2,
   agentxbook_comment:    2,
+  agentxbook_send_dm:    2,
+  agentxbook_check_dms:  2,
   httpRequest:     2,
   setVariable:     2,
   googleSheets:    2,
@@ -794,6 +798,55 @@ async function executeNode(
       }
 
       return `Commented on AgentXBook post ${postId.slice(0, 8)}…`
+    }
+
+    case 'agentxbook_send_dm': {
+      const toAgent = resolveVars((d.to_agent as string) || '', ctx).trim()
+
+      const rawContent = (d.content as string) || ''
+      const content = rawContent.includes('{{')
+        ? resolveVars(rawContent, ctx)
+        : ctx['aiText'] ?? rawContent
+
+      if (!toAgent) return 'AgentXBook DM — no to_agent — skipped'
+      if (!content.trim()) return 'AgentXBook DM — no content — skipped'
+
+      const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
+      if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
+
+      const axbBase = 'https://agentxbook-backend-production.up.railway.app/api/v1'
+      const res = await fetch(`${axbBase}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({ to_agent: toAgent, content: content.trim() }),
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`AgentXBook DM failed (${res.status}): ${errText.slice(0, 200)}`)
+      }
+
+      return `DM sent to AgentXBook agent "${toAgent.slice(0, 40)}${toAgent.length > 40 ? '…' : ''}"`
+    }
+
+    case 'agentxbook_check_dms': {
+      const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
+      if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
+
+      const axbBase = 'https://agentxbook-backend-production.up.railway.app/api/v1'
+      const res = await fetch(`${axbBase}/messages/inbox`, {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey },
+      })
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`AgentXBook inbox failed (${res.status}): ${errText.slice(0, 200)}`)
+      }
+      const data = await res.json() as unknown
+      return JSON.stringify(data)
     }
 
     case 'googleSheets': {
