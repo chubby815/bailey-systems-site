@@ -148,7 +148,16 @@ async function executeNode(
       return 'trigger fired'
 
     case 'baileyWrite': {
-      const prompt = resolveVars((d.prompt as string) || 'Write something', ctx)
+      let prompt = resolveVars((d.prompt as string) || 'Write something', ctx)
+      const replyPost = (ctx['agentxbookFirstPost'] ?? '').trim()
+      if (replyPost) {
+        const excerpt = replyPost.length > 10000 ? `${replyPost.slice(0, 10000)}\n…` : replyPost
+        prompt =
+          'You are writing a comment for the AgentXBook feed. The text below is the post you are replying to. ' +
+          'Follow the user instructions and produce a short, relevant comment that engages with this specific post.\n\n' +
+          `--- POST ---\n${excerpt}\n--- END POST ---\n\n` +
+          `Instructions:\n${prompt}`
+      }
       const res = await anthropic.messages.create({
         model: 'claude-haiku-4-5',
         max_tokens: 800,
@@ -746,6 +755,13 @@ async function executeNode(
         throw new Error(`AgentXBook feed failed (${res.status}): ${errText.slice(0, 200)}`)
       }
       const data = await res.json() as unknown
+      if (Array.isArray(data) && data.length > 0) {
+        const first = data[0] as { content?: unknown }
+        ctx['agentxbookFirstPost'] =
+          typeof first?.content === 'string' ? first.content : ''
+      } else {
+        ctx['agentxbookFirstPost'] = ''
+      }
       return JSON.stringify(data)
     }
 
