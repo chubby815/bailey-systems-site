@@ -52,7 +52,9 @@ const autoVarNames: Record<string, string> = {
   facebookPost:    'postResult',
   instagramPost:   'instagramResult',
   linkedinPost:    'linkedinResult',
-  agentxbook_post: 'agentxbookResult',
+  agentxbook_post:       'agentxbookResult',
+  agentxbook_get_feed:   'agentxbookFeed',
+  agentxbook_comment:    'agentxbookCommentResult',
   httpRequest:     'httpResult',
   setVariable:     'setVariableResult',
   schedule:        'trigger',
@@ -83,7 +85,9 @@ const TYPE_PRIORITY: Record<string, number> = {
   facebookPost:    2,
   instagramPost:   2,
   linkedinPost:    2,
-  agentxbook_post: 2,
+  agentxbook_post:       2,
+  agentxbook_get_feed:   2,
+  agentxbook_comment:    2,
   httpRequest:     2,
   setVariable:     2,
   googleSheets:    2,
@@ -714,6 +718,82 @@ async function executeNode(
         throw new Error(`AgentXBook post failed (${res.status}): ${errText.slice(0, 200)}`)
       }
       return `Posted to AgentXBook (${community})`
+    }
+
+    case 'agentxbook_get_feed': {
+      const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
+      if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
+
+      const axbBase = 'https://agentxbook-backend-production.up.railway.app/api/v1'
+      const limitRaw = parseInt(String((d.limit as string) || '30'), 10)
+      const limit = Number.isFinite(limitRaw) ? Math.min(100, Math.max(1, limitRaw)) : 30
+      const sort = ['new', 'top', 'hot'].includes(String(d.sort || 'new')) ? String(d.sort || 'new') : 'new'
+      const communityQ = resolveVars((d.community as string) || '', ctx).trim()
+
+      const params = new URLSearchParams({ limit: String(limit), sort })
+      if (communityQ) params.set('community', communityQ)
+
+      const res = await fetch(`${axbBase}/feed?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'X-API-Key': apiKey },
+      })
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`AgentXBook feed failed (${res.status}): ${errText.slice(0, 200)}`)
+      }
+      const data = await res.json() as unknown
+      return JSON.stringify(data)
+    }
+
+    case 'agentxbook_comment': {
+      const rawContent = (d.content as string) || ''
+      const content = rawContent.includes('{{')
+        ? resolveVars(rawContent, ctx)
+        : ctx['aiText'] ?? rawContent
+
+      if (!content.trim()) return 'AgentXBook comment — no content — skipped'
+
+      const apiKey = await kv.get<string>(`agentxbook_key:${email}`)
+      if (!apiKey) return 'AgentXBook not connected — go to Dashboard → Connections → AgentXBook'
+
+      const feedRaw = ctx['agentxbookFeed'] ?? ''
+      if (!feedRaw.trim()) {
+        return 'AgentXBook comment — no feed — run Read AgentXBook Feed first (context agentxbookFeed)'
+      }
+
+      let posts: unknown
+      try {
+        posts = JSON.parse(feedRaw) as unknown
+      } catch {
+        return 'AgentXBook comment — could not parse agentxbookFeed as JSON'
+      }
+
+      if (!Array.isArray(posts) || posts.length === 0) {
+        return 'AgentXBook comment — feed is empty'
+      }
+
+      const first = posts[0] as { id?: string }
+      const postId = typeof first?.id === 'string' ? first.id.trim() : ''
+      if (!postId) {
+        return 'AgentXBook comment — no post id on most recent feed item'
+      }
+
+      const axbBase = 'https://agentxbook-backend-production.up.railway.app/api/v1'
+      const res = await fetch(`${axbBase}/posts/${encodeURIComponent(postId)}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({ content: content.trim() }),
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`AgentXBook comment failed (${res.status}): ${errText.slice(0, 200)}`)
+      }
+
+      return `Commented on AgentXBook post ${postId.slice(0, 8)}…`
     }
 
     case 'googleSheets': {
