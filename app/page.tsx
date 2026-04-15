@@ -1,3 +1,5 @@
+"use client";
+
 import TemplatePreviews from "@/components/TemplatePreviews";
 import HeroSection from "@/components/HeroSection";
 import DealBanner from "@/components/DealBanner";
