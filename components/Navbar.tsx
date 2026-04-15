@@ -98,6 +98,29 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
           <NavLink href="/pricing">Pricing</NavLink>
           <NavLink href="/pro">Pro</NavLink>
           <NavLink href="/elite">Elite</NavLink>
+          <a
+            href="https://agentsxbook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 transition-all"
+            style={{
+              color: "#ffb000",
+              border: "1px solid rgba(255,176,0,0.4)",
+              background: "rgba(255,176,0,0.06)",
+              fontFamily: "var(--font-tactical)",
+              letterSpacing: "0.15em",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,176,0,0.15)";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 0 12px rgba(255,176,0,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,176,0,0.06)";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none";
+            }}
+          >
+            ◈ AGENTXBOOK
+          </a>
         </div>
 
         {/* CTA buttons */}
@@ -230,6 +253,16 @@ export default function Navbar({ initialLoggedIn = false }: NavbarProps) {
           <MobileLink href="/pricing" onClick={() => setMobileOpen(false)}>▹ PRICING</MobileLink>
           <MobileLink href="/pro" onClick={() => setMobileOpen(false)}>▹ PRO</MobileLink>
           <MobileLink href="/elite" onClick={() => setMobileOpen(false)}>▹ ELITE</MobileLink>
+          <a
+            href="https://agentsxbook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold uppercase tracking-widest py-1.5"
+            style={{ color: "#ffb000", fontFamily: "var(--font-tactical)", letterSpacing: "0.15em" }}
+            onClick={() => setMobileOpen(false)}
+          >
+            ◈ AGENTXBOOK ↗
+          </a>
           <div className="flex flex-col gap-2 pt-2" style={{ borderTop: "1px solid rgba(75,83,32,0.3)" }}>
             {isLoggedIn ? (
               <>

@@ -104,6 +104,12 @@ h1, h2, h3, h4, h5, h6 {
   animation: decrypt-progress 1.8s ease-in-out forwards;
 }
 
+/* ── TICKER SCROLL ───────────────────────────────────────────────────────── */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* ── BLINK CURSOR ────────────────────────────────────────────────────────── */
 @keyframes tac-blink {
   0%, 100% { opacity: 1; }
