@@ -94,7 +94,7 @@ const TextType = ({
       {showCursor && (
         <span
           ref={cursorRef}
-          style={{ marginLeft: '2px', color: '#00e5a0' }}
+          style={{ marginLeft: '2px', color: '#ffb000' }}
         >
           {cursorCharacter}
         </span>

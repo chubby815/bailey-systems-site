@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 
 export default function DealBanner() {
-  // Deal ends March 24 2026 midnight
   const DEAL_END = new Date('2026-03-24T00:00:00').getTime()
 
   const [timeLeft, setTimeLeft] = useState({
@@ -41,58 +40,60 @@ export default function DealBanner() {
       top: '50%',
       transform: 'translateY(-50%)',
       zIndex: 9999,
-      background: '#0a0a0a',
-      border: '2px solid #ff6600',
-      borderRadius: '16px',
+      background: '#0a0b0c',
+      border: '1px solid rgba(255,176,0,0.5)',
       padding: '1.25rem',
-      maxWidth: '220px',
-      boxShadow: '0 0 30px rgba(255,102,0,0.3)',
+      maxWidth: '200px',
+      boxShadow: '0 0 30px rgba(255,176,0,0.15), inset 0 0 0 1px rgba(75,83,32,0.2)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: '0.75rem',
+      gap: '0.65rem',
       textAlign: 'center',
+      clipPath: 'polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px)',
     }}>
 
       {/* Glow */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        borderRadius: '16px',
-        background: 'radial-gradient(ellipse at center, rgba(255,102,0,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at center, rgba(255,176,0,0.05) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
       {/* Badge */}
       <div style={{
-        background: 'rgba(255,102,0,0.15)',
-        border: '1px solid #ff6600',
-        borderRadius: '100px',
-        padding: '0.2rem 0.75rem',
-        fontSize: '0.65rem',
+        background: 'rgba(255,176,0,0.1)',
+        border: '1px solid rgba(255,176,0,0.4)',
+        padding: '0.2rem 0.65rem',
+        fontSize: '0.6rem',
         fontWeight: 700,
-        color: '#ff6600',
-        letterSpacing: '0.08em',
+        color: '#ffb000',
+        letterSpacing: '0.12em',
         textTransform: 'uppercase' as const,
+        fontFamily: 'var(--font-tactical)',
         position: 'relative',
         zIndex: 1,
       }}>
-        🚨 Limited Time 🚨
+        ■ PRIORITY ALERT ■
       </div>
 
       {/* Main text */}
       <p style={{
-        color: '#ffffff',
-        fontSize: '0.9rem',
+        color: '#e5e5e0',
+        fontSize: '0.8rem',
         fontWeight: 700,
         margin: 0,
-        lineHeight: 1.4,
+        lineHeight: 1.5,
+        fontFamily: 'var(--font-tactical)',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase' as const,
         position: 'relative',
         zIndex: 1,
       }}>
-        Buy 1 AI Website —{' '}
-        <span style={{ color: '#ff6600', fontWeight: 900 }}>Get 1 FREE</span>
-        {' '}for a friend
+        BUY 1 AI WEBSITE —{' '}
+        <span style={{ color: '#ffb000' }}>GET 1 FREE</span>
+        {' '}FOR A FRIEND
       </p>
 
       {/* Countdown */}
@@ -100,43 +101,44 @@ export default function DealBanner() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.35rem',
+        gap: '0.3rem',
         position: 'relative',
         zIndex: 1,
       }}>
-        <span style={{ color: '#6b7280', fontSize: '0.7rem' }}>⏳ Ends in</span>
+        <span style={{ color: '#4b5320', fontSize: '0.65rem', fontFamily: 'var(--font-tactical)', letterSpacing: '0.1em' }}>⏱ MISSION ENDS</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
           {[
-            { value: timeLeft.days,    label: 'd' },
-            { value: timeLeft.hours,   label: 'h' },
-            { value: timeLeft.minutes, label: 'm' },
-            { value: timeLeft.seconds, label: 's' },
+            { value: timeLeft.days,    label: 'D' },
+            { value: timeLeft.hours,   label: 'H' },
+            { value: timeLeft.minutes, label: 'M' },
+            { value: timeLeft.seconds, label: 'S' },
           ].map(({ value, label }, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
               {i > 0 && (
-                <span style={{ color: '#ff6600', fontWeight: 700, fontSize: '0.9rem' }}>:</span>
+                <span style={{ color: '#4b5320', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-tactical)' }}>:</span>
               )}
               <div style={{
-                background: '#111214',
-                border: '1px solid #ff6600',
-                borderRadius: '5px',
-                padding: '0.2rem 0.35rem',
+                background: '#111418',
+                border: '1px solid rgba(75,83,32,0.4)',
+                padding: '0.2rem 0.3rem',
                 textAlign: 'center',
               }}>
                 <div style={{
-                  color: '#ff6600',
+                  color: '#ffb000',
                   fontWeight: 900,
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   lineHeight: 1,
                   fontVariantNumeric: 'tabular-nums',
+                  fontFamily: 'var(--font-tactical)',
                 }}>
                   {String(value).padStart(2, '0')}
                 </div>
                 <div style={{
-                  color: '#4b5563',
-                  fontSize: '0.55rem',
+                  color: '#4b5320',
+                  fontSize: '0.5rem',
                   textTransform: 'uppercase' as const,
-                  letterSpacing: '0.04em',
+                  letterSpacing: '0.06em',
+                  fontFamily: 'var(--font-tactical)',
                 }}>
                   {label}
                 </div>
@@ -150,22 +152,26 @@ export default function DealBanner() {
       <a
         href="/pricing"
         style={{
-          background: '#ff6600',
-          color: '#000',
+          background: '#ffb000',
+          color: '#0a0b0c',
           fontWeight: 800,
-          fontSize: '0.75rem',
-          padding: '0.5rem 1.25rem',
-          borderRadius: '100px',
+          fontSize: '0.65rem',
+          padding: '0.45rem 1rem',
           textDecoration: 'none',
-          letterSpacing: '0.06em',
+          letterSpacing: '0.12em',
           textTransform: 'uppercase' as const,
-          boxShadow: '0 0 16px rgba(255,102,0,0.5)',
+          fontFamily: 'var(--font-tactical)',
+          boxShadow: '0 0 12px rgba(255,176,0,0.3)',
           position: 'relative',
           zIndex: 1,
           whiteSpace: 'nowrap',
+          clipPath: 'polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px)',
+          display: 'block',
+          width: '100%',
+          textAlign: 'center',
         }}
       >
-        Claim Deal →
+        ▶ CLAIM MISSION →
       </a>
 
     </div>

@@ -4,22 +4,30 @@ import TextType from "./TextType";
 
 export default function HeroHeadline() {
   return (
-    <h1 className="font-syne text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-      AI Builds Your Business<br />
-      Website in{" "}
+    <h1
+      className="text-4xl md:text-6xl font-black leading-tight mb-6"
+      style={{
+        fontFamily: "var(--font-tactical)",
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        color: "#e5e5e0",
+      }}
+    >
+      AI BUILDS YOUR BUSINESS<br />
+      WEBSITE IN{" "}
       <TextType
         text={[
-          "60 Seconds",
-          "Minutes, Not Months",
-          "One Click",
-          "Seconds Flat",
+          "60 SECONDS",
+          "MINUTES, NOT MONTHS",
+          "ONE CLICK",
+          "SECONDS FLAT",
         ]}
         typingSpeed={60}
         deletingSpeed={40}
         pauseDuration={2000}
         showCursor={true}
-        cursorCharacter="_"
-        className="text-[#00e5a0]"
+        cursorCharacter="▮"
+        className="tac-amber"
       />
     </h1>
   );

@@ -10,16 +10,16 @@ import { clsx } from "clsx";
 
 const variantStyles = {
   primary:
-    "bg-[#0EA5E9] text-white border-4 border-black shadow-[4px_4px_0_#0a0a0a] hover:bg-[#0284C7] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] transition-all button-primary",
+    "bg-[#ffb000] text-[#0a0b0c] border border-[#ffb000] hover:bg-[#e09e00] hover:shadow-[0_0_15px_rgba(255,176,0,0.4)] transition-all button-primary",
   secondary:
-    "border-4 border-black bg-white text-black shadow-[4px_4px_0_#0a0a0a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] button-secondary",
-  ghost: "text-black hover:text-black/70 hover:bg-black/5",
+    "border border-[rgba(75,83,32,0.6)] bg-transparent text-[#e5e5e0] hover:border-[#ffb000] hover:text-[#ffb000] hover:shadow-[0_0_10px_rgba(255,176,0,0.2)] transition-all button-secondary",
+  ghost: "text-[#9ca3af] hover:text-[#ffb000] hover:bg-[rgba(75,83,32,0.1)]",
 };
 
 const sizeStyles = {
-  sm: "text-sm px-4 py-2",
-  md: "text-sm px-5 py-2.5",
-  lg: "text-base px-6 py-3",
+  sm: "text-xs px-4 py-1.5",
+  md: "text-xs px-5 py-2",
+  lg: "text-xs px-6 py-3",
 };
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -40,7 +40,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const styles = clsx(
-    "inline-flex items-center justify-center font-bold transition-all focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide",
+    "inline-flex items-center justify-center font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffb000] disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest",
     variantStyles[variant],
     sizeStyles[size],
     className,
@@ -57,13 +57,13 @@ export function Button({
     <button
       className={styles}
       disabled={disabled || loading}
+      style={{ fontFamily: "var(--font-tactical)" }}
       {...props}
     >
       {loading && (
-        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+        <span className="mr-2 h-2.5 w-2.5 animate-spin rounded-none border-2 border-[rgba(255,176,0,0.4)] border-t-[#ffb000]" />
       )}
       {children}
     </button>
   );
 }
-
