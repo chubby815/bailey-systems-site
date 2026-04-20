@@ -2,6 +2,28 @@ import { Resend } from "resend";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://baileyagents.com";
 
+/**
+ * Always link verification emails to the canonical www.baileyagents.com host.
+ * Some mail providers (Yahoo in particular) rewrite or block bare apex links
+ * and Vercel preview URLs, so we force the public production hostname here
+ * regardless of where the build is running.
+ */
+function verificationBaseUrl(): string {
+  try {
+    const u = new URL(BASE_URL);
+    if (u.hostname === "baileyagents.com" || u.hostname === "www.baileyagents.com") {
+      return "https://www.baileyagents.com";
+    }
+    // Vercel preview, localhost, etc. — fall through to canonical prod.
+    if (u.hostname.endsWith(".vercel.app")) {
+      return "https://www.baileyagents.com";
+    }
+    return BASE_URL.replace(/\/+$/, "");
+  } catch {
+    return "https://www.baileyagents.com";
+  }
+}
+
 const emailWrap = (body: string) => `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #08090a; color: #f0f0f0; border-radius: 12px;">
   <div style="margin-bottom: 24px;">
@@ -20,7 +42,7 @@ const emailWrap = (body: string) => `
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const url = `${BASE_URL}/api/auth/verify-email?token=${token}`;
+  const url = `${verificationBaseUrl()}/api/auth/verify-email?token=${token}`;
   await resend.emails.send({
     from: "Bailey Agents <noreply@baileyagents.com>",
     to: email,
@@ -33,10 +55,30 @@ export async function sendVerificationEmail(email: string, token: string): Promi
       <a href="${url}" style="display: inline-block; background: #00e5a0; color: #000; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; margin-bottom: 24px;">
         Verify My Email →
       </a>
+      <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 0 0 8px;">
+        Or copy and paste this link into your browser:
+      </p>
+      <p style="color: #d1d5db; font-size: 13px; line-height: 1.5; word-break: break-all; background: #111214; border: 1px solid #1f2123; border-radius: 6px; padding: 10px 12px; margin: 0 0 24px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+        ${url}
+      </p>
       <p style="color: #6b7280; font-size: 12px; margin: 0;">
         This link expires in 24 hours. If you didn't sign up for Bailey Agents, you can safely ignore this email.
       </p>
     `),
+    text: [
+      "Welcome to Bailey Agents!",
+      "",
+      "Verify your email address and activate your account by opening the link below:",
+      "",
+      url,
+      "",
+      "If your email client blocks the link, copy and paste the full URL above into your browser's address bar.",
+      "",
+      "This link expires in 24 hours. If you didn't sign up for Bailey Agents, you can safely ignore this email.",
+      "",
+      "— Bailey Agents",
+      "https://www.baileyagents.com",
+    ].join("\n"),
   });
 }
 
