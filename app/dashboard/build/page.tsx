@@ -165,6 +165,9 @@ function BuildForm() {
   const [planLimitMsg, setPlanLimitMsg] = useState<string | null>(null);
   const [runLimitMsg, setRunLimitMsg] = useState<{ used: number; limit: number } | null>(null);
   const [step, setStep] = useState<"form" | "generating">("form");
+  // Shown inside the generating screen when the request fails — lets the
+  // user retry without leaving the page or being bounced to the dashboard.
+  const [generatingError, setGeneratingError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!editSiteId) return;
@@ -206,33 +209,22 @@ function BuildForm() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.businessName.trim() || !form.location.trim() || !form.services.trim()) {
-      setError("Please fill in Business Name, Location, and Services.");
-      return;
-    }
+  /**
+   * Fires the generate request and handles the response. Keeps the user on
+   * the generating screen the entire time. Only three outcomes:
+   *   1. 200 with a URL              → redirect to that URL (`?edit=true`)
+   *   2. Actionable limit / auth     → return to the form with a banner
+   *   3. Anything else / network err → stay on the generating screen and
+   *                                    show a friendly error with a Retry.
+   * Never redirects the user to the dashboard.
+   */
+  async function runGeneration() {
     setError(null);
+    setGeneratingError(null);
+    setRunLimitMsg(null);
+    setPlanLimitMsg(null);
     setLoading(true);
     setStep("generating");
-
-    // Snapshot the current site count so we can detect a successful
-    // server-side save even when the long-running fetch drops mid-response
-    // (Vercel timeout, intermediate proxy hangup, etc.).
-    let initialSitesUsed: number | null = null;
-    if (!isEditMode) {
-      try {
-        const usageRes = await fetch("/api/usage", { credentials: "include", cache: "no-store" });
-        if (usageRes.ok) {
-          const usageData = (await usageRes.json()) as { sitesUsed?: number };
-          if (typeof usageData.sitesUsed === "number") {
-            initialSitesUsed = usageData.sitesUsed;
-          }
-        }
-      } catch {
-        // Non-fatal — we just lose the recovery path's baseline.
-      }
-    }
 
     try {
       const payload = isEditMode ? { ...form, editSiteId } : form;
@@ -262,17 +254,9 @@ function BuildForm() {
             "[dashboard/build] non-JSON response from /api/sites/generate:",
             rawBody.slice(0, 500)
           );
-          if (res.ok) {
-            // 200 with a non-JSON body — server presumably saved the
-            // site but couldn't serialize the response. Send them to
-            // the dashboard so they can find it.
-            router.push("/dashboard?from=build");
-            return;
-          }
-          setError(
-            "The server returned an unexpected response. Please try again — if this keeps happening, check your dashboard, your site may have been saved."
+          setGeneratingError(
+            "We hit a snag finishing your site. Please tap Retry to try again."
           );
-          setStep("form");
           setLoading(false);
           return;
         }
@@ -299,70 +283,64 @@ function BuildForm() {
           return;
         }
         if (res.status === 403) { router.push("/pricing?reason=subscription_required"); return; }
-        throw new Error(data.message ?? data.error ?? "Generation failed");
+        // Any other non-OK response — stay on the generating screen and
+        // offer a retry. Surface the server's message if it's present.
+        setGeneratingError(
+          data.message ?? data.error ?? "Generation failed. Please tap Retry to try again."
+        );
+        setLoading(false);
+        return;
       }
-      // Server returned 200 — site is saved. Always treat this as success.
-      // Redirect into the editor so the owner sees the site with the edit bar and share URL.
+
+      // 200 with a URL → redirect to that URL (keep `?edit=true` so the
+      // owner lands in the editor with the share bar, matching prior UX).
       if (typeof data?.url === "string" && data.url) {
         router.push(`${data.url}?edit=true`);
         return;
       }
-      // Defensive: 200 but no url — still a success, just send them to dashboard.
-      router.push("/dashboard?from=build");
+
+      // 200 without a URL is unexpected — treat as a soft failure and let
+      // the user retry. Do NOT redirect them away.
+      setGeneratingError(
+        "Your site finished generating but we didn't get a link back. Please tap Retry to try again."
+      );
+      setLoading(false);
     } catch (err: unknown) {
-      // The fetch above can throw `TypeError: Failed to fetch` when the
-      // long-running generate request is killed by the platform proxy
-      // even after the server-side save has already succeeded. Don't
-      // immediately surface that as a hard error — poll /api/usage to
-      // confirm whether a new site landed in Redis, and treat that as
-      // success if so.
+      // Most commonly this is `TypeError: Failed to fetch` when the long
+      // request is dropped by the proxy. Stay on the generating screen
+      // and let the user retry.
       const message = err instanceof Error ? err.message : "Something went wrong";
       const looksLikeNetworkError =
         err instanceof TypeError ||
         message.toLowerCase().includes("failed to fetch") ||
         message.toLowerCase().includes("network");
 
-      if (!isEditMode && looksLikeNetworkError && initialSitesUsed !== null) {
-        const recovered = await pollForNewSite(initialSitesUsed, 60_000);
-        if (recovered) {
-          router.push("/dashboard?from=build");
-          return;
-        }
-      }
-
-      setError(
+      setGeneratingError(
         looksLikeNetworkError
-          ? "Generation took longer than expected. Check your dashboard in a minute — the site may still finish saving."
+          ? "Your connection dropped before your site finished. Please tap Retry to try again."
           : message
       );
-      setStep("form");
       setLoading(false);
     }
   }
 
-  /**
-   * Poll /api/usage for up to `timeoutMs`, returning true when sitesUsed
-   * exceeds the snapshot taken before the request was sent. Used to detect
-   * the case where the server saved the site but the client never received
-   * the response.
-   */
-  async function pollForNewSite(baseline: number, timeoutMs: number): Promise<boolean> {
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-      try {
-        const r = await fetch("/api/usage", { credentials: "include", cache: "no-store" });
-        if (r.ok) {
-          const j = (await r.json()) as { sitesUsed?: number };
-          if (typeof j.sitesUsed === "number" && j.sitesUsed > baseline) {
-            return true;
-          }
-        }
-      } catch {
-        // Ignore transient errors and keep polling.
-      }
-      await new Promise((res) => setTimeout(res, 4000));
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.businessName.trim() || !form.location.trim() || !form.services.trim()) {
+      setError("Please fill in Business Name, Location, and Services.");
+      return;
     }
-    return false;
+    await runGeneration();
+  }
+
+  function handleRetry() {
+    void runGeneration();
+  }
+
+  function handleBackToForm() {
+    setGeneratingError(null);
+    setStep("form");
+    setLoading(false);
   }
 
   if (prefilling) {
@@ -374,6 +352,45 @@ function BuildForm() {
   }
 
   if (step === "generating") {
+    if (generatingError) {
+      return (
+        <div className="min-h-screen bg-[#08090a] flex flex-col items-center justify-center text-center px-6">
+          <div className="mb-8 max-w-sm">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h2 className="font-syne text-2xl font-black text-white mb-3">
+              Something went wrong
+            </h2>
+            <p className="text-[#9ca3af] text-sm leading-relaxed">
+              {generatingError}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+            <button
+              type="button"
+              onClick={handleRetry}
+              disabled={loading}
+              className="flex-1 bg-[#00e5a0] hover:bg-[#00ffb2] text-black font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              Retry
+            </button>
+            <button
+              type="button"
+              onClick={handleBackToForm}
+              disabled={loading}
+              className="flex-1 bg-[#111214] hover:bg-[#1a1b1e] border border-white/[0.07] hover:border-white/20 text-[#f0f0f0] font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              Back to form
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-[#08090a] flex flex-col items-center justify-center text-center px-6">
         <div className="mb-8">
@@ -384,7 +401,7 @@ function BuildForm() {
             {isEditMode ? "Regenerating your site..." : "Building your site..."}
           </h2>
           <p className="text-[#6b7280] text-sm max-w-xs mx-auto leading-relaxed">
-            Generating custom AI images and building your site. This takes about 45–60 seconds.
+            Generating custom AI images and building your site. Hang tight — this can take up to a few minutes.
           </p>
         </div>
         <div className="flex gap-2">
