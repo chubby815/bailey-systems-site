@@ -5,6 +5,16 @@ import { rateLimit } from "@/lib/ratelimit";
 import { checkAndIncrementUsage, checkAndIncrementRegen } from "@/lib/usage";
 import type { StructuredSiteContent } from "@/lib/site-theme";
 
+// Site generation calls Claude + Grok back-to-back and routinely runs
+// 30–55 s. Without an explicit maxDuration, Vercel kills the function at
+// the default (10s hobby / 15s pro), which drops the client connection
+// even though the server might still be writing the site to Redis. That
+// surfaces in the dashboard as a `TypeError: Failed to fetch` and was the
+// root cause of the "failed fetch on 200 response" bug.
+export const maxDuration = 60;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const SITE_LIMITS: Record<string, number> = {
   starter: 1,
   growth:  3,

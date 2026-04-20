@@ -61,7 +61,7 @@ export default async function RootLayout({
       <body>
         <NavWrapper initialHideNav={hideNav} isLoggedIn={isLoggedIn} />
         {children}
-        <FooterWrapper />
+        <FooterWrapper initialHide={hideNav} />
       </body>
     </html>
   );

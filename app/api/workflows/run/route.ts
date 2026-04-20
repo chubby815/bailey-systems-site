@@ -305,7 +305,7 @@ async function executeNode(
 
       if (!to) return 'No email address found — skipped'
       await resend.emails.send({
-        from: 'Bailey Agents <noreply@baileyagents.com>',
+        from: 'Bailey Agents <hello@baileyagents.com>',
         to,
         subject,
         html: html.replace(/\n/g, '<br>'),

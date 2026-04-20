@@ -216,6 +216,24 @@ function BuildForm() {
     setLoading(true);
     setStep("generating");
 
+    // Snapshot the current site count so we can detect a successful
+    // server-side save even when the long-running fetch drops mid-response
+    // (Vercel timeout, intermediate proxy hangup, etc.).
+    let initialSitesUsed: number | null = null;
+    if (!isEditMode) {
+      try {
+        const usageRes = await fetch("/api/usage", { credentials: "include", cache: "no-store" });
+        if (usageRes.ok) {
+          const usageData = (await usageRes.json()) as { sitesUsed?: number };
+          if (typeof usageData.sitesUsed === "number") {
+            initialSitesUsed = usageData.sitesUsed;
+          }
+        }
+      } catch {
+        // Non-fatal — we just lose the recovery path's baseline.
+      }
+    }
+
     try {
       const payload = isEditMode ? { ...form, editSiteId } : form;
       const res = await fetch("/api/sites/generate", {
@@ -247,13 +265,68 @@ function BuildForm() {
         if (res.status === 403) { router.push("/pricing?reason=subscription_required"); return; }
         throw new Error(data.error ?? "Generation failed");
       }
+      // Server returned 200 — site is saved. Always treat this as success.
       // Redirect into the editor so the owner sees the site with the edit bar and share URL.
-      router.push(`${data.url}?edit=true`);
+      if (typeof data?.url === "string" && data.url) {
+        router.push(`${data.url}?edit=true`);
+        return;
+      }
+      // Defensive: 200 but no url — still a success, just send them to dashboard.
+      router.push("/dashboard?from=build");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      // The fetch above can throw `TypeError: Failed to fetch` when the
+      // long-running generate request is killed by the platform proxy
+      // even after the server-side save has already succeeded. Don't
+      // immediately surface that as a hard error — poll /api/usage to
+      // confirm whether a new site landed in Redis, and treat that as
+      // success if so.
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      const looksLikeNetworkError =
+        err instanceof TypeError ||
+        message.toLowerCase().includes("failed to fetch") ||
+        message.toLowerCase().includes("network");
+
+      if (!isEditMode && looksLikeNetworkError && initialSitesUsed !== null) {
+        const recovered = await pollForNewSite(initialSitesUsed, 60_000);
+        if (recovered) {
+          router.push("/dashboard?from=build");
+          return;
+        }
+      }
+
+      setError(
+        looksLikeNetworkError
+          ? "Generation took longer than expected. Check your dashboard in a minute — the site may still finish saving."
+          : message
+      );
       setStep("form");
       setLoading(false);
     }
+  }
+
+  /**
+   * Poll /api/usage for up to `timeoutMs`, returning true when sitesUsed
+   * exceeds the snapshot taken before the request was sent. Used to detect
+   * the case where the server saved the site but the client never received
+   * the response.
+   */
+  async function pollForNewSite(baseline: number, timeoutMs: number): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        const r = await fetch("/api/usage", { credentials: "include", cache: "no-store" });
+        if (r.ok) {
+          const j = (await r.json()) as { sitesUsed?: number };
+          if (typeof j.sitesUsed === "number" && j.sitesUsed > baseline) {
+            return true;
+          }
+        }
+      } catch {
+        // Ignore transient errors and keep polling.
+      }
+      await new Promise((res) => setTimeout(res, 4000));
+    }
+    return false;
   }
 
   if (prefilling) {
