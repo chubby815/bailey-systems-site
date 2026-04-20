@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { stripe } from "@/lib/stripe";
+import { getSessionFromCookies } from "@/lib/auth";
 
 // Render dynamically — reads query params
 export const dynamic = "force-dynamic";
@@ -34,6 +35,12 @@ async function ThankYouContent({
       // Non-fatal — degrade gracefully
     }
   }
+
+  // If the user lost their session between Stripe checkout and the redirect
+  // back here (e.g. paid in a fresh tab / incognito), don't pretend they're
+  // logged in. Tell them to log in to access their dashboard.
+  const userSession = await getSessionFromCookies();
+  const hasSession = !!userSession?.email;
 
   return (
     <main className="min-h-screen bg-[#08090a] text-white flex items-center justify-center px-4">
@@ -69,8 +76,20 @@ async function ThankYouContent({
           </p>
         )}
 
+        {/* Logged-out notice — paid in a different session, must log in to access */}
+        {!hasSession && (
+          <div className="bg-[#0066ff]/10 border border-[#0066ff]/30 text-[#9ec5ff] rounded-2xl px-6 py-5 mb-8 text-sm leading-relaxed">
+            <div className="font-semibold text-white mb-1">
+              Subscription paid — log in to access your dashboard
+            </div>
+            We received your payment, but you&apos;re not logged in on this
+            device. Sign in with the email you used at checkout to unlock your
+            plan.
+          </div>
+        )}
+
         {/* Getting started checklist */}
-        {isSubscription && (
+        {isSubscription && hasSession && (
           <div className="bg-[#111214] border border-white/[0.07] rounded-2xl p-6 mb-8 text-left">
             <div className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">
               Getting Started
@@ -102,12 +121,21 @@ async function ThankYouContent({
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/dashboard"
-            className="bg-[#00e5a0] text-black font-bold px-8 py-3.5 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
-          >
-            Go to Dashboard →
-          </Link>
+          {hasSession ? (
+            <Link
+              href="/dashboard"
+              className="bg-[#00e5a0] text-black font-bold px-8 py-3.5 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
+            >
+              Go to Dashboard →
+            </Link>
+          ) : (
+            <Link
+              href={`/login?redirect=/dashboard${customerEmail ? `&email=${encodeURIComponent(customerEmail)}` : ""}`}
+              className="bg-[#00e5a0] text-black font-bold px-8 py-3.5 rounded-xl text-sm hover:bg-[#00ffb2] hover:shadow-[0_8px_30px_rgba(0,229,160,0.3)] transition-all"
+            >
+              Log in to access dashboard →
+            </Link>
+          )}
           <Link
             href="/"
             className="bg-transparent border border-white/10 text-white font-medium px-8 py-3.5 rounded-xl text-sm hover:border-white/25 transition-all"

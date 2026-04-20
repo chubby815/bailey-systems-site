@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { kv } from "@/lib/kv";
+import { kv, getUser } from "@/lib/kv";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -70,7 +70,13 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode !== "subscription") break;
 
-        const email = session.customer_email ?? session.customer_details?.email;
+        // Prefer the email captured at checkout creation (our verified Bailey user).
+        // Fall back to Stripe-collected email only if metadata is somehow missing.
+        const rawEmail =
+          session.metadata?.baileyEmail ??
+          session.customer_email ??
+          session.customer_details?.email;
+        const email = rawEmail ? rawEmail.toLowerCase() : null;
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
 
@@ -93,21 +99,38 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        if (email) {
-          await kv.set(`sub:${email}`, {
-            plan,
-            customerId,
-            subscriptionId,
-            status: actualStatus,
-            trialEnd,
-            updatedAt: new Date().toISOString(),
-          });
-          // Also index by Stripe customer ID for webhook lookups
-          await kv.set(`sub:cust:${customerId}`, email);
-          // Permanently mark this email as having used their free trial.
-          // No expiry — one trial per email address, regardless of cancellations.
-          await kv.set(`trial-used:${email}`, true);
+        if (!email) {
+          console.warn(`[webhook] checkout.session.completed without email — skipping. session=${session.id}`);
+          break;
         }
+
+        // Safety net: only activate the subscription on a known, verified Bailey user.
+        // The checkout API already enforces this, but if a session somehow reaches us
+        // for an unknown / unverified email (typo, manual Stripe-dashboard checkout,
+        // etc.), we refuse to write a sub:{email} record.
+        const userRecord = await getUser(email);
+        if (!userRecord) {
+          console.warn(`[webhook] no Bailey user for ${email} — skipping subscription activation. session=${session.id}`);
+          break;
+        }
+        if (!userRecord.emailVerified) {
+          console.warn(`[webhook] user ${email} is not email-verified — skipping subscription activation. session=${session.id}`);
+          break;
+        }
+
+        await kv.set(`sub:${email}`, {
+          plan,
+          customerId,
+          subscriptionId,
+          status: actualStatus,
+          trialEnd,
+          updatedAt: new Date().toISOString(),
+        });
+        // Also index by Stripe customer ID for webhook lookups
+        await kv.set(`sub:cust:${customerId}`, email);
+        // Permanently mark this email as having used their free trial.
+        // No expiry — one trial per email address, regardless of cancellations.
+        await kv.set(`trial-used:${email}`, true);
 
         console.log(`[webhook] activated ${plan} for ${email}`);
         break;

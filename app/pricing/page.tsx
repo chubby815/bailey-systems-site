@@ -16,6 +16,21 @@ export default function PricingPage() {
     setError(null);
 
     try {
+      // Pre-flight: confirm user has a Bailey session before hitting Stripe checkout.
+      // Unauthenticated users go straight to signup — no guest checkout allowed.
+      const sessionRes = await fetch("/api/user", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+      const sessionData = (await sessionRes.json().catch(() => ({}))) as {
+        session?: { email?: string } | null;
+      };
+      if (!sessionRes.ok || !sessionData.session?.email) {
+        router.push(`/login?mode=signup&redirect=/pricing`);
+        return;
+      }
+
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,9 +40,14 @@ export default function PricingPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // If user not authenticated, redirect to login
+        // Server-side guard: session was lost between pre-flight and POST.
         if (res.status === 401) {
-          router.push(`/login?redirect=/pricing`);
+          router.push(`/login?mode=signup&redirect=/pricing`);
+          return;
+        }
+        // Email not verified yet — bounce them to login so they can resend verification.
+        if (res.status === 403 && data?.error === "email_not_verified") {
+          router.push(`/login?redirect=/pricing&error=verify_email`);
           return;
         }
         throw new Error(data.error ?? "Failed to create checkout session");

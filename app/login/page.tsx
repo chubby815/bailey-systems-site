@@ -12,7 +12,8 @@ function LoginForm() {
   // URL error params (e.g. from email verify redirect)
   const urlError = searchParams.get("error");
 
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
