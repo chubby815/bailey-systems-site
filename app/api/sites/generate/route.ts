@@ -11,7 +11,7 @@ import type { StructuredSiteContent } from "@/lib/site-theme";
 // even though the server might still be writing the site to Redis. That
 // surfaces in the dashboard as a `TypeError: Failed to fetch` and was the
 // root cause of the "failed fetch on 200 response" bug.
-export const maxDuration = 60;
+export const maxDuration = 300;
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
