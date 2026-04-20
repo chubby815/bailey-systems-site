@@ -11,6 +11,85 @@ import { SiteChat }         from "@/components/site/SiteChat";
 
 export const dynamic = "force-dynamic";
 
+// ── Mobile-nav safety net for AI-generated customer sites ─────────────────────
+// The HTML-generated sites (via lib/generate-site-html.ts) ask Claude to build a
+// desktop nav + mobile hamburger. In practice Claude's mobile output is
+// inconsistent: sometimes the entire <nav> gets display:none on <768px with a
+// broken / missing hamburger toggle, sometimes the links overflow off-screen.
+// This injection forces the top-level <nav> / <header> on the published site
+// to render as a visible wrapping flex row at the top on small screens. It's
+// intentionally scoped to direct children of <body> so we don't interfere with
+// interior nav-like widgets (footer menus, drawers, service-card tabs, etc.).
+const MOBILE_NAV_SAFETY_CSS = `
+<style data-bailey-mobile-nav-safety>
+  @media (max-width: 768px) {
+    html, body { overflow-x: hidden !important; }
+    body > nav,
+    body > header,
+    body > header > nav {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.5rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      padding: 0.75rem 1rem !important;
+      min-height: 56px !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1000 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      transform: none !important;
+    }
+    body > nav > *,
+    body > header > *,
+    body > header > nav > * {
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+    body > nav a,
+    body > header a,
+    body > header > nav a,
+    body > nav button,
+    body > header button,
+    body > header > nav button {
+      font-size: 0.9rem !important;
+      line-height: 1.2 !important;
+    }
+    body > nav > a:first-child,
+    body > header > a:first-child,
+    body > header > nav > a:first-child,
+    body > nav > div:first-child,
+    body > header > div:first-child,
+    body > header > nav > div:first-child {
+      display: inline-flex !important;
+      align-items: center !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+      max-width: 60% !important;
+    }
+  }
+</style>
+`;
+
+function withMobileNavSafety(html: string): string {
+  if (!html) return html;
+  if (html.includes("data-bailey-mobile-nav-safety")) return html;
+  if (html.includes("</head>")) {
+    return html.replace("</head>", `${MOBILE_NAV_SAFETY_CSS}</head>`);
+  }
+  const bodyOpen = html.match(/<body[^>]*>/i);
+  if (bodyOpen) {
+    return html.replace(bodyOpen[0], `${bodyOpen[0]}${MOBILE_NAV_SAFETY_CSS}`);
+  }
+  return MOBILE_NAV_SAFETY_CSS + html;
+}
+
 // ── Metadata ──────────────────────────────────────────────────────────────────
 /**
  * Resolve a siteId param to a SiteRecord.
@@ -201,7 +280,7 @@ export default async function SitePage({
   if (site.generatedHTML) {
     return (
       <div
-        dangerouslySetInnerHTML={{ __html: site.generatedHTML }}
+        dangerouslySetInnerHTML={{ __html: withMobileNavSafety(site.generatedHTML) }}
         style={{ width: "100%", minHeight: "100vh" }}
       />
     );
@@ -309,16 +388,38 @@ export default async function SitePage({
       
 
       {/* NAVBAR */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb", padding: "0 1.5rem" }}>
-        <div style={{ maxWidth, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px" }}>
-          <a href="#home" style={{ fontWeight: font.weight, fontFamily: font.heading, fontSize: "1.25rem", color: "#1a1a1a", textDecoration: "none", letterSpacing: "-0.03em" }}>
+      <style>{`
+        .bailey-legacy-nav-inner { gap: 2rem; height: 64px; }
+        .bailey-legacy-nav-links { gap: 2rem; }
+        .bailey-legacy-nav-link  { display: inline-flex; }
+        @media (max-width: 768px) {
+          .bailey-legacy-nav-inner {
+            height: auto !important;
+            min-height: 56px !important;
+            padding: 0.5rem 0 !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+          }
+          .bailey-legacy-nav-links {
+            gap: 0.75rem 1rem !important;
+            flex-wrap: wrap !important;
+            justify-content: flex-end !important;
+          }
+          .bailey-legacy-nav-link { font-size: 0.8rem !important; }
+          .bailey-legacy-nav-cta  { padding: 0.4rem 0.9rem !important; font-size: 0.8rem !important; }
+          .bailey-legacy-nav-logo { font-size: 1.05rem !important; max-width: 55%; }
+        }
+      `}</style>
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb", padding: "0 1rem" }}>
+        <div className="bailey-legacy-nav-inner" style={{ maxWidth, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <a href="#home" className="bailey-legacy-nav-logo" style={{ fontWeight: font.weight, fontFamily: font.heading, fontSize: "1.25rem", color: "#1a1a1a", textDecoration: "none", letterSpacing: "-0.03em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {businessName}
           </a>
-          <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+          <div className="bailey-legacy-nav-links" style={{ display: "flex", alignItems: "center" }}>
             {["Home", "Services", "About", "Contact"].map((link) => (
-              <a key={link} href={`#${link.toLowerCase()}`} style={{ fontSize: "0.875rem", fontWeight: 500, color: "#6b7280", textDecoration: "none" }}>{link}</a>
+              <a key={link} href={`#${link.toLowerCase()}`} className="bailey-legacy-nav-link" style={{ fontSize: "0.875rem", fontWeight: 500, color: "#6b7280", textDecoration: "none" }}>{link}</a>
             ))}
-            <a href="#contact" style={{ background: accent, color: "#fff", fontWeight: 700, fontSize: "0.875rem", padding: "0.5rem 1.25rem", borderRadius: "8px", textDecoration: "none" }}>
+            <a href="#contact" className="bailey-legacy-nav-cta" style={{ background: accent, color: "#fff", fontWeight: 700, fontSize: "0.875rem", padding: "0.5rem 1.25rem", borderRadius: "8px", textDecoration: "none" }}>
               {c.cta_text}
             </a>
           </div>
