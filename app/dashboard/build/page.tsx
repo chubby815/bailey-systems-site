@@ -241,7 +241,43 @@ function BuildForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+
+      // Defensive JSON parse — some platform-level error envelopes
+      // (e.g. Vercel's "A server error has occurred...") arrive as
+      // plain text and would otherwise blow up res.json() with
+      // "Unexpected token A...". Read as text first, then try to parse.
+      const rawBody = await res.text();
+      let data: {
+        url?: string;
+        error?: string;
+        message?: string;
+        used?: number;
+        limit?: number;
+      } = {};
+      if (rawBody) {
+        try {
+          data = JSON.parse(rawBody);
+        } catch {
+          console.error(
+            "[dashboard/build] non-JSON response from /api/sites/generate:",
+            rawBody.slice(0, 500)
+          );
+          if (res.ok) {
+            // 200 with a non-JSON body — server presumably saved the
+            // site but couldn't serialize the response. Send them to
+            // the dashboard so they can find it.
+            router.push("/dashboard?from=build");
+            return;
+          }
+          setError(
+            "The server returned an unexpected response. Please try again — if this keeps happening, check your dashboard, your site may have been saved."
+          );
+          setStep("form");
+          setLoading(false);
+          return;
+        }
+      }
+
       if (!res.ok) {
         if (res.status === 401) { router.push("/login?redirect=/dashboard/build"); return; }
         if (res.status === 429 && data.error === "run_limit_reached") {
@@ -263,7 +299,7 @@ function BuildForm() {
           return;
         }
         if (res.status === 403) { router.push("/pricing?reason=subscription_required"); return; }
-        throw new Error(data.error ?? "Generation failed");
+        throw new Error(data.message ?? data.error ?? "Generation failed");
       }
       // Server returned 200 — site is saved. Always treat this as success.
       // Redirect into the editor so the owner sees the site with the edit bar and share URL.

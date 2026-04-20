@@ -153,6 +153,12 @@ async function getUniqueSlug(baseSlug: string): Promise<string> {
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  // Outer guard: under no circumstances should this route return a
+  // non-JSON body. Vercel's default error envelope is a plain-text
+  // string ("A server error has occurred...") and the build dashboard
+  // crashes when it tries to call res.json() on it. Catching everything
+  // here and returning a real JSON object keeps the client recoverable.
+  try {
   // Auth
   const session = await getSession(req);
   if (!session) {
@@ -399,4 +405,15 @@ export async function POST(req: NextRequest) {
     subdomainSlug,
     subdomainUrl:  `https://${subdomainSlug}.baileyagents.com`,
   });
+  } catch (err) {
+    console.error("[sites/generate] unhandled error:", err);
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Site generation failed. Please try again.";
+    return NextResponse.json(
+      { error: "internal_error", message },
+      { status: 500 }
+    );
+  }
 }
